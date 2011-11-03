@@ -1,0 +1,83 @@
+cn.fmsoft.lnx.gmud.simple.R
+cn.fmsoft.lnx.gmud.simple.R$array
+cn.fmsoft.lnx.gmud.simple.R$attr
+cn.fmsoft.lnx.gmud.simple.R$drawable
+cn.fmsoft.lnx.gmud.simple.R$id
+cn.fmsoft.lnx.gmud.simple.R$layout
+cn.fmsoft.lnx.gmud.simple.R$menu
+cn.fmsoft.lnx.gmud.simple.R$string
+cn.fmsoft.lnx.gmud.simple.core.Battle:
+    886:900:boolean ba()
+cn.fmsoft.lnx.gmud.simple.core.Gmud:
+    static final java.lang.String SAVE_PATH
+    public static final int WQX_ORG_WIDTH
+    public static final int WQX_ORG_HEIGHT
+    static final int FRAME_TIME
+    37:37:static boolean CleanSave()
+cn.fmsoft.lnx.gmud.simple.core.GmudMain:
+    static final int STATE_INVALID
+    static final int STATE_UNINITALIZE
+    static final int STATE_WAIT_UI
+    static final int STATE_WAIT_NEW_NAME
+    static final int STATE_RUNNING
+cn.fmsoft.lnx.gmud.simple.core.GmudTemp:
+    static java.lang.Object timer_thread_handle
+    39:44:static void Clear20Data()
+cn.fmsoft.lnx.gmud.simple.core.Input:
+    static final int kKeyExit
+    static final int kKeyEnt
+    static final int kKeyDown
+    static final int kKeyLeft
+    static final int kKeyUp
+    static final int kKeyRight
+    static final int kKeyPgUp
+    static final int kKeyPgDn
+    static final int kKeyFly
+cn.fmsoft.lnx.gmud.simple.core.Magic:
+    static final java.lang.String need_wait
+cn.fmsoft.lnx.gmud.simple.core.Map:
+    static final int ELEM_BASE_Y
+    105:105:public void recycle()
+cn.fmsoft.lnx.gmud.simple.core.NewGame:
+    static final java.lang.String Title
+    java.lang.String selecttip
+cn.fmsoft.lnx.gmud.simple.core.Player:
+    static final int AGE_TIME
+    114:121:boolean Clean(android.content.Context)
+    301:301:int GetPlayerClassID()
+    341:346:int GetSkillNumber()
+    741:755:boolean a(int,int)
+cn.fmsoft.lnx.gmud.simple.core.UI:
+    static final java.lang.String old_award_words
+cn.fmsoft.lnx.gmud.simple.core.Video:
+    static final int LARGE_FONT_SIZE
+    static final int SMALL_FONT_SIZE
+    170:174:static void VideoShutdown()
+cn.fmsoft.lnx.gmud.simple.core.mini_game_1:
+    24:24:static void draw_process()
+cn.fmsoft.lnx.gmud.simple.core.task:
+    static final java.lang.String yes_no
+    static final java.lang.String award
+    static final java.lang.String award_exp
+    static final java.lang.String award_potential
+    static final java.lang.String no_award
+    static final java.lang.String item_start
+    static final java.lang.String item_wait
+    static final java.lang.String old_woman_start
+    static final java.lang.String old_woman_wait
+    static final java.lang.String old_woman_unable
+    static final java.lang.String old_woman_award
+    static final java.lang.String kill_start
+    static final java.lang.String kill_wait
+    static final java.lang.String exist_award
+    static final java.lang.String talk_start
+    static final java.lang.String talk_wait
+    static final java.lang.String task_finish
+    static final java.lang.String bad_man_start
+    static final java.lang.String bad_man_wait
+    static final java.lang.String bad_man_nothing
+    static final java.lang.String bad_man_doing
+cn.fmsoft.lnx.gmud.simple.core.util:
+    42:42:static long GetCycleCount()
+    55:55:static void GetSecondTime()
+    69:69:static void GmudDelay(int)
