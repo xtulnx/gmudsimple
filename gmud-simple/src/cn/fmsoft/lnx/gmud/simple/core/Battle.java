@@ -16,8 +16,11 @@ public class Battle {
 	short NPC_item[] = new short[5];
 	int NPC_equip[] = new int[16];
 	int NPC_select_skill[]= new int[16];
+	
+	// 3元数组，[0]- active-id 
 	int a_int_array1d_static[] = new int[256];
 	int b_int_array1d_static[] = new int[256];
+	
 	int d_int_static;  //end flag ?
 	int e_int_static;
 
@@ -63,10 +66,16 @@ public class Battle {
 		return j1;
 	}
 
-	void a(int i1, int j1, int k1)
+	/**
+	 * 记录伤害结果？ j1:
+	 * @param active_id
+	 * @param j1 0=fpPlus 1=hp 2=hp_max 4=fp
+	 * @param k1
+	 */
+	void a(int active_id, int j1, int k1)
 	{
 		for (int l1 = 0; l1 < e_int_static; l1 += 3)
-			if (b_int_array1d_static[l1 + 32] == i1 && b_int_array1d_static[l1 + 1 + 32] == j1)
+			if (b_int_array1d_static[l1 + 32] == active_id && b_int_array1d_static[l1 + 1 + 32] == j1)
 			{
 				b_int_array1d_static[l1 + 2 + 32] = k1;
 				return;
@@ -77,7 +86,7 @@ public class Battle {
 			return;
 		} else
 		{
-			b_int_array1d_static[e_int_static + 32] = i1;
+			b_int_array1d_static[e_int_static + 32] = active_id;
 			b_int_array1d_static[e_int_static + 1 + 32] = j1;
 			b_int_array1d_static[e_int_static + 2 + 32] = k1;
 			e_int_static += 3;
@@ -731,6 +740,12 @@ public class Battle {
 			return 0;
 	}
 
+	/**
+	 * 设置出招的描述文本 ??
+	 * @param i1
+	 * @param j1 id (Magic.txt)
+	 * @param k1
+	 */
 	void b(int i1, int j1, int k1)
 	{
 		b_int_array1d_static[4] = i1;
@@ -1299,27 +1314,22 @@ public class Battle {
 		}
 	}
 
-	void NPCActive()
-	{
-		if (player_id != active_id)
-		{
-			int i1;
-			if ((i1 = CalaAvtiveSpeed(active_id, 4, 4)) > 0 && i1 < 20)
-			{
+	void NPCActive() {
+		if (player_id != active_id) {
+			int i1 = CalaAvtiveSpeed(active_id, 4, 4);
+			if (i1 > 0 && i1 < 20) {
+				// "你现在呆若木鸡！"
 				b(1, 99, 1);
-			} else
-			{
+			} else {
 				Magic.Effect(active_id);
 				int k1 = g(active_id);
 				boolean flag = util.RandomBool(20);
-				int j2;
-				String s;
-				if (k1 > 0 && flag)
-				{
-					if ((s = Magic.UseMagic(j2 = a_int_array2d_static[active_id][util.RandomInt(k1)])).length() > 0)
+				if (k1 > 0 && flag) {
+					int j2 = a_int_array2d_static[active_id][util.RandomInt(k1)];
+					String s = Magic.UseMagic(j2);
+					if (s.length() > 0)
 						PhyAttack(false);
-				} else
-				{
+				} else {
 					PhyAttack(false);
 				}
 			}
@@ -1574,8 +1584,8 @@ public class Battle {
 
 	void RollBackData()
 	{
-		int i1;
-		int j1 = (i1 = player_id) != 0 ? 0 : 1;
+		int i1 = player_id;
+		int j1 = (i1) != 0 ? 0 : 1;
 		for (int k1 = 0; k1 < 16; k1++)
 			if (fighter_data[i1][14 + k1] != Gmud.sPlayer.equips[k1])
 				Gmud.sPlayer.LoseOneItem(fighter_data[i1][14 + k1]);
@@ -1600,10 +1610,12 @@ public class Battle {
 		}
 		NPC.NPC_attrib[l1][11] = fighter_data[j1][1];
 		NPC.NPC_attrib[l1][12] = fighter_data[j1][2];
-		if (fighter_data[j1][6] > 0)
-			NPC.NPC_attrib[l1][13] = fighter_data[j1][6];
-		else
-			NPC.NPC_attrib[l1][13] = fighter_data[j1][4];
+		
+		// TODO: FP 与  MP 共用了 [13]/[14]，暂时只能更新一个，取较为常用的 FP
+		// if (fighter_data[j1][6] > 0)
+		// NPC.NPC_attrib[l1][13] = fighter_data[j1][6];
+		// else
+		NPC.NPC_attrib[l1][13] = fighter_data[j1][4];
 
 		Gmud.sPlayer.hp = fighter_data[i1][1];
 		Gmud.sPlayer.hp_max = fighter_data[i1][2];

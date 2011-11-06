@@ -14,43 +14,52 @@ public class uibattle {
 	static Bitmap fp_img;
 	static Bitmap mp_img;
 	static Bitmap hit_img;
-	static String menu_title[] =new String[] {
+	static final String menu_title[] =new String[] {
 		"普通攻击", "绝招攻击", "使用内力", "使用物品", "调整招式", "逃跑"
 	};
+	
+	
 //	vector<wstring> desc_words;
 	static ArrayList<String> desc_words;
 
 	static int weapon_id[] = new int[2];
 
-//	extern void Gmud.GmudDelay(unsigned int);
-
-	static void DrawFPMenu(int i)
-	{
+	/**
+	 * 绘制内力菜单，只有  {加力} 和 {吸气}
+	 * @param i 当前选择
+	 */
+	static void DrawFPMenu(int i) {
 		Video.VideoClearRect(60, 50, 39, 28);
 		Video.VideoDrawRectangle(60, 50, 39, 28);
-		for (int i3 = 0; i3 < 2; i3++)
-		{
+		for (int i3 = 0; i3 < 2; i3++) {
 			Video.VideoDrawStringSingleLine(UI.fp_menu_words[i3 + 1], 72, 51 + 13 * i3);
 			if (i3 == i)
 				UI.DrawCursor(60 + 4, 52 + 12 * i3);
 		}
 	}
 
-	static void DrawPlusFp()
-	{
-		if (Battle.sBattle.fighter_data[Battle.sBattle.active_id][36] == 255)
-		{
-//			wstring str("你必须选择你要用的内功心法.");
-			String str = "你必须选择你要用的内功心法.";
-			UI.DrawStringFromY(str, 660);
+	/**
+	 * 加力菜单
+	 */
+	static void DrawPlusFp() {
+		
+		final int id_active = Battle.sBattle.active_id;
+		
+		// 无内功，直接返回
+		if (Battle.sBattle.fighter_data[id_active][36] == 255) {
+			UI.DrawStringFromY(Res.STR_NO_INNER_KONGFU_STRING, 660);
 			Video.VideoUpdate();
 			Gmud.GmudDelay(1500);
 			return;
 		}
-		int i = Gmud.sPlayer.GetPlusFPMax();  //加力上限
-		int l;
-		int i1 = l = Battle.sBattle.fighter_data[Battle.sBattle.active_id][0];
-		boolean flag = false;
+		
+		// 加力上限
+		final int max = Gmud.sPlayer.GetPlusFPMax();
+		// 当前加力
+		final int cur_base = Battle.sBattle.fighter_data[id_active][0];
+		
+		int cur = cur_base;
+		
 		int k1 = 80 - 70 - 4;
 		int l1;
 		l1 = (l1 = (l1 = 13) + (16 + 2)) + 12 * 5;
@@ -60,65 +69,52 @@ public class uibattle {
 		else
 			i2 = 0;
 		i2 += 13 + 16 + 16 + 16;
-		UI.DrawNumberBox(l, i, k1, i2);
+		UI.DrawNumberBox(cur, max, k1, i2);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(100);
-		while (true)
-		{
-			if ((Input.inputstatus & Input.kKeyUp)!=0)  //up
+		while (true) {
+			if ((Input.inputstatus & Input.kKeyUp) != 0) // up
 			{
-				if (l > 0)
-					l--;
-				UI.DrawNumberBox(l, i, k1, i2);
+				if (cur > 0)
+					cur--;
+				UI.DrawNumberBox(cur, max, k1, i2);
 				Video.VideoUpdate();
 				Gmud.GmudDelay(50);
-			} else
-			if ((Input.inputstatus & Input.kKeyDown)!=0)  //down
+			} else if ((Input.inputstatus & Input.kKeyDown) != 0) // down
 			{
-				if (l < i)
-					l++;
-				UI.DrawNumberBox(l, i, k1, i2);
+				if (cur < max)
+					cur++;
+				UI.DrawNumberBox(cur, max, k1, i2);
 				Video.VideoUpdate();
 				Gmud.GmudDelay(50);
-			} else
-			{
-				if ((Input.inputstatus & Input.kKeyEnt)!=0)  //enter
+			} else {
+				if ((Input.inputstatus & Input.kKeyEnt) != 0) // enter
 				{
-					Battle.sBattle.fighter_data[Battle.sBattle.active_id][0] = l;
-					Battle.sBattle.a(Battle.sBattle.active_id, 0, l);
-					if (l == i)
-					{
-//						wstring str("你目前的加力上限为");
-//						wchar_t num[6];
-//						str += _itow(i, num, 10);
-						String str = "你目前的加力上限为"+i;
+					Battle.sBattle.fighter_data[id_active][0] = cur;
+					Battle.sBattle.a(id_active, 0, cur);
+					if (cur == max) {
+						String str = String.format(Res.STR_FP_PLUS_LIMIT_STRING, max);
 						UI.DrawStringFromY(str, 660);
 						Video.VideoUpdate();
 						Input.ClearKeyStatus();
 						Gmud.GmudDelay(1500);
 						return;
-					} else
-					{
+					} else {
 						Input.ClearKeyStatus();
 						Gmud.GmudDelay(50);
 						return;
 					}
 				}
-				if ((Input.inputstatus & Input.kKeyExit)!=0)  //Esc
-					if (i == i1)
-					{
-//						wstring str("你目前的加力上限为");
-//						wchar_t num[6];
-//						str += _itow(i, num, 10);
-						String str = "你目前的加力上限为" + i;
+				if ((Input.inputstatus & Input.kKeyExit) != 0) // Esc
+					if (max == cur_base) {
+						String str = String.format(Res.STR_FP_PLUS_LIMIT_STRING, max);
 						UI.DrawStringFromY(str, 660);
 						Video.VideoUpdate();
 						Input.ClearKeyStatus();
 						Gmud.GmudDelay(1500);
 						return;
-					} else
-					{
+					} else {
 						Gmud.GmudDelay(50);
 						return;
 					}
@@ -288,31 +284,45 @@ public class uibattle {
 		}
 	}
 
-	static void DrawHPRect(int i, int l, int i1, int j1, int k1, boolean flag)
+	/**
+	 * 绘制血条
+	 * @param cur 当前血量
+	 * @param max 最大血量
+	 * @param full 满血
+	 * @param x 坐标
+	 * @param y 
+	 * @param show_percent 是否输出数字，如  99/100
+	 */
+	static void DrawHPRect(int cur, int max, int full, int x, int y, boolean show_percent)
 	{
-		int l1 = Gmud.WQX_ORG_WIDTH / 4;
-		i *= 1000;
-		l *= 1000;
-		int i2 = (i1 *= 1000) / l1;
-		if (i1 % l1 > 0)
-			i2++;
-		if (i2 <= 0)
-			i2 = 1;
-		int j2;
-		if ((j2 = i / i2) > l1)
-			j2 = l1;
-		Video.VideoFillRectangle(j1, k1, j2, 5);
-		if ((j2 = l / i2) > l1)
-			j2 = l1;
-		Video.VideoFillRectangle(j1, k1 + 7, j2, 2);
-		if(flag)
+		int length = Gmud.WQX_ORG_WIDTH / 4;
+		full *= 1000;
+		int per = full / length;
+		if (full % length > 0)
+			per++;
+		if (per <= 0)
+			per = 1;
+		
+		int len;
+		
+		len = (cur*1000) / per;
+		if (len > length)
+			len = length;
+		Video.VideoFillRectangle(x, y, len, 5);
+		
+		len = (max*1000) / per;
+		if (len > length)
+			len = length;
+		Video.VideoFillRectangle(x, y + 7, len, 2);
+		
+		if(show_percent)
 		{
 //			wchar_t num[8];
 //			wstring str(_itow(i / 1000, num, 10));
 //			str += "/";
 //			str += _itow(l / 1000, num, 10);
-			String str = String.format("%d/%d", i/1000,l/1000);
-			Video.VideoDrawNumberData(str, j1 + l1 + 2, k1 + 2);
+			String str = String.format("%d/%d", cur, max);
+			Video.VideoDrawNumberData(str, x + length + 2, y + 2);
 		}
 	}
 
@@ -349,6 +359,7 @@ public class uibattle {
 		j1 += 16;
 		Video.VideoDrawImage(fp_img, 4, j1);
 		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.player_id][4], Battle.sBattle.fighter_data[Battle.sBattle.player_id][5], Battle.sBattle.fighter_data[Battle.sBattle.player_id][5], l1, j1 + 4, true);
+		DrawHPRect(Battle.sBattle.fighter_data[i1][4], Battle.sBattle.fighter_data[i1][5], Battle.sBattle.fighter_data[i1][5], k1 + 2, j1 + 4, false);
 		j1 += 16;
 		if(Battle.sBattle.fighter_data[Battle.sBattle.player_id][42] != 255)
 		{
@@ -370,116 +381,124 @@ public class uibattle {
 			}
 	}
 
-//	extern wstring ReplaceStr(wstring*, LPCWSTR, LPCWSTR);
-
-	static void PhyAttack(int i, int l)
+	
+	/**
+	 * 描述过招内容
+	 * @param attack_type 出招类型 0:物理攻击  1:技能攻击 2:攻击结果 3:??自定义描述文本于desc_words中 4:伤害描述
+	 * @param attack_desc 描述文本ID
+	 */
+	static void PhyAttack(int attack_type, int attack_desc)
 	{
-//		wstring s("");
-//		wstring s1("");
-		String s="";
-		String s1="";
-		int i1 = Battle.sBattle.active_id;
-		int j1 = Battle.sBattle.player_id;
-		int l1;
-		if ((l1 = Battle.sBattle.a_int_array1d_static[3]) != -1)
-			s += GmudData.hit_point_name[l1];
-		switch (i)
+		String str_desc;
+		int id_active = Battle.sBattle.active_id;
+		int id_player = Battle.sBattle.player_id;
+		switch (attack_type)
 		{
-		default:
-			break;
-
-		case 0: //
-			s1 = Skill.GetAttackDesc(l);
-			if (i1 == j1)
+		case 0: //物理攻击
+			str_desc = Skill.GetAttackDesc(attack_desc);
+			if (id_active == id_player)
 			{
-				s1 = util.ReplaceStr(s1, "N", "你");
-				s1 = util.ReplaceStr(s1, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
-				s1 = util.ReplaceStr(s1, "SW", Items.item_names[weapon_id[i1]]);
+				str_desc = util.ReplaceStr(str_desc, "N", "你");
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name);
+				str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 			} else
 			{
-				s1 = util.ReplaceStr(s1, "N", Battle.sBattle.NPC_name/*.c_str()*/);
-				s1 = util.ReplaceStr(s1, "SB", "你");
-				s1 = util.ReplaceStr(s1, "SW", Items.item_names[weapon_id[i1]]);
+				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.NPC_name);
+				str_desc = util.ReplaceStr(str_desc, "SB", "你");
+				str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 			}
-			s1 = util.ReplaceStr(s1, "SP", s/*.c_str()*/);
+			
+			// 攻击部位
+			String s;
+			int hit_point = Battle.sBattle.a_int_array1d_static[3];
+			if (hit_point != -1)
+				s = GmudData.hit_point_name[hit_point];
+			else {
+				s = "";
+			}
+			str_desc = util.ReplaceStr(str_desc, "SP", s/*.c_str()*/);
 			break;
 		case 1:
 			{
-				s1 = Magic.GetMagicDesc(l);
+				str_desc = Magic.GetMagicDesc(attack_desc);
 				int k2 = Battle.sBattle.a_int_array1d_static[13];
-				if (i1 == j1)
+				if (id_active == id_player)
 				{
-					s1 = util.ReplaceStr(s1, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
-					s1 = util.ReplaceStr(s1, "SW", Items.item_names[weapon_id[i1]]);
+					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 				} else
 				{
-					s1 = util.ReplaceStr(s1, "你", Battle.sBattle.NPC_name/*.c_str()*/);
-					s1 = util.ReplaceStr(s1, "SB", "你");
-					s1 = util.ReplaceStr(s1, "SW", Items.item_names[weapon_id[i1]]);
+					str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "SB", "你");
+					str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 				}
 				if (k2 != -1)
-					s1 = util.ReplaceStr(s1, "~", Magic.magic_name[k2]);
+					str_desc = util.ReplaceStr(str_desc, "~", Magic.magic_name[k2]);
 				break;
 			}
 		case 2: //hit result
 			{
 				int j3;
-				s1 = Skill.GetHitDesc(j3 = l & 0xff);
-				int k3 = l / 256;
+				str_desc = Skill.GetHitDesc(j3 = attack_desc & 0xff);
+				int k3 = attack_desc / 256;
 //				wstring s2("");
 				String s2="";
 				if (k3 > 36)
 					s2 = Skill.GetHitDesc(k3);
-				if (i1 == j1)
+				if (id_active == id_player)
 				{
-					s1 = util.ReplaceStr(s1, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
 					if (j3 != 36)
 					{
-						s1 += "(";
-						s1 += Battle.sBattle.NPC_name;
-						s1 += s2/*.c_str()*/;
-						s1 += ")";
+						str_desc += "(";
+						str_desc += Battle.sBattle.NPC_name;
+						str_desc += s2/*.c_str()*/;
+						str_desc += ")";
 					}
 					break;
 				}
-				s1 = util.ReplaceStr(s1, "你", Battle.sBattle.NPC_name/*.c_str()*/);
-				s1 = util.ReplaceStr(s1, "SB", "你");
+				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 				if (j3 != 36)
 				{
-					s1 += "(你";
-					s1 += s2/*.c_str()*/;
-					s1 += ")";
+					str_desc += "(你";
+					str_desc += s2/*.c_str()*/;
+					str_desc += ")";
 				}
 				break;
 			}
 		case 3: //？？？
 //			s1 = desc_words[l];
-			s1 = desc_words.get(l);
-			if (i1 == j1)
+			str_desc = desc_words.get(attack_desc);
+			if (id_active == id_player)
 			{
-				s1 = util.ReplaceStr(s1, "N", "你");
-				s1 = util.ReplaceStr(s1, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "N", "你");
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
 			} else
 			{
-				s1 = util.ReplaceStr(s1, "N", Battle.sBattle.NPC_name/*.c_str()*/);
-				s1 = util.ReplaceStr(s1, "SB", "你");
+				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
 			break;
 
 		case 4: //伤害描述
-			s1 = Skill.GetHitDesc(l);
-			if (i1 == j1)
+			str_desc = Skill.GetHitDesc(attack_desc);
+			if (id_active == id_player)
 			{
-				s1 = util.ReplaceStr(s1, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
 			} else
 			{
-				s1 = util.ReplaceStr(s1, "你", Battle.sBattle.NPC_name/*.c_str()*/);
-				s1 = util.ReplaceStr(s1, "SB", "你");
+				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
+			break;
+			
+		default:
+			str_desc = "";
 			break;
 		}
 		DrawMain();
-		UI.DrawStringFromY(s1, 660);
+		UI.DrawStringFromY(str_desc, 660);
 		Video.VideoUpdate();
 	}
 

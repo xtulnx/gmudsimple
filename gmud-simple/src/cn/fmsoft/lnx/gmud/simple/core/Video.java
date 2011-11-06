@@ -15,8 +15,10 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
+import android.graphics.Path;
 import android.graphics.Rect;
 import cn.fmsoft.lnx.gmud.simple.Show;
+import cn.fmsoft.lnx.gmud.simple.R.id;
 
 public class Video {
 	
@@ -182,6 +184,43 @@ public class Video {
 			exit(0);
 		lpmem.drawLine(x1*sScale, y1*sScale, x2*sScale, y2*sScale, blackPen);
 	}
+	
+	/**
+	 * 绘制一个箭头
+	 * @param x
+	 * @param y
+	 * @param w 宽度
+	 * @param h 高度，如果小于0，表示向上
+	 * @param type 类型，Bit0:左右方向 Bit1:实心 Bit2:用背景色(只用于实心)
+	 */
+	static void VideoDrawArrow(int x, int y, int w, int h, int type) {
+		final Path path = new Path();
+		x *= sScale;
+		y *= sScale;
+		w *= sScale;
+		h *= sScale;
+		path.moveTo(x, y);
+		if ((type & 1) == 0) {
+			path.lineTo(x + w, y);
+			path.lineTo(x + w / 2, y + h);
+		} else {
+			path.lineTo(x, y + h);
+			path.lineTo(x + w, y + h / 2);
+		}
+		path.close();
+
+		if ((type & 2) == 0) {
+			// clear
+			lpmem.drawPath(path, greenBrush);
+			lpmem.drawPath(path, blackPen);
+		} else {
+			if ((type & 4) == 0) {
+				lpmem.drawPath(path, blackBrush);
+			} else {
+				lpmem.drawPath(path, greenBrush);
+			}
+		}
+	}
 
 	static void VideoClear() {
 		if (VideoExited)
@@ -251,7 +290,7 @@ public class Video {
 
 	private static void drawMultiText(String str, int x, int y, int restrictWidth, Paint paint) {
 
-		FontMetrics fm = paint.getFontMetrics();// 得到系统默认字体属�?
+		FontMetrics fm = paint.getFontMetrics();// 得到系统默认字体属性
 		final int fontHeight = (int) (Math.ceil(fm.descent - fm.ascent) - 2);// 获得字体高度
 
 		// paint.getTextWidths(str, widths);
@@ -280,7 +319,7 @@ public class Video {
 		if (VideoExited)
 			exit(0);
 
-		// 大字�?y坐标:每行+16 //小字�?y坐标:每行+13
+		// 大字体y坐标:每行+16 //小字体y坐标:每行+13
 		if (type != 0) {
 			blackBrush.setTextSize(largeFnt);
 			lpmem.drawText(str, x*sScale, y*sScale+largeOff, blackBrush);
@@ -299,7 +338,9 @@ public class Video {
 		if (VideoExited)
 			exit(0);
 
-		// PointF origin(x, y); //大字�?y坐标:每行+16 //小字�?y坐标:每行+13
+		// PointF origin(x, y); 
+		// 大字体y坐标:每行+16 
+		// 小字体y坐标:每行+13
 		switch (type) {
 		case 1:
 			// lpmem->DrawString(str, -1, largeFnt, PointF(x, y), blackBrush);

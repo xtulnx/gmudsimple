@@ -1,6 +1,7 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 public class Map {
 
@@ -104,10 +105,8 @@ public class Map {
 //		delete[] b_byte_array1d;
 	}
 	
-	public boolean LoadMap(int id)
-	{
+	public boolean LoadMap(int id) {
 		if (b_boolean)   //map ready?
-			
 		{
 			b_boolean = false;
 		}
@@ -142,6 +141,10 @@ public class Map {
 //			delete[] map_event_data.data;
 		MapInfo.GetMapEvent(map_event_data, id);   //load map event
 
+		if (Gmud.DEBUG) {
+			Log.i("lnx", "map id=" + id + " image-size=" + map_image_data.data.length + " event-size="+map_event_data.data.length);
+		}
+		
 		// TODO: 
 		if(task.bad_man_mapid == id)
 		{

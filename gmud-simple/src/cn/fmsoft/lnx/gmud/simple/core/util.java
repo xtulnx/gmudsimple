@@ -4,7 +4,13 @@ public class util {
 
 	static int count_per_millisecond = 1000;
 
-	// 替换字符串target中的obj为data
+	/**
+	 * 替换字符串 @target 中的 @obj 为 @data 
+	 * @param target 源字符串
+	 * @param obj 待替掉的内容，常用 N:进攻者 SB:被攻击者  SW:武器类型 SP:攻击部位 ~:技能名称 $o:NPC名字
+	 * @param data 新的子串
+	 * @return 替换后的字符串
+	 */
 	static String ReplaceStr(String target, String obj, String data) {
 		return target.replaceAll(obj, data);
 	}

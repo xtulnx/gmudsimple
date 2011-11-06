@@ -301,28 +301,40 @@ public class Player {
 		return (class_id > 9) ? 0 : class_id;
 	}
 
-	// 食物最大
+	/**
+	 * 
+	 * @return 食物最大
+	 */
 	int GetFoodMax() {
 		return 75 + 15 * pre_force;
 	}
 
-	// 饮水最大
+	/**
+	 * 饮水最大
+	 * @return
+	 */
 	int GetWaterMax() {
 		return 60 + 15 * pre_force;
 	}
 
-	// HP Max
+	/**
+	 * 取生命值(Health Point)上限，与内力、年龄有关
+	 * @return HP Max
+	 */
 	int GetHPMax() {
 		return 100 + (fp_level / 4) + (GetAge() * 20);
 	}
 
-	// 年龄增量（14起）
+	/**
+	 * 年龄增量（14起）
+	 * @return
+	 */
 	int GetAge() {
 		return (int) (played_time / AGE_TIME);
 	}
 
 	/**
-	 * 计算技能的等级
+	 * 计算技能的等级，如果此技能无效或未学，返回0
 	 * @param id 技能ID
 	 * @return 技能等级
 	 */
@@ -336,7 +348,9 @@ public class Player {
 		return 0;
 	}
 
-	// 招式总数
+	/**
+	 * @return 招式总数
+	 */
 	int GetSkillNumber() {
 		int i1 = 0;
 		for (int j1 = 0; j1 < 32; j1++)
@@ -346,7 +360,9 @@ public class Player {
 		return i1;
 	}
 
-	// 角色等级
+	/**
+	 * @return 角色等级
+	 */
 	int GetPlayerLevel() {
 		int i1 = GetWeaponID();
 		int j1 = Items.item_attribs[i1][1];
@@ -404,18 +420,27 @@ public class Player {
 			return j1 / i1;
 	}
 
-	// 轻功等级
+	/**
+	 * 
+	 * @return 轻功等级
+	 */
 	int GetFlySkillLevel() {
 		return (GetSkillLevel(select_skills[2]) + GetSkillLevel(7) / 2);
 	}
 
-	// 设置相貌等级,含技能提升
+	/**
+	 * 设置相貌等级,含技能提升 {驻颜术} {扶桑忍术}
+	 * @return 
+	 */
 	int SetFaceLevel() {
 		int i = GetSkillLevel(10) / 15 + GetSkillLevel(26) / 15 + face_level;
 		return (i > 12) ? 12 : i;
 	}
 
-	// 相貌等级
+	/**
+	 * 
+	 * @return 相貌等级 [0-13]
+	 */
 	int GetFaceLevel() {
 		if (GetAge() < 2)
 			return -1;
@@ -425,7 +450,10 @@ public class Player {
 			return face_level;
 	}
 
-	// 加力max
+	/**
+	 *  
+	 * @return 加力max
+	 */
 	int GetPlusFPMax() {
 		int i1 = GetSkillLevel(0);
 		if (0 == i1) {
@@ -436,7 +464,10 @@ public class Player {
 		}
 	}
 
-	// 法点max
+	/**
+	 * Mana Point
+	 * @return 法点max
+	 */
 	int GetPlusMPMax() {
 		int i1;
 		if (0 == (i1 = GetSkillLevel(4))) {
@@ -447,12 +478,18 @@ public class Player {
 		}
 	}
 
-	// 武器ID
+	/**
+	 * 
+	 * @return 武器ID
+	 */
 	int GetWeaponID() {
 		return equips[15];
 	}
 
-	// 后天膂力
+	/**
+	 * 
+	 * @return 后天膂力
+	 */
 	int GetForce() {
 		int i1 = GetSkillLevel(1);
 		int j1 = 0;
@@ -461,7 +498,10 @@ public class Player {
 		return i1 / 10 + pre_force + j1;
 	}
 
-	// 敏捷
+	/**
+	 * 
+	 * @return 敏捷
+	 */
 	int GetAgility() {
 		int i1 = GetSkillLevel(7);
 		int j1 = 0;
@@ -470,7 +510,10 @@ public class Player {
 		return i1 / 10 + pre_agility + j1;
 	}
 
-	// 悟性
+	/**
+	 * 
+	 * @return 悟性
+	 */
 	int GetSavvy() {
 		int i1 = GetSkillLevel(9);
 		int j1 = 0;
@@ -776,11 +819,7 @@ public class Player {
 			if (food >= GetFoodMax())
 				return "你再也吃不下任何东西了";
 			food += i2;
-			if (food > GetFoodMax())
-				food = GetFoodMax();
 			water += j2;
-			if (water > GetWaterMax())
-				water = GetWaterMax();
 			item_package[i1][2]--;
 			if (item_package[i1][2] <= 0)
 			{

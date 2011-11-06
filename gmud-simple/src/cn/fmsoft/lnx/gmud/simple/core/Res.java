@@ -13,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 public class Res {
+	static final String STR_YOU_STRING = "你";
+	static final String STR_NO_INNER_KONGFU_STRING = "你必须选择你要用的内功心法.";
+	static final String STR_FP_PLUS_LIMIT_STRING = "你目前的加力上限为%d";
 	
 	static final String sText[] = new String[] {
 		"0.txt",

@@ -88,8 +88,6 @@ public class UI {
 		}
 	}
 
-
-
 	static void ShowDialog2(int id)
 	{
 		String s1 = Res.readtext(5, dialog_point[id], dialog_point[1 + id]);
@@ -137,42 +135,55 @@ public class UI {
 		}
 	}
 
-	static int DrawFlashCursor(int i1, int j1, int k1)
-	{
-		boolean flag = false;
-		int i2 = 11;
-		int key;
+	/**
+	 * 绘制一个向下闪烁的光标
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @return
+	 */
+	static int DrawFlashCursor(int x, int y, int w) {
+		final int h = w / 2 + 1;
+		boolean blink = false;
+		int count = 0;
 		Input.ClearKeyStatus();
 		Input.ProcessMsg();
-		while((key = Input.inputstatus) == 0) 
-		{
-			if (!flag)
-			{
-				Video.VideoClearRect(i1, j1, k1 + 1, k1);
-				for (int j2 = 0; j2 < k1 / 2 + 1; j2++)
-					Video.VideoDrawLine(i1 + j2, j1 + j2, (i1 + k1) - j2, j1 + j2);
-
+		while (Input.inputstatus == 0) {
+			if (count == 0) {
+				if (!blink) {
+					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 0);
+	
+					// Video.VideoClearRect(x, y, w + 1, w);
+					// for (int j2 = 0; j2 < w / 2 + 1; j2++)
+					// 	Video.VideoDrawLine(x + j2, y + j2, (x + w) - j2, y + j2);
+				} else {
+					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 4);
+					// Video.VideoClearRect(x, y, w + 1, w);
+				}
 				Video.VideoUpdate();
-			} else
-			{
-				Video.VideoClearRect(i1, j1, k1 + 1, k1);
-				Video.VideoUpdate();
+				
+				count = 6;
+				blink = !blink;
+			} else {
+				count--;
 			}
-			if (++i2 % 10 == 0)
-				flag = !flag;
 			Input.ClearKeyStatus();
 			Gmud.GmudDelay(50);
 		}
-		return key;
+		return Input.inputstatus;
 	}
 
-
-
-	static void DrawCursor(int x, int y)
-	{
-		Video.VideoDrawLine(x, y, x, y + 11);
-		for (int k1 = 0; k1 < 6; k1++)
-			Video.VideoDrawLine(x + k1 + 1, y + k1 + 1, x + k1 + 1, (y + 10) - k1);
+	/**
+	 * 绘制一个实心向右的箭头
+	 * @param x
+	 * @param y
+	 */
+	static void DrawCursor(int x, int y) {
+		Video.VideoDrawArrow(x, y, 7, 11, 1+2);
+		
+//		Video.VideoDrawLine(x, y, x, y + 11);
+//		for (int k1 = 0; k1 < 6; k1++)
+//			Video.VideoDrawLine(x + k1 + 1, y + k1 + 1, x + k1 + 1, (y + 10) - k1);
 	}
 
 	static void DrawMainMenu(int id)
@@ -564,40 +575,59 @@ public class UI {
 		Video.VideoDrawString(s1, 0, k1);
 	}
 
-	static void DrawNumberBox(int i1, int j1, int k1, int l1)
+	/**
+	 * 绘制数字加减对话框，用于 {加力} 等。
+	 * @param cur
+	 * @param max 最大值，[0-999]
+	 * @param x
+	 * @param y
+	 */
+	static void DrawNumberBox(int cur, int max, int x, int y)
 	{
-		int i2 = 27;
-		int j2 = 6;
-		int k2 = 13 + 4;
-		int l2 = i2 + 4 + 10;
-		if (i1 > j1)
-			i1 = j1;
-		if (i1 < 0)
-			i1 = 0;
-		Video.VideoClearRect(k1, l1, l2, k2);
-		Video.VideoDrawRectangle(k1, l1, l2, k2);
-		Video.VideoDrawLine(k1 + i2 + 3, l1, k1 + i2 + 3, (l1 + k2) - 1);
-		Video.VideoDrawLine(k1 + i2 + 3, l1 + k2 / 2, (k1 + l2) - 1, l1 + k2 / 2);
-		int i3 = l2 - 3 - i2 - 5;
-		for (int j3 = 0; j3 < i3 / 2 + 1; j3++)
-		{
-			Video.VideoDrawLine(k1 + i2 + 5 + j3, (l1 + k2 / 2) - 2 - j3, (k1 + l2) - 2 - j3, (l1 + k2 / 2) - 2 - j3);
-			Video.VideoDrawLine(k1 + i2 + 5 + j3, l1 + k2 / 2 + 2 + j3, (k1 + l2) - 2 - j3, l1 + k2 / 2 + 2 + j3);
-		}
+		final int num_w = 27; // 数字区的宽度
+		final int nw = 6; // 每个数字的宽度
+		final int h = 13 + 4; // 总高度，假定小号文本高度固定为 13
+		final int w = num_w + 4 + 10; // 总宽度 
+		if (cur > max)
+			cur = max;
+		if (cur < 0)
+			cur = 0;
+		
+		// 绘制外边框
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		
+		// 分隔线
+		Video.VideoDrawLine(x + num_w + 3, y, x + num_w + 3, (y + h));
+		Video.VideoDrawLine(x + num_w + 3, y + h / 2, (x + w), y + h / 2);
+		
+		// 绘制上下箭头
+		final int arrow_w = w - 3 - num_w - 4;
+		final int arrow_h = h / 2 - 3;
+		Video.VideoDrawArrow(x + num_w + 5, (y + h / 2) - 2, arrow_w, -arrow_h, cur > 0 ? 2 : 0);
+		Video.VideoDrawArrow(x + num_w + 5, (y + h / 2) + 2, arrow_w, arrow_h, cur < max ? 2 : 0);
+		// 		int i3 = w - 3 - num_w - 5
+		//		for (int j3 = 0; j3 < i3 / 2 + 1; j3++)
+		//		{
+		//			Video.VideoDrawLine(x + num_w + 5 + j3, (y + h / 2) - 2 - j3, (x + w) - 2 - j3, (y + h / 2) - 2 - j3);
+		//			Video.VideoDrawLine(x + num_w + 5 + j3, y + h / 2 + 2 + j3, (x + w) - 2 - j3, y + h / 2 + 2 + j3);
+		//		}
+		
+		// 右对齐绘制数字
 		int k3 = 100;
 		boolean flag = false;
 		for (int l3 = 0; l3 < 3; l3++)
 		{
 			int i4;
-			if ((i4 = i1 / k3) != 0 || l3 == 2 || flag)
+			if ((i4 = cur / k3) != 0 || l3 == 2 || flag)
 			{
 				flag = true;
 //				wchar_t a[2];
 //				_itow(i4, a, 10);
 				String a = String.valueOf(i4);
-				Video.VideoDrawStringSingleLine(a, k1 + 3 + (j2 + 1) * l3, l1 + 2);
+				Video.VideoDrawStringSingleLine(a, x + 3 + (nw + 1) * l3, y + 2);
 			}
-			i1 -= i4 * k3;
+			cur -= i4 * k3;
 			k3 /= 10;
 		}
 	}

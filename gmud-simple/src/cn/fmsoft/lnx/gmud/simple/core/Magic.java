@@ -50,10 +50,10 @@ public class Magic {
 	{
 //		wstring str("");
 		String str = "";
-		int j = Battle.sBattle.active_id;
-		int l = j==0?1:0;
-		int i1 = Battle.sBattle.fighter_data[j][4];
-		int j1 = Battle.sBattle.fighter_data[j][6];
+		int id_active = Battle.sBattle.active_id;
+		int id_rival = id_active==0?1:0;
+		int i1 = Battle.sBattle.fighter_data[id_active][4];
+		int j1 = Battle.sBattle.fighter_data[id_active][6];
 		Battle.sBattle.b_int_array1d_static[13] = i;
 		if (i >= 11 && i <= 22)
 		{
@@ -76,31 +76,31 @@ public class Magic {
 				int k2 = 0;
 				int l2 = 0;
 				int i3;
-				if ((i3 = Calc2(j, 0, 12, 1)) > 0)
+				if ((i3 = Calc2(id_active, 0, 12, 1)) > 0)
 				{
 					int j3;
-					if ((j3 = Calc2(j, 0, 12, 105)) < 0)
+					if ((j3 = Calc2(id_active, 0, 12, 105)) < 0)
 						return NeedMoreLevel(12);
 					int k1;
-					if ((k1 = Calc2(j, 3, 14, 105)) < 0)
+					if ((k1 = Calc2(id_active, 3, 14, 105)) < 0)
 						return NeedMoreLevel(14);
-					j3 = Calc1(j, 0, 12);
+					j3 = Calc1(id_active, 0, 12);
 					k2 = 5 + (j3 - 90) / 10;
 					l2 = 10 + (j3 - 90) / 2;
 				} else
 				{
 					int k3;
-					if ((k3 = Calc2(j, 0, 13, 135)) < 0)
+					if ((k3 = Calc2(id_active, 0, 13, 135)) < 0)
 						return NeedMoreLevel(13);
 					int l1;
-					if ((l1 = Calc2(j, 3, 14, 135)) < 0)
+					if ((l1 = Calc2(id_active, 3, 14, 135)) < 0)
 						return NeedMoreLevel(14);
-					k3 = Calc1(j, 0, 13);
+					k3 = Calc1(id_active, 0, 13);
 					k2 = 12 + (k3 - 90) / 10;
 					l2 = 10 + (k3 - 90);
 				}
 				boolean flag1;
-				if (!(flag1 = (flag1 = Battle.sBattle.a(j, 0, k2, -1, -1, 1, 10)) && Battle.sBattle.a(j, 1, l2, -1, -1, -1, 10)))
+				if (!(flag1 = (flag1 = Battle.sBattle.a(id_active, 0, k2, -1, -1, 1, 10)) && Battle.sBattle.a(id_active, 1, l2, -1, -1, -1, 10)))
 					return need_wait;
 				Battle.sBattle.b(1, 0, 1);
 				break;
@@ -108,13 +108,13 @@ public class Magic {
 		case 6: //三花
 			{
 				int l3;
-				if ((l3 = Calc2(j, 3, 20, 90)) < 0)
+				if ((l3 = Calc2(id_active, 3, 20, 90)) < 0)
 					return NeedMoreLevel(20);
 				boolean flag2 = false;
-				l3 = Calc1(j, 3, 20);
+				l3 = Calc1(id_active, 3, 20);
 				int i4 = 20 + (l3 - 90) / 5;
 				int j4 = 10 + (l3 - 90) / 10;
-				if (!(flag2 = (flag2 = Battle.sBattle.a(j, 2, i4, -1, -1, 5, 8)) && Battle.sBattle.a(j, 3, j4, -1, -1, -1, 8)))
+				if (!(flag2 = (flag2 = Battle.sBattle.a(id_active, 2, i4, -1, -1, 5, 8)) && Battle.sBattle.a(id_active, 3, j4, -1, -1, -1, 8)))
 					return need_wait;
 				Battle.sBattle.b(1, 4, 1);
 				break;
@@ -122,13 +122,13 @@ public class Magic {
 		case 2: //红莲出世
 			{
 				int k4;
-				if ((k4 = Calc2(j, 3, 25, 120)) < 0)
+				if ((k4 = Calc2(id_active, 3, 25, 120)) < 0)
 					return NeedMoreLevel(25);
 				int l5 = 0;
-				k4 = Calc1(j, 3, 25);
+				k4 = Calc1(id_active, 3, 25);
 				l5 = 14 + util.RandomInt((k4 - 120) / 4);
 				boolean flag3;
-				if (!(flag3 = Battle.sBattle.a(j, 0, l5, -1, -1, -1, 10)))
+				if (!(flag3 = Battle.sBattle.a(id_active, 0, l5, -1, -1, -1, 10)))
 					return need_wait;
 				Battle.sBattle.b(1, 13, 1);
 				break;
@@ -136,12 +136,12 @@ public class Magic {
 		case 1: //雷动九天
 			{
 				int l4;
-				if ((l4 = Calc2(j, 3, 25, 90)) < 0)
+				if ((l4 = Calc2(id_active, 3, 25, 90)) < 0)
 					return NeedMoreLevel(25);
 				int i6 = 0;
 				i6 = 21 + util.RandomInt((l4 - 90) / 3);
 				boolean flag4;
-				if (!(flag4 = Battle.sBattle.a(j, 1, i6, -1, -1, -1, 10)))
+				if (!(flag4 = Battle.sBattle.a(id_active, 1, i6, -1, -1, -1, 10)))
 					return need_wait;
 				Battle.sBattle.b(1, 12, 1);
 				break;
@@ -149,17 +149,17 @@ public class Magic {
 		case 25: //忍术烟幕
 			{
 				int j6;
-				if ((j6 = Calc2(j, 3, 26, 90)) < 0)
+				if ((j6 = Calc2(id_active, 3, 26, 90)) < 0)
 					return NeedMoreLevel(26);
-				int j7 = Battle.sBattle.fighter_data[j][9];
+				int j7 = Battle.sBattle.fighter_data[id_active][9];
 				int k7;
-				if ((k7 = 50 + (Battle.sBattle.fighter_data[j][4] - Battle.sBattle.fighter_data[l][4]) / 20) < 0)
+				if ((k7 = 50 + (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20) < 0)
 					k7 = 1;
 				if (k7 > 99)
 					k7 = 99;
 				if (util.RandomBool(k7))
 				{
-					Battle.sBattle.a(j, 0, j7, -1, -1, -1, 10);
+					Battle.sBattle.a(id_active, 0, j7, -1, -1, -1, 10);
 					boolean flag5 = false;
 				} else
 				{
@@ -171,14 +171,14 @@ public class Magic {
 		case 26: //忍法影分身
 			{
 				int k6;
-				if ((k6 = Calc2(j, 3, 26, 110)) < 0)
+				if ((k6 = Calc2(id_active, 3, 26, 110)) < 0)
 					return NeedMoreLevel(26);
 				int l7;
-				if ((l7 = Battle.sBattle.fighter_data[j][37] / 3) < 1)
+				if ((l7 = Battle.sBattle.fighter_data[id_active][37] / 3) < 1)
 					l7 = 1;
 				if (l7 > 80)
 					l7 = 80;
-				Battle.sBattle.a(j, 5, l7, -1, 101, 18, 10);
+				Battle.sBattle.a(id_active, 5, l7, -1, 101, 18, 10);
 				boolean flag6 = false;
 				Battle.sBattle.b(1, 17, 1);
 				break;
@@ -186,12 +186,12 @@ public class Magic {
 		case 3: //冰心决
 			{
 				int i8;
-				if ((i8 = Calc2(j, 3, 36, 90)) < 0)
+				if ((i8 = Calc2(id_active, 3, 36, 90)) < 0)
 					return NeedMoreLevel(36);
-				i8 = Calc1(j, 3, 36);
+				i8 = Calc1(id_active, 3, 36);
 				int l8 = 40 + (i8 - 90) / 3;
 				boolean flag7;
-				if (!(flag7 = Battle.sBattle.a(j, 6, l8, -1, -1, 44, 6)))
+				if (!(flag7 = Battle.sBattle.a(id_active, 6, l8, -1, -1, 44, 6)))
 					return need_wait;
 				Battle.sBattle.b(1, 43, 1);
 				break;
@@ -199,32 +199,32 @@ public class Magic {
 		case 24: //八卦刀影掌
 			{
 				int i9;
-				if ((i9 = Calc2(j, 1, 11, 105)) < 0)
+				if ((i9 = Calc2(id_active, 1, 11, 105)) < 0)
 					return NeedMoreLevel(11);
 				int i2;
-				if ((i2 = Calc2(j, 3, 14, 105)) < 0)
+				if ((i2 = Calc2(id_active, 3, 14, 105)) < 0)
 					return NeedMoreLevel(14);
 				int k9;
-				if ((k9 = Calc2(j, 0, 12, 1)) < 0)
+				if ((k9 = Calc2(id_active, 0, 12, 1)) < 0)
 					return NeedMoreLevel(12);
 				int l9 = 0;
 				int j12;
 				Battle.sBattle.a(j12 = util.RandomInt(6) + 8, 0, 0, 0);
 				l9 = (l9 = 0 + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 2, 1);
-				Battle.sBattle.c(1, l9, l, 11);
+				Battle.sBattle.c(1, l9, id_rival, 11);
 				break;
 			}
 		case 36: //八阵刀影掌
 			{
 				int j9;
-				if ((j9 = Calc2(j, 1, 11, 135)) < 0)
+				if ((j9 = Calc2(id_active, 1, 11, 135)) < 0)
 					return NeedMoreLevel(11);
 				int j2;
-				if ((j2 = Calc2(j, 3, 14, 105)) < 0)
+				if ((j2 = Calc2(id_active, 3, 14, 105)) < 0)
 					return NeedMoreLevel(14);
 				int l12;
-				if ((l12 = Calc2(j, 0, 13, 105)) < 0)
+				if ((l12 = Calc2(id_active, 0, 13, 105)) < 0)
 					return NeedMoreLevel(13);
 				int i10 = 0;
 				int k12;
@@ -233,88 +233,88 @@ public class Magic {
 				Battle.sBattle.a(k12 = util.RandomInt(6) + 8, 0, 0, 0);
 				i10 = (i10 += Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 2, 1);
-				Battle.sBattle.c(1, i10, l, 11);
+				Battle.sBattle.c(1, i10, id_rival, 11);
 				break;
 			}
 		case 8: //柳浪闻莺
 			{
 				int i5;
-				if ((i5 = Calc2(j, 3, 20, 150)) < 0)
+				if ((i5 = Calc2(id_active, 3, 20, 150)) < 0)
 					return NeedMoreLevel(20);
 				int i13;
-				if ((i13 = Calc2(j, 1, 18, 150)) < 0)
+				if ((i13 = Calc2(id_active, 1, 18, 150)) < 0)
 					return NeedMoreLevel(18);
 				int j10 = 0;
 				Battle.sBattle.a(-1, 0, 0, 0);
 				j10 = (j10 = (j10 = 0 + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 4, 1);
-				Battle.sBattle.c(1, j10, l, 18);
+				Battle.sBattle.c(1, j10, id_rival, 18);
 				break;
 			}
 		case 7: //落英缤纷
 			{
 				int j5;
-				if ((j5 = Calc2(j, 3, 20, 120)) < 0)
+				if ((j5 = Calc2(id_active, 3, 20, 120)) < 0)
 					return NeedMoreLevel(20);
 				int j13;
-				if ((j13 = Calc2(j, 1, 17, 120)) < 0)
+				if ((j13 = Calc2(id_active, 1, 17, 120)) < 0)
 					return NeedMoreLevel(17);
 				int k13 = 0;
-				if ((k13 = Calc1(j, 1, 17) / 3) < 0)
+				if ((k13 = Calc1(id_active, 1, 17) / 3) < 0)
 					k13 = 1;
 				if (k13 > 80)
 					k13 = 80;
 				Battle.sBattle.b(1, 4, 1);
-				if (Battle.sBattle.fighter_data[l][29] == 0)
+				if (Battle.sBattle.fighter_data[id_rival][29] == 0)
 				{
 					if (util.RandomBool(k13))
 					{
 						Battle.sBattle.d(1, 10, 1);
-						Battle.sBattle.a(l, 4, -1, -1, 99, -1, 4);
+						Battle.sBattle.a(id_rival, 4, -1, -1, 99, -1, 4);
 					} else
 					{
 						Battle.sBattle.d(1, 11, 1);
-						Battle.sBattle.a(j, 4, -1, -1, 99, -1, 3);
+						Battle.sBattle.a(id_active, 4, -1, -1, 99, -1, 3);
 					}
 				} else
 				if (util.RandomBool(k13))
 				{
 					Battle.sBattle.d(1, 8, 1);
-					Battle.sBattle.a(l, 29, -123);
+					Battle.sBattle.a(id_rival, 29, -123);
 				} else
 				{
 					Battle.sBattle.d(1, 9, 1);
-					Battle.sBattle.a(j, 4, -1, -1, 99, -1, 4);
+					Battle.sBattle.a(id_active, 4, -1, -1, 99, -1, 4);
 				}
 				break;
 			}
 		case 0: //流星飞掷
 			{
 				int k5;
-				if ((k5 = Calc2(j, 3, 25, 120)) < 0)
+				if ((k5 = Calc2(id_active, 3, 25, 120)) < 0)
 					return NeedMoreLevel(25);
 				int k15;
-				if ((k15 = Calc2(j, 1, 23, 120)) < 0)
+				if ((k15 = Calc2(id_active, 1, 23, 120)) < 0)
 					return NeedMoreLevel(23);
 				int l15;
-				if ((l15 = Battle.sBattle.fighter_data[j][8]) < 33)
+				if ((l15 = Battle.sBattle.fighter_data[id_active][8]) < 33)
 				{
 //					wstring str("膂力不够,无法使用绝招");
 //					return str;
 					return "膂力不够,无法使用绝招";
 				}
 				int l13 = 0;
-				if ((l13 = Calc1(j, 1, 23) / 6) < 0)
+				if ((l13 = Calc1(id_active, 1, 23) / 6) < 0)
 					l13 = 1;
 				if (l13 > 40)
 					l13 = 40;
 				Battle.sBattle.b(1, 14, 1);
-				Battle.sBattle.a(j, 29, -123);
+				Battle.sBattle.a(id_active, 29, -123);
 				if (util.RandomBool(l13))
 				{
 					Battle.sBattle.d(1, 15, 1);
-					Battle.sBattle.a(l, 1, 0);
-					Battle.sBattle.a(l, 2, 0);
+					Battle.sBattle.a(id_rival, 1, 0);
+					Battle.sBattle.a(id_rival, 2, 0);
 				} else
 				{
 					Battle.sBattle.d(1, 16, 1);
@@ -324,10 +324,10 @@ public class Magic {
 		case 27: //旋风三连斩
 			{
 				int l6;
-				if ((l6 = Calc2(j, 3, 26, 120)) < 0)
+				if ((l6 = Calc2(id_active, 3, 26, 120)) < 0)
 					return NeedMoreLevel(26);
 				int i16;
-				if ((i16 = Calc2(j, 1, 29, 90)) < 0)
+				if ((i16 = Calc2(id_active, 1, 29, 90)) < 0)
 					return NeedMoreLevel(29);
 				int k10 = 0;
 				boolean flag12 = false;
@@ -338,34 +338,34 @@ public class Magic {
 				Battle.sBattle.a(89, 0, 0, -1);
 				k10 += Battle.sBattle.PhyAttack(true);
 				Battle.sBattle.b(1, 21, 1);
-				Battle.sBattle.c(1, k10, l, 29);
+				Battle.sBattle.c(1, k10, id_rival, 29);
 				break;
 			}
 		case 28: //迎风一刀斩
 			{
 				int i7;
-				if ((i7 = Calc2(j, 3, 26, 120)) < 0)
+				if ((i7 = Calc2(id_active, 3, 26, 120)) < 0)
 					return NeedMoreLevel(26);
 				int j16;
-				if ((j16 = Calc2(j, 1, 29, 120)) < 0)
+				if ((j16 = Calc2(id_active, 1, 29, 120)) < 0)
 					return NeedMoreLevel(29);
 				Battle.sBattle.a(-1, 70, 15, -1);
 				int l10 = Battle.sBattle.PhyAttack(true);
 				Battle.sBattle.b(1, 22, 1);
-				Battle.sBattle.c(1, l10, l, 29);
+				Battle.sBattle.c(1, l10, id_rival, 29);
 				break;
 			}
 		case 4: //雪花六出
 			{
 				int j8;
-				if ((j8 = Calc2(j, 3, 36, 90)) < 0)
+				if ((j8 = Calc2(id_active, 3, 36, 90)) < 0)
 					return NeedMoreLevel(36);
 				int k16;
-				if ((k16 = Calc2(j, 1, 38, 90)) < 0)
+				if ((k16 = Calc2(id_active, 1, 38, 90)) < 0)
 					return NeedMoreLevel(38);
 				int i11 = 0;
 				int l16 = 0;
-				int i17 = Calc1(j, 1, 38);
+				int i17 = Calc1(id_active, 1, 38);
 				l16 = 2 + (i17 - 90) / 45;
 				if (Gmud.sPlayer.lasting_tasks[0] == 1)
 					l16++;
@@ -376,23 +376,23 @@ public class Magic {
 				}
 
 				Battle.sBattle.b(1, 45, 1);
-				Battle.sBattle.c(6, i11, l, 38);
+				Battle.sBattle.c(6, i11, id_rival, 38);
 				break;
 			}
 		case 5: //神倒鬼跌
 			{
 				int k8;
-				if ((k8 = Calc2(j, 3, 36, 150)) < 0)
+				if ((k8 = Calc2(id_active, 3, 36, 150)) < 0)
 					return NeedMoreLevel(36);
 				int k17;
-				if ((k17 = Calc2(j, 0, 39, 90)) < 0)
+				if ((k17 = Calc2(id_active, 0, 39, 90)) < 0)
 					return NeedMoreLevel(39);
 				Battle.sBattle.b(1, 46, 1);
 				int i14;
-				if (util.RandomBool(i14 = Calc1(j, 0, 39) / 5))
+				if (util.RandomBool(i14 = Calc1(id_active, 0, 39) / 5))
 				{
 					Battle.sBattle.d(1, 47, 1);
-					Battle.sBattle.a(l, 4, -1, -1, 99, -1, 4);
+					Battle.sBattle.a(id_rival, 4, -1, -1, 99, -1, 4);
 				} else
 				{
 					Battle.sBattle.d(1, 48, 1);
@@ -402,13 +402,13 @@ public class Magic {
 		case 9: //变熊术
 			{
 				int l17;
-				if ((l17 = Calc2(j, 3, 45, 150)) < 0)
+				if ((l17 = Calc2(id_active, 3, 45, 150)) < 0)
 					return NeedMoreLevel(45);
 				int l18;
-				if ((l18 = (l18 = Calc1(j, 3, 45)) / 2) < 0)
+				if ((l18 = (l18 = Calc1(id_active, 3, 45)) / 2) < 0)
 					l18 = 10;
 				boolean flag8;
-				if (!(flag8 = Battle.sBattle.a(j, 6, l18, -1, -1, 56, 8)))
+				if (!(flag8 = Battle.sBattle.a(id_active, 6, l18, -1, -1, 56, 8)))
 					return need_wait;
 				Battle.sBattle.b(1, 55, 1);
 				break;
@@ -416,9 +416,9 @@ public class Magic {
 		case 10: //猛虎啸
 			{
 				int i18;
-				if ((i18 = Calc2(j, 3, 45, 150)) < 0)
+				if ((i18 = Calc2(id_active, 3, 45, 150)) < 0)
 					return NeedMoreLevel(45);
-				int j14 = (Battle.sBattle.fighter_data[j][4] - Battle.sBattle.fighter_data[l][4]) / 20;
+				int j14 = (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20;
 				if ((j14 += 50) < 0)
 					j14 = 1;
 				if (j14 > 90)
@@ -427,7 +427,7 @@ public class Magic {
 				if (util.RandomBool(j14))
 				{
 					Battle.sBattle.d(1, 50, 1);
-					Battle.sBattle.a(l, 4, -1, -1, 99, -1, 8);
+					Battle.sBattle.a(id_rival, 4, -1, -1, 99, -1, 8);
 				} else
 				{
 					Battle.sBattle.d(1, 51, 1);
@@ -437,12 +437,12 @@ public class Magic {
 		case 37: //"飞鹰召唤"
 			{
 				int j18;
-				if ((j18 = Calc2(j, 3, 45, 180)) < 0)
+				if ((j18 = Calc2(id_active, 3, 45, 180)) < 0)
 					return NeedMoreLevel(45);
 				int i19;
-				i19 = util.RandomInt(i19 = Calc1(j, 3, 45));
+				i19 = util.RandomInt(i19 = Calc1(id_active, 3, 45));
 				boolean flag9;
-				if (!(flag9 = Battle.sBattle.a(l, 7, i19, -1, 96, -1, 12)))
+				if (!(flag9 = Battle.sBattle.a(id_rival, 7, i19, -1, 96, -1, 12)))
 					return need_wait;
 				Battle.sBattle.b(1, 95, 1);
 				break;
@@ -450,81 +450,94 @@ public class Magic {
 		case 38: //"变鹰术"
 			{
 				int k18;
-				if ((k18 = Calc2(j, 3, 45, 150)) < 0)
+				if ((k18 = Calc2(id_active, 3, 45, 150)) < 0)
 					return NeedMoreLevel(45);
 				int j19;
-				if ((j19 = Calc2(j, 0, 44, 1)) < 0)
+				if ((j19 = Calc2(id_active, 0, 44, 1)) < 0)
 				{
 //					wstring str("你还未学过鹰爪功");
 //					return str;
 					return "你还未学过鹰爪功";
 				}
 				boolean flag10;
-				if (!(flag10 = Battle.sBattle.a(j, 2, 20, -1, -1, 53, 12)))
+				if (!(flag10 = Battle.sBattle.a(id_active, 2, 20, -1, -1, 53, 12)))
 					return need_wait;
 				Battle.sBattle.b(1, 52, 1);
 				break;
 			}
 		case 29: //震字决
 			{
-				int k19;
-				if ((k19 = Calc2(j, 3, 32, 90)) < 0)
+				int k19 = Calc2(id_active, 3, 32, 90);
+				if (k19 < 0)
 					return NeedMoreLevel(32);
-				int j21;
-				if ((j21 = Calc2(j, 0, 31, 90)) < 0)
+				int j21 = Calc2(id_active, 0, 31, 90);
+				if (j21 < 0)
 					return NeedMoreLevel(31);
-				int k14 = (Battle.sBattle.fighter_data[j][4] - Battle.sBattle.fighter_data[l][4]) / 20;
-				if ((k14 += 70) < 0)
-					k14 = 1;
-				if (k14 > 90)
-					k14 = 90;
-				int j11 = Battle.sBattle.fighter_data[j][4] / 5;
-				j11 = 10 + util.RandomInt(j11);
+				
+				// 命中率: 70+(使用者内力-敌人内力)/20
+				int hit = 70 + (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20;
+				if (hit < 0)
+					hit = 1;
+				if (hit > 90)
+					hit = 90;
+				
+				// 伤害：10+Random(使用者内力/5)
+				int hurt = Battle.sBattle.fighter_data[id_active][4] / 5;
+				hurt = 10 + util.RandomInt(hurt);
+				
+				// 记录攻击描述
+				// magic.txt:39:突然你双手左右连划，一个圆圈已将SB套住，太极拳的~随即使出！
 				Battle.sBattle.b(1, 39, 1);
-				if (util.RandomBool(k14))
+				
+				if (util.RandomBool(hit))
 				{
-					int j22 = Battle.sBattle.fighter_data[l][1] - j11;
-					int k23 = Battle.sBattle.fighter_data[l][2] - j11;
+					// LNX: 镇字诀，血的上限也掉？
+					int j22 = Battle.sBattle.fighter_data[id_rival][1] - hurt;
+					int k23 = Battle.sBattle.fighter_data[id_rival][2] - hurt;
 					if (j22 < 0)
 						j22 = 0;
 					if (k23 < 0)
 						k23 = 0;
-					Battle.sBattle.a(l, 1, j22);
-					Battle.sBattle.a(l, 2, k23);
+					Battle.sBattle.a(id_rival, 1, j22);
+					Battle.sBattle.a(id_rival, 2, k23);
 					Battle.sBattle.d(1, 40, 1);
 				} else
 				if (util.RandomBool(10))
 				{
+					// ... 各自退几步
 					Battle.sBattle.d(1, 42, 1);
 				} else
 				{
+					// ... 再也来不及出招
 					Battle.sBattle.d(1, 41, 1);
-					Battle.sBattle.a(j, 4, -1, -1, 99, -1, 4);
+					Battle.sBattle.a(id_active, 4, -1, -1, 99, -1, 4);
 				}
 				break;
 			}
 		case 30: //挤字决", "乱环决", "阴阳决", "缠绵决", "连字决", "三环套月"
 			{
-				int l19;
-				if ((l19 = Calc2(j, 3, 32, 105)) < 0)
+				int l19 = Calc2(id_active, 3, 32, 105);
+				if (l19 < 0)
 					return NeedMoreLevel(32);
-				int k21;
-				if ((k21 = Calc2(j, 0, 31, 105)) < 0)
+				int k21 = Calc2(id_active, 0, 31, 105);
+				if (k21 < 0)
 					return NeedMoreLevel(31);
-				int l14 = (Battle.sBattle.fighter_data[j][4] - Battle.sBattle.fighter_data[l][4]) / 20;
-				if ((l14 += 70) < 0)
+				
+				// [4] - fp
+				int l14 =70 + (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20;
+				if (l14 < 0)
 					l14 = 1;
 				if (l14 > 95)
 					l14 = 95;
-				int k11 = Battle.sBattle.fighter_data[j][4] / 10;
+				int k11 = Battle.sBattle.fighter_data[id_active][4] / 10;
 				k11 = 10 + util.RandomInt(k11);
 				Battle.sBattle.b(1, 29, 1);
 				if (util.RandomBool(l14))
 				{
 					int k22;
-					if ((k22 = Battle.sBattle.fighter_data[l][4] - k11) < 0)
+					if ((k22 = Battle.sBattle.fighter_data[id_rival][4] - k11) < 0)
 						k22 = 0;
-					Battle.sBattle.a(l, 4, k22);
+					Battle.sBattle.a(id_rival, 4, k22);
 					Battle.sBattle.d(1, 30, 1);
 				} else
 				if (util.RandomBool(10))
@@ -534,22 +547,22 @@ public class Magic {
 				{
 					Battle.sBattle.d(1, 31, 1);
 					int l22;
-					if ((l22 = Battle.sBattle.fighter_data[j][4] - k11 / 2) < 0)
+					if ((l22 = Battle.sBattle.fighter_data[id_active][4] - k11 / 2) < 0)
 						l22 = 0;
-					Battle.sBattle.a(j, 4, l22);
+					Battle.sBattle.a(id_active, 4, l22);
 				}
 				break;
 			}
 		case 31: // '\037'
 			{
 				int i20;
-				if ((i20 = Calc2(j, 3, 32, 150)) < 0)
+				if ((i20 = Calc2(id_active, 3, 32, 150)) < 0)
 					return NeedMoreLevel(32);
 				int l21;
-				if ((l21 = Calc2(j, 0, 31, 150)) < 0)
+				if ((l21 = Calc2(id_active, 0, 31, 150)) < 0)
 					return NeedMoreLevel(31);
 				int i15;
-				if ((i15 = Calc1(j, 0, 31) / 3) < 0)
+				if ((i15 = Calc1(id_active, 0, 31) / 3) < 0)
 					i15 = 1;
 				if (i15 > 95)
 					i15 = 95;
@@ -557,7 +570,7 @@ public class Magic {
 				if (util.RandomBool(i15))
 				{
 					int i23 = util.RandomInt(12) + 1;
-					Battle.sBattle.a(l, 4, -1, -1, 99, -1, i23);
+					Battle.sBattle.a(id_rival, 4, -1, -1, 99, -1, i23);
 					Battle.sBattle.d(1, 34, 1);
 				} else
 				{
@@ -568,10 +581,10 @@ public class Magic {
 		case 32: // ' '
 			{
 				int j20;
-				if ((j20 = Calc2(j, 3, 32, 180)) < 0)
+				if ((j20 = Calc2(id_active, 3, 32, 180)) < 0)
 					return NeedMoreLevel(32);
 				int i22;
-				if ((i22 = Calc2(j, 0, 31, 180)) < 0)
+				if ((i22 = Calc2(id_active, 0, 31, 180)) < 0)
 					return NeedMoreLevel(31);
 				int j23;
 				Battle.sBattle.a(j23 = util.RandomInt(2) + 121, 0, 0, -1);
@@ -586,13 +599,13 @@ public class Magic {
 		case 33: // '!'
 			{
 				int k20;
-				if ((k20 = Calc2(j, 3, 32, 120)) < 0)
+				if ((k20 = Calc2(id_active, 3, 32, 120)) < 0)
 					return NeedMoreLevel(32);
 				int l23;
-				if ((l23 = Calc2(j, 1, 30, 120)) < 0)
+				if ((l23 = Calc2(id_active, 1, 30, 120)) < 0)
 					return NeedMoreLevel(30);
 				int j15;
-				if ((j15 = Calc1(j, 1, 30) / 3) < 0)
+				if ((j15 = Calc1(id_active, 1, 30) / 3) < 0)
 					j15 = 1;
 				if (j15 > 90)
 					j15 = 90;
@@ -600,7 +613,7 @@ public class Magic {
 				if (util.RandomBool(j15))
 				{
 					int k24 = util.RandomInt(7) + 1;
-					Battle.sBattle.a(l, 4, -1, -1, 99, -1, k24);
+					Battle.sBattle.a(id_rival, 4, -1, -1, 99, -1, k24);
 					Battle.sBattle.d(1, 24, 1);
 				} else
 				{
@@ -611,13 +624,13 @@ public class Magic {
 		case 34: // '"'
 			{
 				int l20;
-				if ((l20 = Calc2(j, 3, 32, 120)) < 0)
+				if ((l20 = Calc2(id_active, 3, 32, 120)) < 0)
 					return NeedMoreLevel(32);
 				int i24;
-				if ((i24 = Calc2(j, 1, 30, 120)) < 0)
+				if ((i24 = Calc2(id_active, 1, 30, 120)) < 0)
 					return NeedMoreLevel(30);
 				boolean flag11 = false;
-				if (!(flag11 = (flag11 = Battle.sBattle.a(j, 0, 10, -1, -1, 27, 10)) || Battle.sBattle.a(j, 3, 12 + util.RandomInt(3), -1, -1, -1, 10)))
+				if (!(flag11 = (flag11 = Battle.sBattle.a(id_active, 0, 10, -1, -1, 27, 10)) || Battle.sBattle.a(id_active, 3, 12 + util.RandomInt(3), -1, -1, -1, 10)))
 					return need_wait;
 				Battle.sBattle.b(1, 26, 1);
 				break;
@@ -625,10 +638,10 @@ public class Magic {
 		case 35: // '#'
 			{
 				int i21;
-				if ((i21 = Calc2(j, 3, 32, 180)) < 0)
+				if ((i21 = Calc2(id_active, 3, 32, 180)) < 0)
 					return NeedMoreLevel(32);
 				int j24;
-				if ((j24 = Calc2(j, 1, 30, 180)) < 0)
+				if ((j24 = Calc2(id_active, 1, 30, 180)) < 0)
 					return NeedMoreLevel(30);
 				Battle.sBattle.a(101, 0, 0, -1);
 				int i12 = Battle.sBattle.PhyAttack(true);
@@ -637,7 +650,7 @@ public class Magic {
 				Battle.sBattle.a(103, 0, 0, -1);
 				i12 += Battle.sBattle.PhyAttack(true);
 				Battle.sBattle.b(1, 28, 1);
-				Battle.sBattle.c(1, i12, l, 30);
+				Battle.sBattle.c(1, i12, id_rival, 30);
 				break;
 			}
 		case 11: // '\013'
@@ -653,39 +666,39 @@ public class Magic {
 		case 21: // '\025'
 		case 22: // '\026'
 		default:
-			return UseMPMagic(j, l, i);  //use magic
+			return UseMPMagic(id_active, id_rival, i);  //use magic
 		}
 		if (i >= 11 && i <= 22)   //cost FP / MP
-			Battle.sBattle.CostMP(j, magic_cost[i]);
+			Battle.sBattle.CostMP(id_active, magic_cost[i]);
 		else
-			Battle.sBattle.CostFP(j, magic_cost[i]);
+			Battle.sBattle.CostFP(id_active, magic_cost[i]);
 		str = "";
 		return str;
 	}
 
-	static String NeedMoreLevel(int i)
+	static String NeedMoreLevel(int skill_id)
 	{
 //		wstring str("你的武功修为不够");
 		String str = "你的武功修为不够";
-		if (i < 0 || i > 57)
+		if (skill_id < 0 || skill_id > 57)
 			return str;
 		else
 		{
 			str = "你的";
-			str += Skill.skill_name[i];
+			str += Skill.skill_name[skill_id];
 			str += "修为不够";
 			return str;
 		}
 	}
 
-	static void Effect(int i)
+	static void Effect(int id_active)
 	{
 		int j = 0;
 		for (int l = 0; l < 10; l++)
-			Battle.sBattle.a_int_array2d_static[i][l] = 255;
+			Battle.sBattle.a_int_array2d_static[id_active][l] = 255;
 
-		int i1 = Battle.sBattle.fighter_data[i][36];
-		int j1 = Battle.sBattle.fighter_data[i][29];
+		int i1 = Battle.sBattle.fighter_data[id_active][36];
+		int j1 = Battle.sBattle.fighter_data[id_active][29];
 		int k1 = Items.item_attribs[j1][1];
 		if (i1 != 255)
 			switch (i1)
@@ -695,147 +708,147 @@ public class Magic {
 
 			case 14: //连珠雷
 				{
-					int l1 = Calc1(i, 0, 12);
-					int j2 = Calc1(i, 0, 13);
-					int l2 = Calc1(i, 1, 11);
+					int l1 = Calc1(id_active, 0, 12);
+					int j2 = Calc1(id_active, 0, 13);
+					int l2 = Calc1(id_active, 1, 11);
 					if (k1 == 0)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][0] = 23;
+						Battle.sBattle.a_int_array2d_static[id_active][0] = 23;
 					}
 					if ((l1 > 0 || j2 > 9) && l2 > 0 && k1 == 1)
 					{
-						Battle.sBattle.a_int_array2d_static[i][j++] = 24;
-						Battle.sBattle.a_int_array2d_static[i][j++] = 36;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 24;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 36;
 					}
 					break;
 				}
 			case 20: //雾棱镖
 				{
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][0] = 6;
-					int j3 = Calc1(i, 1, 17);
-					int l3 = Calc1(i, 1, 18);
+					Battle.sBattle.a_int_array2d_static[id_active][0] = 6;
+					int j3 = Calc1(id_active, 1, 17);
+					int l3 = Calc1(id_active, 1, 18);
 					if (j3 > 0 && k1 == 9)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][1] = 7;
+						Battle.sBattle.a_int_array2d_static[id_active][1] = 7;
 					}
 					if (l3 > 0 && k1 == 1)
-						Battle.sBattle.a_int_array2d_static[i][j++] = 8;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 8;
 					break;
 				}
 			case 25: //忍术烟幕
 				{
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][0] = 1;
+					Battle.sBattle.a_int_array2d_static[id_active][0] = 1;
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][1] = 2;
+					Battle.sBattle.a_int_array2d_static[id_active][1] = 2;
 					int i4;
-					if ((i4 = Calc1(i, 1, 23)) > 0 && k1 == 7)
+					if ((i4 = Calc1(id_active, 1, 23)) > 0 && k1 == 7)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][2] = 0;
+						Battle.sBattle.a_int_array2d_static[id_active][2] = 0;
 					}
 					break;
 				}
 			case 26: //忍法影分身
 				{
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][0] = 25;
+					Battle.sBattle.a_int_array2d_static[id_active][0] = 25;
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][1] = 26;
+					Battle.sBattle.a_int_array2d_static[id_active][1] = 26;
 					int j4;
-					if ((j4 = Calc1(i, 1, 29)) > 0 && k1 == 1)
+					if ((j4 = Calc1(id_active, 1, 29)) > 0 && k1 == 1)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][2] = 27;
+						Battle.sBattle.a_int_array2d_static[id_active][2] = 27;
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][3] = 28;
+						Battle.sBattle.a_int_array2d_static[id_active][3] = 28;
 					}
 					break;
 				}
 			case 32: //阴阳决
 				{
-					int k4 = Calc1(i, 0, 31);
-					int l4 = Calc1(i, 1, 30);
+					int k4 = Calc1(id_active, 0, 31);
+					int l4 = Calc1(id_active, 1, 30);
 					if (k4 > 0 && k1 == 0)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][0] = 29;
+						Battle.sBattle.a_int_array2d_static[id_active][0] = 29;
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][1] = 30;
+						Battle.sBattle.a_int_array2d_static[id_active][1] = 30;
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][2] = 31;
+						Battle.sBattle.a_int_array2d_static[id_active][2] = 31;
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][3] = 32;
+						Battle.sBattle.a_int_array2d_static[id_active][3] = 32;
 					}
 					if (l4 > 0 && k1 == 6)
 					{
-						Battle.sBattle.a_int_array2d_static[i][j++] = 33;
-						Battle.sBattle.a_int_array2d_static[i][j++] = 34;
-						Battle.sBattle.a_int_array2d_static[i][j++] = 35;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 33;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 34;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 35;
 					}
 					break;
 				}
 			case 36: //八阵刀影掌
 				{
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][0] = 3;
-					int i5 = Calc1(i, 1, 38);
-					int j5 = Calc1(i, 0, 39);
+					Battle.sBattle.a_int_array2d_static[id_active][0] = 3;
+					int i5 = Calc1(id_active, 1, 38);
+					int j5 = Calc1(id_active, 0, 39);
 					if (i5 > 0 && k1 == 6)
 					{
 						j++;
-						Battle.sBattle.a_int_array2d_static[i][1] = 4;
+						Battle.sBattle.a_int_array2d_static[id_active][1] = 4;
 					}
 					if (j5 > 0 && k1 == 0)
-						Battle.sBattle.a_int_array2d_static[i][j++] = 5;
+						Battle.sBattle.a_int_array2d_static[id_active][j++] = 5;
 					break;
 				}
 			case 45: // '-'
 				j++;
-				Battle.sBattle.a_int_array2d_static[i][0] = 9;
+				Battle.sBattle.a_int_array2d_static[id_active][0] = 9;
 				j++;
-				Battle.sBattle.a_int_array2d_static[i][1] = 37;
+				Battle.sBattle.a_int_array2d_static[id_active][1] = 37;
 				j++;
-				Battle.sBattle.a_int_array2d_static[i][2] = 38;
+				Battle.sBattle.a_int_array2d_static[id_active][2] = 38;
 				int k5;
-				if ((k5 = Calc1(i, 0, 43)) > 0 && k1 == 0)
+				if ((k5 = Calc1(id_active, 0, 43)) > 0 && k1 == 0)
 				{
 					j++;
-					Battle.sBattle.a_int_array2d_static[i][3] = 10;
+					Battle.sBattle.a_int_array2d_static[id_active][3] = 10;
 				}
 				break;
 			}
 		int k3 = 0;
-		if (Battle.sBattle.fighter_data[i][36] == 48)
-			k3 = Battle.sBattle.fighter_data[i][37];
-		int i2 = Calc1(i, 6, 52);
-		int k2 = Calc1(i, 6, 50);
-		int i3 = Calc1(i, 6, 51);
+		if (Battle.sBattle.fighter_data[id_active][36] == 48)
+			k3 = Battle.sBattle.fighter_data[id_active][37];
+		int i2 = Calc1(id_active, 6, 52);
+		int k2 = Calc1(id_active, 6, 50);
+		int i3 = Calc1(id_active, 6, 51);
 		if (i2 > 0)
 		{
-			Battle.sBattle.a_int_array2d_static[i][j++] = 11;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 12;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 11;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 12;
 			if (k3 > 0)
-				Battle.sBattle.a_int_array2d_static[i][j++] = 13;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 14;
+				Battle.sBattle.a_int_array2d_static[id_active][j++] = 13;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 14;
 		}
 		if (k2 > 0)
 		{
-			Battle.sBattle.a_int_array2d_static[i][j++] = 15;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 16;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 15;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 16;
 			if (k3 > 0)
-				Battle.sBattle.a_int_array2d_static[i][j++] = 17;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 18;
+				Battle.sBattle.a_int_array2d_static[id_active][j++] = 17;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 18;
 		}
 		if (i3 > 0)
 		{
-			Battle.sBattle.a_int_array2d_static[i][j++] = 19;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 20;
-			Battle.sBattle.a_int_array2d_static[i][j++] = 21;
-			Battle.sBattle.a_int_array2d_static[i][j] = 22;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 19;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 20;
+			Battle.sBattle.a_int_array2d_static[id_active][j++] = 21;
+			Battle.sBattle.a_int_array2d_static[id_active][j] = 22;
 		}
 	}
 
@@ -1191,18 +1204,18 @@ public class Magic {
 		return j1 += Battle.sBattle.fighter_data[i][30 + j * 2 + 1] / 2;
 	}
 
-	static int Calc2(int i, int j, int l, int i1)  //calc 2
+	static int Calc2(int id_player, int j, int skill_id, int test_level)  //calc 2
 	{
-		int j1 = Battle.sBattle.fighter_data[i][46 + j * 2];
-		int k1 = Battle.sBattle.fighter_data[i][46 + j * 2 + 1];
-		int l1 = Battle.sBattle.fighter_data[i][30 + j * 2];
+		int j1 = Battle.sBattle.fighter_data[id_player][46 + j * 2];
+		int k1 = Battle.sBattle.fighter_data[id_player][46 + j * 2 + 1];
+		int l1 = Battle.sBattle.fighter_data[id_player][30 + j * 2];
 		int i2 = 0;
 		if (j1 != 255)
 			i2 = 0 + k1 / 2;
-		i2 += Battle.sBattle.fighter_data[i][30 + j * 2 + 1];
-		if (l1 != l)
+		i2 += Battle.sBattle.fighter_data[id_player][30 + j * 2 + 1];
+		if (l1 != skill_id)
 			return -1;
-		if (i2 < i1)
+		if (i2 < test_level)
 			return -1;
 		else
 			return i2;
