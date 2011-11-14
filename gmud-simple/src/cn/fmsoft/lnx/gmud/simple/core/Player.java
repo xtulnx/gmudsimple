@@ -901,8 +901,8 @@ public class Player {
 			int k2;
 			if ((k2 = GetSkillLevel(9)) == 0)
 				return "你还是个文盲!";
-			int l2;
-			if ((l2 = k2 / 2) == 0)
+			int l2 = k2 / 2;
+			if (l2 == 0)
 				l2 = 1;
 			int i3 = Items.item_attribs[j1][2];
 			int j3 = Items.item_attribs[j1][3];
@@ -926,8 +926,8 @@ public class Player {
 					return "你埋头研读,似乎有点心得";
 				}
 			i4 = SetNewSkill(i3);
-			int j4;
-			if ((j4 = skills[i4][4]) <= 0)
+			int j4 = skills[i4][4];
+			if (j4 <= 0)
 				SetNewSkill(i4);
 			if (k3 < skills[i4][1])
 				return "书上所说的对你太浅了";

@@ -1347,40 +1347,37 @@ public class Battle {
 		return i1;
 	}
 
-	int CalcActOrder()    //计算出招先后
+	int CalcActOrder() // 计算出招先后
 	{
-		int i1 = fighter_data[active_id][9];
-		int j1 = fighter_data[active_id][62];
-		int k1 = active_id != 0 ? 0 : 1;
-		int l1 = fighter_data[k1][62];
-		int i2;
-		if ((i2 = f(fighter_data[active_id][64] / 100) - f(fighter_data[k1][64] / 100)) > 50)
+		int agility = fighter_data[active_id][9];
+		int level = fighter_data[active_id][62];
+		int id_rival = active_id != 0 ? 0 : 1;
+		int level_rival = fighter_data[id_rival][62];
+		int i2 = f(fighter_data[active_id][64] / 100) - f(fighter_data[id_rival][64] / 100);
+		if (i2 > 50)
 			i2 = 50;
 		if (i2 < -50)
 			i2 = -50;
-		int j2;
-		if ((j2 = (j2 = (j2 = (i1 - fighter_data[k1][9]) + 50) + (j1 - l1)) + i2) < 1)
+		int j2 = (agility - fighter_data[id_rival][9]) + 50 + (level - level_rival) + i2;
+		if (j2 < 1)
 			j2 = 10;
 		if (j2 > 95)
 			j2 = 95;
 		int k2 = 1;
-		if(util.RandomBool(j2))
+		if (util.RandomBool(j2))
 			k2 = 0;
 		return k2;
 	}
 
-	int f(int i1)
-	{
+	int f(int i1) {
 		int j1 = 0;
 		if (i1 < 1)
 			return 0;
 		for (int k1 = 0x40000000; k1 > 0; k1 >>= 2)
-			if (i1 >= j1 + k1)
-			{
+			if (i1 >= j1 + k1) {
 				i1 -= j1 + k1;
 				j1 = (j1 >>= 1) + k1;
-			} else
-			{
+			} else {
 				j1 >>= 1;
 			}
 
@@ -1389,25 +1386,20 @@ public class Battle {
 
 //	extern BOOL WriteSave();
 
-	void BattleEnd()
-	{
+	void BattleEnd() {
 		int i1 = NPC_id;
 		int k1 = 0;
 		for (int i2 = 0; i2 < 5; i2++)
 			NPC_item[i2] = 0;
 
-		for (int j2 = 0; j2 < 5; j2++)
-		{
+		for (int j2 = 0; j2 < 5; j2++) {
 			int i3;
 			if ((i3 = NPC.NPC_item[i1][j2]) == 0)
 				continue;
-			if (Items.item_attribs[i3][0] == 2)
-			{
+			if (Items.item_attribs[i3][0] == 2) {
 				if (fighter_data[1][29] != i3)
 					continue;
-			} else
-			if (Items.item_attribs[i3][0] == 3)
-			{
+			} else if (Items.item_attribs[i3][0] == 3) {
 				int k3 = Items.item_attribs[i3][1];
 				if (fighter_data[1][14 + k3] == i3)
 					NPC_item[k1++] = (short) i3;
@@ -1417,24 +1409,26 @@ public class Battle {
 		}
 
 		int k2 = NPC.NPC_attrib[i1][16];
-		if (is_try == 0)
-			if (fighter_data[0][1] <= 0)  //player Hp < 0
+		
+		// 如果不是“切磋”且不是“逃跑”，刷新战斗结果
+		if (is_try == 0 && d_int_static == 0)
+			if (fighter_data[0][1] <= 0) // player Hp < 0
 			{
-				Gmud.sPlayer.PlayerDead();  //player dead
-				Gmud.WriteSave();  //save
+				Gmud.sPlayer.PlayerDead(); // player dead
+				Gmud.WriteSave(); // save
 				UI.DrawDead();
 				Gmud.exit();
-			} else
-			{
-				TaskEnd(i1);  //特殊人物
-				UI.BattleWin(k2);   //draw win
-				for (int j3 = 0; j3 < 5; j3++)  //get item
+			} else {
+				TaskEnd(i1); // 特殊人物
+				UI.BattleWin(k2); // draw win
+				for (int j3 = 0; j3 < 5; j3++)
+					// get item
 					Gmud.sPlayer.GainOneItem(NPC_item[j3]);
 
-				Gmud.sPlayer.money += k2;   //+money
-				Gmud.sMap.SetNPCDead(i1, (byte)1);  //set npc dead
+				Gmud.sPlayer.money += k2; // +money
+				Gmud.sMap.SetNPCDead(i1, (byte) 1); // set npc dead
 			}
-			RollBackData();
+		RollBackData();
 	}
 
 	void TaskEnd(int i1)

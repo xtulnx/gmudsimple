@@ -47,7 +47,6 @@ public class task {
 	static int bad_man_mapid = -1;
 	
 	static void reset() {
-		Arrays.fill(item_to_find, 0);
 		Arrays.fill(bad_man_skill, 0);
 		bad_man_mapid = -1;
 	}
