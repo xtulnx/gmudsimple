@@ -898,52 +898,52 @@ public class Player {
 		}
 	case 4: //read book
 		{
-			int k2;
-			if ((k2 = GetSkillLevel(9)) == 0)
+			int k2 = GetSkillLevel(9);
+			if (k2 == 0)
 				return "你还是个文盲!";
 			int l2 = k2 / 2;
 			if (l2 == 0)
 				l2 = 1;
-			int i3 = Items.item_attribs[j1][2];
-			int j3 = Items.item_attribs[j1][3];
-			int k3 = Items.item_attribs[j1][4];
-			int l3 = Items.item_attribs[j1][5];
-			int i4;
-			if (GetSkillLevel(i3) == 0)
-				if ((i4 = AddNewSkill(i3)) == -1)
-				{
+			int skill_id = Items.item_attribs[j1][2];
+			int hp_expend = Items.item_attribs[j1][3];
+			int max_level = Items.item_attribs[j1][4];
+			int require_EXP = Items.item_attribs[j1][5];
+			int skill_pos;
+			if (GetSkillLevel(skill_id) == 0) {
+				skill_pos = AddNewSkill(skill_id);
+				if (skill_pos == -1) {
 					return "";
-				} else
-				{
-					skills[i4][1] = 1;
-					SetNewSkill(i4);
-					/*
-					wchar_t str[9];
-					wcscpy(str, "你学会了");
-					wcscat(str, Skill.skill_name[i3]);
-					return str;
-					*/
-					return "你埋头研读,似乎有点心得";
 				}
-			i4 = SetNewSkill(i3);
-			int j4 = skills[i4][4];
-			if (j4 <= 0)
-				SetNewSkill(i4);
-			if (k3 < skills[i4][1])
+				
+				skills[skill_pos][1] = 1;
+				SetNewSkill(skill_id);
+				/*
+				 * wchar_t str[9];
+				 * wcscpy(str, "你学会了");
+				 * wcscat(str, Skill.skill_name[i3]);
+				 * return str;
+				 */
+				return "你埋头研读,似乎有点心得";
+			}
+			skill_pos = SetNewSkill(skill_id);
+			if (skills[skill_pos][4] <= 0) {
+				SetSkillUpgrate(skill_pos);
+			}
+			if (max_level < skills[skill_pos][1])
 				return "书上所说的对你太浅了";
-			int k4 = (((l3 * 1000) / k3) * (skills[i4][1] + 1)) / 1000;
+			int k4 = (((require_EXP * 1000) / max_level) * (skills[skill_pos][1] + 1)) / 1000;
 			if (exp < k4)
 				return "你的实战经验不足";
-			if (hp < j3)
+			if (hp < hp_expend)
 				return "你现在太疲倦了,没法研读";
-			skills[i4][2] += l2;
-			hp -= j3;
-			if (skills[i4][2] > skills[i4][4])
+			skills[skill_pos][2] += l2;
+			hp -= hp_expend;
+			if (skills[skill_pos][2] > skills[skill_pos][4])
 			{
-				skills[i4][4] = 0;
-				skills[i4][1] += 1;
-				skills[i4][2] = 0;
-				SetNewSkill(i4);
+				skills[skill_pos][4] = 0;
+				skills[skill_pos][1] += 1;
+				skills[skill_pos][2] = 0;
+				SetSkillUpgrate(skill_pos);
 				return "你的功夫进步了";
 			} else
 			{
@@ -1028,7 +1028,11 @@ public class Player {
 		return i1;
 	}
 
-	// 新技能
+	/**
+	 * 添加新技能，如果技能已存在，则返回序号，否则新建一个等级为1的技能。
+	 * @param id
+	 * @return
+	 */
 	int AddNewSkill(int id) {
 		if (GetSkillLevel(id) > 0)
 			return SetNewSkill(id);
