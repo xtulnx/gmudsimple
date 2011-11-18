@@ -539,10 +539,18 @@ public class Battle {
 	{
 		if (i < 0 || i > 179)
 			return;
-		int j;
-		NPCSKILLINFO nsk = new NPCSKILLINFO();
-		NPC.GetNPCSkill(nsk, i);
-		if ((j = nsk.data[0]) < 0)
+		
+		final int[] skills;
+		if (i == 179) {
+			skills = task.bad_man_skill;
+		} else {
+			NPCSKILLINFO nsk = new NPCSKILLINFO();
+			NPC.GetNPCSkill(nsk, i);
+			skills = nsk.data;
+		}
+		
+		int j = skills[0];
+		if (j < 0)
 		{
 //			free(nsk.data);
 			return;
@@ -556,8 +564,8 @@ public class Battle {
 		int l = NPC_equip[15];
 		for (int i1 = 0; i1 < j; i1++)
 		{
-			int j1 = nsk.data[1 + i1 * 2];
-			int k1 = nsk.data[1 + i1 * 2 + 1];
+			int j1 = skills[1 + i1 * 2];
+			int k1 = skills[1 + i1 * 2 + 1];
 			if (j1 < 10)
 				continue;
 			if (Skill.skill_type[j1] < 2)

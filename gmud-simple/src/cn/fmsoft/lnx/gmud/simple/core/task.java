@@ -1043,6 +1043,7 @@ public class task {
 
 	static void KillWanted()
 	{
+		// 如果有恶人并且不在25分钟时间点上，就提示有恶人
 		if (temp_tasks_data[0] != 0 && temp_tasks_data[5] / 30 != 49)
 		{
 //			wstring str(bad_man_wait);
@@ -1051,6 +1052,7 @@ public class task {
 			UI.DrawDialog(str);
 			return;
 		}
+		//　如果时间不到300s且有杀过恶人，就提示暂无恶人
 		if (temp_tasks_data[5] < 300 && temp_tasks_data[1] > 0)
 		{
 //			wstring str(bad_man_nothing);
@@ -1058,13 +1060,18 @@ public class task {
 			UI.DrawDialog(bad_man_nothing);
 			return;
 		}
+		// 累计恶人难度，以10为循环
 		temp_tasks_data[34] += 1;
 		temp_tasks_data[34] %= 10;
+		// 如果有恶人且时间在25分钟，则将恶人难度归0————25分法？
 		if(49 == temp_tasks_data[5] / 30 && 1 == temp_tasks_data[0])
 			temp_tasks_data[34] = 0;
+		
+		// 随机恶人的地图位置
 		int i1 = util.RandomInt(9);    //where
 		temp_tasks_data[2] = i1;   
 		while((task.bad_man_mapid = GmudData.bad_man_map[i1][util.RandomInt(16)]) == 0);   //set map image&event
+		// 随机恶人的名字
 		int l1 = util.RandomInt(8);  //random name 1
 		int i2 = util.RandomInt(8);  //random name 2
 		/*/
@@ -1076,15 +1083,22 @@ public class task {
 		//*/
 		NPC.NPC_names[179] = bad_man_family_name[l1] + bad_man_name[i2];
 		//wcscpy(NPC.NPC_names[179], s1.c_str()); 
+		
+		// 随机恶人原型，用于取技能
 		int j2;
 		int k2 = j2 = util.RandomInt(20);
 		j2 = GmudData.bad_man_based_npc[j2];
+		
+		// 清除物品
 		//equip clean
 		for (int l2 = 0; l2 < 5; l2++)
 			NPC.NPC_item[179][l2] = 0;
-
+		
+		// 给布衣和武器
 		NPC.NPC_item[179][0] = 42;
 		NPC.NPC_item[179][1] = GmudData.bad_man_weapon[k2];  //weapon
+		
+		// 复制属性
 		for (int i3 = 0; i3 < 18; i3++)
 			NPC.NPC_attrib[179][i3] = NPCINFO.NPC_attribute[j2][i3];
 
@@ -1099,8 +1113,13 @@ public class task {
 		NPC.NPC_attrib[179][13] = Gmud.sPlayer.fp_level / 2 + (temp_tasks_data[1] * Gmud.sPlayer.fp_level) / 5;
 		NPC.NPC_attrib[179][14] = Gmud.sPlayer.fp_level / 2 + (temp_tasks_data[1] * Gmud.sPlayer.fp_level) / 5;
 		NPC.NPC_attrib[179][16] = util.RandomInt(temp_tasks_data[1] * 300 + temp_tasks_data[34] * temp_tasks_data[1] * 200) + 90;
+		
+		// 累计除恶次数
 		temp_tasks_data[1] += 1;
+		
+		// 设置恶人的经验
 		NPC.NPC_attrib[179][3] = 100 + temp_tasks_data[1] * (Gmud.sPlayer.exp / 10);
+		// 如果玩家有内力，则生成加力
 		if (Gmud.sPlayer.fp_level > 0)
 			NPC.NPC_attrib[179][4] = temp_tasks_data[1] + temp_tasks_data[34] * temp_tasks_data[1];
 		else
@@ -1109,13 +1128,16 @@ public class task {
 		NPC.NPC_attrib[179][0] = 77;
 		int j3 = Gmud.sPlayer.hp_full / 2 + (temp_tasks_data[1] * Gmud.sPlayer.hp_full) / 4;
 		NPC.NPC_attrib[179][11] = NPC.NPC_attrib[179][12] = NPC.NPC_attrib[179][15] = j3;
+		// 取玩家最猛的一个技能的等级
 		int k3 = Gmud.sPlayer.GetMaxSkillLevel();
 		Battle.sBattle.CalcFighterLevel(0);
+		// 如果玩家整体等级大于20
 		if (Battle.sBattle.fighter_data[0][62] > 20)
 			k3 -= 10;
 //		delete glpBattle;
 //		glpBattle = 0;
 		Battle.sBattle = null;
+		// 计算恶人的每个技能等级（都是一样等级）
 		int i4 = k3 + (temp_tasks_data[34] * temp_tasks_data[1]) / 2 + (temp_tasks_data[1] - 1) * 3;
 		if (temp_tasks_data[1] > 7)
 			i4 -= 5;
@@ -1123,6 +1145,7 @@ public class task {
 			i4 = 250;
 		if (i4 < 0)
 			i4 = 0;
+		// 取恶人原型的技能表
 		NPCSKILLINFO nsk= new NPCSKILLINFO();
 		NPC.GetNPCSkill(nsk, j2);
 
@@ -1134,16 +1157,19 @@ public class task {
 			bad_man_skill[1 + k4 * 2 + 1] = i4;
 		}
 //		free(nsk.data);
-		temp_tasks_data[3] = util.RandomInt(Gmud.sPlayer.GetSavvy() * 2 + Gmud.sPlayer.SetFaceLevel() * 4 + temp_tasks_data[1] * 40) + temp_tasks_data[1] * 100;
-		temp_tasks_data[4] = util.RandomInt(Gmud.sPlayer.GetSavvy() + Gmud.sPlayer.SetFaceLevel() * 2 + temp_tasks_data[1] * 20) + temp_tasks_data[1] * 50;
+		// 实战经验奖励
+		temp_tasks_data[3] = util.RandomInt(Gmud.sPlayer.bliss*6+Gmud.sPlayer.GetSavvy() * 2 + Gmud.sPlayer.SetFaceLevel() * 4 + temp_tasks_data[1] * 40) + temp_tasks_data[1] * 100;
+		// 潜能奖励(与福缘关联起来)
+		temp_tasks_data[4] = util.RandomInt(Gmud.sPlayer.bliss*3+Gmud.sPlayer.GetSavvy() + Gmud.sPlayer.SetFaceLevel() * 2 + temp_tasks_data[1] * 20) + temp_tasks_data[1] * 50;
 //		wstring str(bad_man_start);
 //		UI.DrawDialog(&ReplaceStr(&ReplaceStr(&str, L"o", NPC.NPC_names[179]), L"m", GmudData::map_name[temp_tasks_data[2]]));
 		String str = bad_man_start.replaceAll("o", NPC.NPC_names[179]);
 		UI.DrawDialog(str.replaceAll("m", GmudData.map_name[temp_tasks_data[2]]));
+		// 如果是25分法，就增加一些特别奖励
 		if(49 == temp_tasks_data[5] / 30 && 1 == temp_tasks_data[0])
 		{
-			temp_tasks_data[3] &= 0x61E;
-			temp_tasks_data[4] &= 0x30F;
+			temp_tasks_data[3] |= 0x61E;
+			temp_tasks_data[4] |= 0x30F;
 		}
 		temp_tasks_data[5] = 0;
 		temp_tasks_data[0] = 1;
