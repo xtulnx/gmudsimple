@@ -185,14 +185,16 @@ public class GmudMain extends Thread {
 		int i1 = 0;
 		int j1 = 0;
 		boolean flag = false;
-		int k1 = player.lasting_tasks[7];
-		String s1 = GmudData.weapon_first_name[k1 - 1]; // first word
-		if (player.lasting_tasks[8] / 256 > 0) {
+		int attack = player.lasting_tasks[7];
+		String s1 = GmudData.weapon_first_name[attack - 1]; // first word
+		if (player.lasting_tasks[8] / 256 > 0) { 
+			// 自身属性: 天渊 → 合灵
 			i1 = player.lasting_tasks[8] / 256 - 1;
-			j1 = player.lasting_tasks[8] & 4;
+			j1 = player.lasting_tasks[8] & 255;
 			s1 += GmudData.weapon_last_name[i1 * 4 + j1];
 			flag = true;
 		} else if (player.lasting_tasks[8] >= 24) {
+			// 未定属性：绝世 → 蟠桃
 			int l1 = player.lasting_tasks[8];
 			s1 += GmudData.weapon_last_name[l1];
 		}
@@ -206,7 +208,7 @@ public class GmudMain extends Thread {
 				Items.item_attribs[77][3] = 20 - j1 * 5; // +命中
 			else if (i1 == 0)
 				Items.item_attribs[77][4] = 20 - j1 * 5; // +回避
-		if (player.lasting_tasks[8] >= 24 && !flag) // +附属属性
+		if (player.lasting_tasks[8] >= 24 && !flag) // +附属属性  该属性暂时无用 
 			Items.item_attribs[77][5] = player.lasting_tasks[8] - 10;
 		else
 			Items.item_attribs[77][5] = 20 - j1 * 5;
@@ -227,14 +229,15 @@ public class GmudMain extends Thread {
 			// enter name
 			player.weapon_name = WaitForNewName(1);
 
-			int j1 = util.RandomInt(50) + 1;
+			// 属性
 			int k1 = 0;
 			if (util.RandomInt(100) < 5 + player.bliss) // rand < q.A +5
-				k1 = (k1 = util.RandomInt(6) + 1) * 256 + util.RandomInt(4);
+				k1 = (util.RandomInt(6) + 1) * 256 + util.RandomInt(4);
 			else if (util.RandomInt(100) < player.bliss) // rand < q.A
 				k1 = 24 + util.RandomInt(13);
+			
 			player.lasting_tasks[4] = 0;
-			player.lasting_tasks[7] = j1; // attack
+			player.lasting_tasks[7] = util.RandomInt(52) + 1; // attack
 			player.lasting_tasks[8] = k1;
 			player.lasting_tasks[9] = 1;
 			// WriteSave(); // savedata
@@ -307,19 +310,6 @@ public class GmudMain extends Thread {
 				}
 				Video.VideoUpdate();
 				Gmud.GmudDelay(100);
-			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) // press left
-			{
-				Input.ClearKeyStatus();
-				map.DirLeft(4);
-				Video.VideoUpdate();
-				Gmud.GmudDelay(130);
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) // press
-																	// right
-			{
-				Input.ClearKeyStatus();
-				map.DirRight(4);
-				Video.VideoUpdate();
-				Gmud.GmudDelay(130);
 			} else if ((Input.inputstatus & Input.kKeyPgUp) != 0) // left++
 			{
 				Input.ClearKeyStatus();
@@ -344,6 +334,19 @@ public class GmudMain extends Thread {
 				}
 				Video.VideoUpdate();
 				Gmud.GmudDelay(50);
+			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) // press left
+			{
+				Input.ClearKeyStatus();
+				map.DirLeft(4);
+				Video.VideoUpdate();
+				Gmud.GmudDelay(130);
+			} else if ((Input.inputstatus & Input.kKeyRight) != 0) // press
+																	// right
+			{
+				Input.ClearKeyStatus();
+				map.DirRight(4);
+				Video.VideoUpdate();
+				Gmud.GmudDelay(130);
 			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) // press enter
 			{
 				Input.ClearKeyStatus();

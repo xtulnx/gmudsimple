@@ -897,7 +897,7 @@ public class task {
 		temp_tasks_data[14] = 1;
 		temp_tasks_data[15] = 0;
 		temp_tasks_data[16] = 0;
-		temp_tasks_data[17] = util.RandomInt(Gmud.sPlayer.GetSavvy() * 3);
+		temp_tasks_data[17] = util.RandomInt(20+Gmud.sPlayer.GetSavvy() * 3);
 		if (temp_tasks_data[17] < 5)
 			temp_tasks_data[17] = 5;
 //		wstring str(item_start);
@@ -955,7 +955,7 @@ public class task {
 		temp_tasks_data[9] = 1;
 		temp_tasks_data[10] = 0;
 		temp_tasks_data[11] = 0;
-		temp_tasks_data[12] = util.RandomInt(Gmud.sPlayer.GetSavvy() * 3);
+		temp_tasks_data[12] = util.RandomInt(20+Gmud.sPlayer.GetSavvy() * 3);
 		if (temp_tasks_data[12] < 5)
 			temp_tasks_data[12] = 5;
 //		wstring str(talk_start);
@@ -1044,7 +1044,8 @@ public class task {
 	static void KillWanted()
 	{
 		// 如果有恶人并且不在25分钟时间点上，就提示有恶人
-		if (temp_tasks_data[0] != 0 && temp_tasks_data[5] / 30 != 49)
+//		if (temp_tasks_data[0] != 0 && temp_tasks_data[5] / 30 != 49)
+		if (temp_tasks_data[0] != 0 && temp_tasks_data[5]<600)
 		{
 //			wstring str(bad_man_wait);
 //			UI.DrawDialog(&ReplaceStr(&str, L"o", NPC.NPC_names[179]));

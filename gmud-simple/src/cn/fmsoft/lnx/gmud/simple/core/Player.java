@@ -493,8 +493,8 @@ public class Player {
 	int GetForce() {
 		int i1 = GetSkillLevel(1);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 3 && equips[15] == 77)
-			j1 = Items.item_attribs[77][4];
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 4 && equips[15] == 77)
+			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/; // 自制武器加成，下同
 		return i1 / 10 + pre_force + j1;
 	}
 
@@ -505,8 +505,8 @@ public class Player {
 	int GetAgility() {
 		int i1 = GetSkillLevel(7);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 2 && equips[15] == 77)
-			j1 = Items.item_attribs[77][4];
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 3 && equips[15] == 77)
+			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
 		return i1 / 10 + pre_agility + j1;
 	}
 
@@ -517,8 +517,8 @@ public class Player {
 	int GetSavvy() {
 		int i1 = GetSkillLevel(9);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 5 && equips[15] == 77)
-			j1 = Items.item_attribs[77][4];
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 6 && equips[15] == 77)
+			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
 		return i1 / 10 + pre_savvy + j1;
 	}
 
@@ -526,8 +526,8 @@ public class Player {
 	int GetAptitude() {
 		int i1 = GetSkillLevel(0);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 4 && equips[15] == 77)
-			j1 = Items.item_attribs[77][4];
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 5 && equips[15] == 77)
+			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
 		return i1 / 10 + pre_aptitude + j1;
 	}
 

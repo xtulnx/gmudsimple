@@ -113,10 +113,10 @@ public class Battle {
 		if (l1 > 100)
 			l1 = 100;
 		int i2 = 0;
-		int j2 = fighter_data[i1][29];
+		int j2 = fighter_data[i1][29]; // 武器
 		if (flag && f_int_array1d_static[3] >= 0)
-			fighter_data[i1][29] = f_int_array1d_static[3];
-		int k2 = fighter_data[i1][9] - fighter_data[j1][9];
+			fighter_data[i1][29] = f_int_array1d_static[3]; // 暂时换了武器？
+		int k2 = fighter_data[i1][9] - fighter_data[j1][9]; // 敏捷相差
 		int l2;
 		if ((l2 = CalaAvtiveSpeed(i1, 2, 4)) > 0 && l2 < 20)
 			k2 += CalaAvtiveSpeed(i1, 1, 0);
@@ -124,10 +124,10 @@ public class Battle {
 		for (int j3 = 0; j3 < 2; j3++)
 		{
 			if ((i2 = fighter_data[j3][29]) == 0)
-			{
+			{ //空手
 				int i4;
 				if ((i4 = fighter_data[j3][30]) == 255)
-				{
+				{ // 无拳脚技能
 					c_int_array2d_static[j3][8] = ib(j3, 1, 1);
 				} else
 				{
@@ -136,18 +136,18 @@ public class Battle {
 				}
 				continue;
 			}
-			int j4 = fighter_data[j3][32];
-			int i5 = Items.item_attribs[i2][1];
+			int j4 = fighter_data[j3][32]; // [30+2] 已选择的兵刃技能
+			int i5 = Items.item_attribs[i2][1]; // 武器类型
 			int j6 = 0;
 			if (j4 != 255)
 				j6 = Skill.skill_weapon_type[j4];
-			if (j6 == i5)
+			if (j6 == i5) // 武器类型相同？
 			{
 				int k5 = j4;
 				c_int_array2d_static[j3][8] = ib(j3, k5, fighter_data[j3][33]);
 				ai[j3] = fighter_data[j3][33];
 			} else
-			{
+			{ // XXX: 鞭类武器(9)时，描述文本变成闪避
 				int l5 = Skill.c[i5];
 				c_int_array2d_static[j3][8] = ib(j3, l5, 1);
 			}
@@ -225,7 +225,7 @@ public class Battle {
 		{
 			int l6 = c_int_array2d_static[i1][8];
 			if (util.RandomBool(65))
-			{
+			{ // ? 如果击中了，加入攻击描述
 				b(0, l6, 1);
 				int k7;
 				if (i2 == 0)
@@ -243,7 +243,7 @@ public class Battle {
 					l7 = util.RandomInt(5) + 243;
 				d(0, l7, 1);
 			}
-			fighter_data[i1][29] = j2;
+			fighter_data[i1][29] = j2; // 恢复武器
 			return 0;
 		}
 		if ((i6 = CalaAvtiveSpeed(j1, 5, 4)) > 0 && i6 < 20 && util.RandomBool(CalaAvtiveSpeed(j1, 5, 0)))
@@ -936,7 +936,7 @@ public class Battle {
 		b_int_array1d_static[11] = j1;
 		b_int_array1d_static[12] = k1;
 	}
-
+	// j1:技能ID k1:技能等级  产生攻击描述？
 	int ib(int i1, int j1, int k1)
 	{
 		for (int l1 = 0; l1 < 8; l1++)
@@ -998,10 +998,10 @@ public class Battle {
 		if ((k1 = CalaAvtiveSpeed(i1, 0, 4)) > 0 && k1 < 20)
 			j1 += CalaAvtiveSpeed(i1, 0, 0);
 		for (int l1 = 0; l1 < 16; l1++)
-		{
+		{ // 遍历所有装备
 			int i2;
 			if ((i2 = fighter_data[i1][14 + l1]) > 0 && i2 < 92 && (Items.item_attribs[i2][0] == 2 || Items.item_attribs[i2][0] == 3))
-			{
+			{ // 如果是“武器”或“装备”，则加上“命中率”
 				int j2 = Items.item_attribs[i2][3] <= 127 ? Items.item_attribs[i2][3] : -(256 - Items.item_attribs[i2][3]);
 				j1 += j2;
 			}

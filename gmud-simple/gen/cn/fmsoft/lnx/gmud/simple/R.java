@@ -21,9 +21,11 @@ public final class R {
         public static final int FrameLayout01=0x7f070000;
         public static final int control=0x7f070001;
         public static final int grout_main=0x7f070003;
-        public static final int item_about=0x7f070006;
-        public static final int item_exit=0x7f070005;
-        public static final int item_hook=0x7f070004;
+        public static final int item_about=0x7f070008;
+        public static final int item_exit=0x7f070004;
+        public static final int item_hidekey=0x7f070006;
+        public static final int item_lockscreen=0x7f070007;
+        public static final int item_setting=0x7f070005;
         public static final int show=0x7f070002;
     }
     public static final class layout {

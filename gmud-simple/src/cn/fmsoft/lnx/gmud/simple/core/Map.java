@@ -139,7 +139,12 @@ public class Map {
 
 //		if(map_event_data.data)
 //			delete[] map_event_data.data;
-		MapInfo.GetMapEvent(map_event_data, id);   //load map event
+		MapInfo.GetMapEvent(map_event_data, id);   //load map event 
+
+		// XXX: 屏蔽武馆里面那面墙的地图属性。
+		if (id == 5 && map_event_data.data[11] == -321) {
+			map_event_data.data[11] = 255;
+		}
 
 		if (Gmud.DEBUG) {
 			Log.i("lnx", "map id=" + id + " image-size=" + map_image_data.data.length + " event-size="+map_event_data.data.length);
@@ -331,6 +336,7 @@ public class Map {
 			boolean flag = false;
 			if (j1 < -255)  //goto map -[j1+256]
 			{
+				Log.e("lnx", "Map.DirUp, event = " + j1);
 				flag = true;
 				j1 = -(j1 + 256);
 			}
