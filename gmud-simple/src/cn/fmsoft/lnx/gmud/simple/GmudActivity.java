@@ -5,17 +5,24 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
+import android.R.integer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.opengl.Visibility;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
@@ -24,6 +31,10 @@ public class GmudActivity extends Activity {
 //	final static int MENU_HOOKGAME = 0;
 //	final static int MENU_EXITAPPLICATION = 1;
 //	final static int MENU_ABOUT = 2;
+	
+	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
+	private boolean bLockScreen = false;
+	private boolean bHideSoftKey= false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -34,6 +45,9 @@ public class GmudActivity extends Activity {
 
 //		new Gmud(this);
 		Gmud.bind(this);
+		
+		mRequestOritation = getRequestedOrientation();
+		Log.i("lnx", "Orientation = " + mRequestOritation);
 	}
 
 	@Override
@@ -80,8 +94,38 @@ public class GmudActivity extends Activity {
 			Gmud.exit();
 			break;
 
-		case R.id.item_hook:
+		case R.id.item_lockscreen:
+			bLockScreen = !item.isChecked();
+			item.setChecked(bLockScreen);
+
+			// 如果还没有横竖屏的设置,按宽高比计算
+			if (bLockScreen
+					&& (mRequestOritation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)) {
+				final Display display = getWindowManager().getDefaultDisplay();
+				if (display.getWidth() > display.getHeight()) {
+					mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+				} else {
+					mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+				}
+			}
+
+			setRequestedOrientation(bLockScreen ? mRequestOritation
+					: ActivityInfo.SCREEN_ORIENTATION_USER);
 			break;
+			
+		case R.id.item_hidekey:
+			bHideSoftKey = !item.isChecked();
+			item.setChecked(bHideSoftKey);
+			
+			Gmud.setMinScale(!bHideSoftKey);
+			final Control control = (Control) findViewById(R.id.control);
+			control.hide(bHideSoftKey);
+			final View show = findViewById(R.id.show);
+			show.requestLayout();
+			break;
+			
+//		case R.id.item_hook:
+//			break;
 
 		case R.id.item_about:
 			Dialog dialog = new AlertDialog.Builder(this)
@@ -120,17 +164,23 @@ public class GmudActivity extends Activity {
 		return super.onKeyDown(keyCode, event);
 	}
 
-//	@Override
-//	public void onConfigurationChanged(Configuration newConfig) {
-//
-//		super.onConfigurationChanged(newConfig);
-//
-//		// if (this.getResources().getConfiguration().orientation ==
-//		// Configuration.ORIENTATION_LANDSCAPE) {
-//		// // �������Ҫ����Ĵ���
-//		// } else if (this.getResources().getConfiguration().orientation ==
-//		// Configuration.ORIENTATION_PORTRAIT) {
-//		// // ��������Ҫ����Ĵ���
-//		// }
-//	}
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+
+		super.onConfigurationChanged(newConfig);
+
+		if (!bLockScreen) {
+			if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+			} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+			}
+		}
+		
+		// if (this.getResources().getConfiguration().orientation ==
+		// Configuration.ORIENTATION_LANDSCAPE) {
+		// } else if (this.getResources().getConfiguration().orientation ==
+		// Configuration.ORIENTATION_PORTRAIT) {
+		// }
+	}
 }

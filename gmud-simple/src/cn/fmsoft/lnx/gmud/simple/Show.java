@@ -5,14 +5,14 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
-import cn.fmsoft.lnx.gmud.simple.core.Gmud;
-import cn.fmsoft.lnx.gmud.simple.core.Video;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import cn.fmsoft.lnx.gmud.simple.core.Gmud;
+import cn.fmsoft.lnx.gmud.simple.core.Video;
 
 public class Show extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -64,7 +64,7 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback {
 			int height) {
 		Canvas c = getHolder().lockCanvas();
 		if (c != null) {
-			c.drawColor(Color.GREEN);
+			c.drawColor(Color.BLACK);
 			getHolder().unlockCanvasAndPost(c);
 		}
 		Video.VideoUpdate();

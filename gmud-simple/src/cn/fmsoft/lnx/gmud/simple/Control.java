@@ -18,6 +18,9 @@ import android.view.View;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
 public class Control extends View {
+	
+	static boolean sbConfig_Hide = false;
+	
 	// soft key
 	static final Rect sSoftKey[] = new Rect[9];
 	
@@ -53,6 +56,11 @@ public class Control extends View {
 		setFocusableInTouchMode(true);
 		requestFocus();
 	}
+	
+	public void hide(boolean bhide) {
+		sbConfig_Hide = bhide;
+		requestLayout();
+	}
 
 	// Ovrride this method, to hide Chinese input-method.
 	@Override
@@ -81,7 +89,7 @@ public class Control extends View {
 			int code = event.getKeyCode();
 			if (KeyEvent.KEYCODE_ENTER==code || (KeyEvent.KEYCODE_0 <= code && code <= KeyEvent.KEYCODE_Z)) {
 				Input.onKey(code, event);
-				return false;
+				return true;
 			}
 		}
 		return super.dispatchKeyEventPreIme(event);
@@ -173,6 +181,10 @@ public class Control extends View {
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		if (sbConfig_Hide) {
+			return false;
+		}
+		
 		int action = event.getAction() & MotionEvent.ACTION_MASK;
 		if (action == MotionEvent.ACTION_DOWN
 				|| action == MotionEvent.ACTION_CANCEL
@@ -210,6 +222,11 @@ public class Control extends View {
         bPort =  (widthSize < heightSize);
         
         height = resetSoftKeyPosition(widthSize, heightSize);
+        
+        if (sbConfig_Hide) {
+        	widthSize = 1;
+        	height = 1;
+        }
 
         setMeasuredDimension(widthSize, height);
         
@@ -218,6 +235,11 @@ public class Control extends View {
     
     @Override
     protected void onDraw(Canvas canvas) {
+    	if (sbConfig_Hide) {
+    		canvas.drawARGB(40, 90, 0, 0);
+    		return ;
+    	}
+    	
     	drawSoftKey(canvas);
     }
 

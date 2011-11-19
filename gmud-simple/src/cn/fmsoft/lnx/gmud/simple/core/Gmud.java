@@ -30,6 +30,8 @@ public class Gmud {
 
 	static Activity sActivity = null;
 	
+	static boolean sbConfig_MinScale = true;
+	
 	/**
 	 * 清除数据，用于自杀
 	 *  
@@ -89,6 +91,10 @@ public class Gmud {
 		}
 	}
 
+	public static void setMinScale(boolean bMin) {
+		sbConfig_MinScale = bMin;
+	}
+
 	// 计算初始缩放比例
 	public static void checkScale() {
 		try {
@@ -98,7 +104,7 @@ public class Gmud {
 			// 按竖屏的模式计算宽高比
 			int w = display.getWidth();
 			int h = display.getHeight();
-			if (w > h) {
+			if (sbConfig_MinScale && w > h) {
 				int tmp = w;
 				w = h;
 				h = tmp;

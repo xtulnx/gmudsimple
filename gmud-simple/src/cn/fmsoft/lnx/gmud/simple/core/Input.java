@@ -61,13 +61,13 @@ public class Input {
 	}
 
 	static void GmudDefaultKey() {
-		kbkeys[0] = KeyEvent.KEYCODE_DPAD_UP;
-		kbkeys[1] = KeyEvent.KEYCODE_DPAD_DOWN;
+		kbkeys[0] = KeyEvent.KEYCODE_W;
+		kbkeys[1] = KeyEvent.KEYCODE_S;
 		kbkeys[2] = KeyEvent.KEYCODE_DPAD_LEFT;
 		kbkeys[3] = KeyEvent.KEYCODE_DPAD_RIGHT;
 		kbkeys[4] = KeyEvent.KEYCODE_A; // Delete 左连
 		kbkeys[5] = KeyEvent.KEYCODE_D; // PGDN 右连
-		kbkeys[6] = KeyEvent.KEYCODE_ENTER; // enter 输入
+		kbkeys[6] = KeyEvent.KEYCODE_E; // enter 输入
 		kbkeys[7] = KeyEvent.KEYCODE_Q; // alt跳出
 		kbkeys[8] = KeyEvent.KEYCODE_F; // End 轻功
 	}
@@ -101,10 +101,10 @@ public class Input {
 				inputstatus = kKeyRight;
 				return;
 			case 4:
-				inputstatus = kKeyPgUp;
+				inputstatus = kKeyPgUp|kKeyLeft;
 				return;
 			case 5:
-				inputstatus = kKeyPgDn;
+				inputstatus = kKeyPgDn|kKeyRight;
 				return;
 			case 6:
 				inputstatus = kKeyEnt;
