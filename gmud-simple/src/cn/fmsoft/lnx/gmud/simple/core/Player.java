@@ -563,7 +563,7 @@ public class Player {
 		else
 			k1 += util.RandomInt(16);
 		skills[id][4] = k1;
-		skills[id][2] = 0;
+//		skills[id][2] = 0;
 	}
 
 	// 出手等级
