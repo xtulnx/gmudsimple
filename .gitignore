@@ -1,5 +1,12 @@
-.gitignore
+*.class
+*.apk
+*.ap_
+*.swp
+tags
 bin/
+gen/
+local.properties
+proguard/
 bak/
 *.gz
 *.7z

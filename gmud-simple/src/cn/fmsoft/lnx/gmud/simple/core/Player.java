@@ -813,7 +813,9 @@ public class Player {
 		break;
 
 	case 0: 
-		{
+		{ // 吃食物
+			if (Battle.sBattle!=null)
+				break;
 			int i2 = Items.item_attribs[j1][2];
 			int j2 = Items.item_attribs[j1][3];
 			if (food >= GetFoodMax())
@@ -829,40 +831,42 @@ public class Player {
 			}
 			break;
 		}
-	case 1:
-		if(Battle.sBattle!=null && l1 == 0)
-		{
-			if(Battle.sBattle.fighter_data[i1][2] == hp_full)
-				return "";
-			hp_max = (Battle.sBattle.fighter_data[i1][2] += Items.item_attribs[j1][2]);
-			if(Battle.sBattle.fighter_data[i1][2] == hp_full)
-				hp_max = Battle.sBattle.fighter_data[i1][2] = hp_full;
-			if (item_package[i1][2] <= 0)
-			{
+	case 1: // 用药
+		if (Battle.sBattle != null && l1 == 0) {
+			int player_id = Battle.sBattle.player_id;
+			int hp_max_tmp = Battle.sBattle.fighter_data[player_id][2];
+			int hp_full_tmp = Battle.sBattle.fighter_data[player_id][3];
+			if (hp_max_tmp >= hp_full_tmp)
+				break;
+			hp_max_tmp += Items.item_attribs[j1][2];
+			if (hp_max_tmp > hp_full_tmp)
+				hp_max_tmp = hp_full_tmp;
+			item_package[i1][2]--;
+			if (item_package[i1][2] <= 0) {
 				item_package[i1][0] = 0;
 				item_package[i1][1] = 0;
 				item_package[i1][2] = 0;
 			}
+			Battle.sBattle.fighter_data[player_id][2] = hp_max_tmp;
+			Battle.sBattle.a(player_id, 2, hp_max_tmp);
 			break;
 		}
-		if (l1 == 0)
-		{
+		if (l1 == 0) {
 			if(hp_max == hp_full)
-				return "";
+				break;
 			hp_max += Items.item_attribs[j1][2];
 			if (hp_max > hp_full)
 				hp_max = hp_full;
 			item_package[i1][2]--;
-			if (item_package[i1][2] <= 0)
-			{
+			if (item_package[i1][2] <= 0) {
 				item_package[i1][0] = 0;
 				item_package[i1][1] = 0;
 				item_package[i1][2] = 0;
 			}
 			break;
 		}
-		//if (l1 != 1 || aa.a != 0)
-		//	break;
+		if (l1 != 1 || Battle.sBattle != null)
+			break;
 		if (lasting_tasks[13] < 10000)
 		{
 			fp_level += item_package[i1][2];
@@ -878,6 +882,9 @@ public class Player {
 		break;
 
 	case 2: //weapon
+      if ((Battle.sBattle != null) && (item_package[i1][0] == 77))
+    	  break; // 战斗的时候不换自制武器（影响玩家属性计算）
+      
 		if (item_package[i1][1] == 0)
 			EquipWeapon(i1);
 		else
@@ -898,6 +905,9 @@ public class Player {
 		}
 	case 4: //read book
 		{
+			if (Battle.sBattle!=null)
+				break;
+			
 			int k2 = GetSkillLevel(9);
 			if (k2 == 0)
 				return "你还是个文盲!";
