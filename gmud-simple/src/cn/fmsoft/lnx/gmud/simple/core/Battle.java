@@ -104,6 +104,9 @@ public class Battle {
 		ai[0] = ai[1] = 0;
 		int i1 = active_id;
 		int j1 = active_id != 0 ? 0 : 1;
+//	    int i1;
+//	    if ((i1 = a(n = jdField_g_of_type_Int == 0 ? 1 : 0, 1)) == 0)
+//	      return 0;
 		int k1 = 50;
 		if (active_id == player_id)
 			k1 = 60;
@@ -258,6 +261,7 @@ public class Battle {
 		fighter_data[i1][29] = j2;
 		int k8 = c_int_array2d_static[i1][6];
 		i7 += c_int_array2d_static[i1][7];
+		// XXX: 不同？！
 		if (fighter_data[i1][29] > 800 || fighter_data[i1][30] > 800)
 			Video.exit(1);   //error exit
 		int j9 = fighter_data[i1][0];
@@ -1139,13 +1143,38 @@ public class Battle {
 
 	int a(int i1, int j1)
 	{
-		for (int k1 = 0; k1 < e_int_static; k1 += 3)
-			if (a_int_array1d_static[k1 + 32] == i1 && a_int_array1d_static[k1 + 1 + 32] == j1)
-				return a_int_array1d_static[k1 + 2 + 32];
-
-		return -1;
+	    int m = -1;
+		for (int k1 = 0; k1 < e_int_static; k1 += 3) {
+			if (a_int_array1d_static[k1 + 32] == i1 && a_int_array1d_static[k1 + 1 + 32] == j1) {
+				m = k1;
+			}
+		}
+//				return a_int_array1d_static[k1 + 2 + 32];
+//		return -1;
+		if (m==-1) 
+			return -1000000;
+		return a_int_array1d_static[m + 2 + 32];
 	}
-
+	  public void a1(int paramInt1, int paramInt2)
+	  {
+	    int m;
+	    if ((m = a(paramInt1, 4)) < 0)
+	      m = fighter_data[paramInt1][4];
+	    m -= paramInt2;
+	    if (m < 0)
+	      m = 0;
+	    a(paramInt1, 4, m);
+	  }
+	  public void b1(int paramInt1, int paramInt2)
+	  {
+		    int m;
+		    if ((m = a(paramInt1, 6)) < 0)
+		      m = fighter_data[paramInt1][6];
+		    m -= paramInt2;
+		    if (m < 0)
+		      m = 0;
+		    a(paramInt1, 6, m);
+		  }
 	int b(int i1, int j1)
 	{
 		for (int k1 = 0; k1 < e_int_static; k1 += 3)

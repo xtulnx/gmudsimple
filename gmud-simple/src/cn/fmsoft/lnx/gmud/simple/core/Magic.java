@@ -55,19 +55,13 @@ public class Magic {
 		int i1 = Battle.sBattle.fighter_data[id_active][4];
 		int j1 = Battle.sBattle.fighter_data[id_active][6];
 		Battle.sBattle.b_int_array1d_static[13] = i;
-		if (i >= 11 && i <= 22)
-		{
-			if (j1 < magic_cost[i])
-			{
-				str = "你的法力不足";
-				return str;
+		if (i >= 11 && i <= 22) {
+			if (j1 < magic_cost[i]) {
+				return "你的法力不足";
 			}
-		} else
-		if (i1 < magic_cost[i])
-			{
-				str = "你的内力不足";
-				return str;
-			}
+		} else if (i1 < magic_cost[i]) {
+			return "你的内力不足";
+		}
 		switch (i)
 		{
 		case 23: //化掌为刀
@@ -349,9 +343,9 @@ public class Magic {
 				int j16;
 				if ((j16 = Calc2(id_active, 1, 29, 120)) < 0)
 					return NeedMoreLevel(29);
+				Battle.sBattle.b(1, 22, 1);
 				Battle.sBattle.a(-1, 70, 15, -1);
 				int l10 = Battle.sBattle.PhyAttack(true);
-				Battle.sBattle.b(1, 22, 1);
 				Battle.sBattle.c(1, l10, id_rival, 29);
 				break;
 			}
@@ -366,16 +360,15 @@ public class Magic {
 				int i11 = 0;
 				int l16 = 0;
 				int i17 = Calc1(id_active, 1, 38);
-				l16 = 2 + (i17 - 90) / 45;
+				l16 = 2 + (i17 - 90) / 30;
 				if (Gmud.sPlayer.lasting_tasks[0] == 1)
 					l16++;
+				Battle.sBattle.b(1, 45, 1);
 				for (int j17 = 0; j17 < l16; j17++)
 				{
 					Battle.sBattle.a(-1, -1, -1, -1);
 					i11 += Battle.sBattle.PhyAttack(true);
 				}
-
-				Battle.sBattle.b(1, 45, 1);
 				Battle.sBattle.c(6, i11, id_rival, 38);
 				break;
 			}
@@ -679,16 +672,10 @@ public class Magic {
 	static String NeedMoreLevel(int skill_id)
 	{
 //		wstring str("你的武功修为不够");
-		String str = "你的武功修为不够";
 		if (skill_id < 0 || skill_id > 57)
-			return str;
+			return "你的武功修为不够";
 		else
-		{
-			str = "你的";
-			str += Skill.skill_name[skill_id];
-			str += "修为不够";
-			return str;
-		}
+			return "你的" + Skill.skill_name[skill_id] + "修为不够";
 	}
 
 	static void Effect(int id_active)
