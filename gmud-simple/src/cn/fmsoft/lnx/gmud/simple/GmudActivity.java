@@ -5,7 +5,6 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
-import android.R.integer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -14,7 +13,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -27,27 +25,42 @@ import android.view.WindowManager;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.fb.NotificationType;
+import com.umeng.fb.UMFeedbackService;
+
 public class GmudActivity extends Activity {
-//	final static int MENU_HOOKGAME = 0;
-//	final static int MENU_EXITAPPLICATION = 1;
-//	final static int MENU_ABOUT = 2;
-	
+	// final static int MENU_HOOKGAME = 0;
+	// final static int MENU_EXITAPPLICATION = 1;
+	// final static int MENU_ABOUT = 2;
+
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
-	private boolean bHideSoftKey= false;
+	private boolean bHideSoftKey = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		configUpdate();
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.main);
 
-//		new Gmud(this);
+		// new Gmud(this);
 		Gmud.bind(this);
-		
+
 		mRequestOritation = getRequestedOrientation();
 		Log.i("lnx", "Orientation = " + mRequestOritation);
+	}
+
+	/**
+	 * 配置自动更新和错误统计功能。
+	 */
+	private void configUpdate() {
+		UMFeedbackService.enableNewReplyNotification(this,
+				NotificationType.AlertDialog);
+		MobclickAgent.setDebugMode(false);
+		MobclickAgent.onError(this);
 	}
 
 	@Override
@@ -66,11 +79,13 @@ public class GmudActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
+		MobclickAgent.onPause(this);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+		MobclickAgent.onResume(this);
 		// Video.VideoUpdate();
 	}
 
@@ -79,11 +94,11 @@ public class GmudActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_main, menu);
 		return true;
-//		
-//		menu.add(0, MENU_HOOKGAME, 0, "Hook");
-//		menu.add(0, MENU_EXITAPPLICATION, 0, "Exit Game");
-//		menu.add(0, MENU_ABOUT, 0, "About");
-//		return super.onCreateOptionsMenu(menu);
+		//
+		// menu.add(0, MENU_HOOKGAME, 0, "Hook");
+		// menu.add(0, MENU_EXITAPPLICATION, 0, "Exit Game");
+		// menu.add(0, MENU_ABOUT, 0, "About");
+		// return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -112,32 +127,35 @@ public class GmudActivity extends Activity {
 			setRequestedOrientation(bLockScreen ? mRequestOritation
 					: ActivityInfo.SCREEN_ORIENTATION_USER);
 			break;
-			
+
 		case R.id.item_hidekey:
 			bHideSoftKey = !item.isChecked();
 			item.setChecked(bHideSoftKey);
-			
+
 			Gmud.setMinScale(!bHideSoftKey);
 			final Control control = (Control) findViewById(R.id.control);
 			control.hide(bHideSoftKey);
 			final View show = findViewById(R.id.show);
 			show.requestLayout();
 			break;
-			
-//		case R.id.item_hook:
-//			break;
+
+		// case R.id.item_hook:
+		// break;
 
 		case R.id.item_about:
 			Dialog dialog = new AlertDialog.Builder(this)
 					.setIcon(android.R.drawable.btn_star)
-					.setTitle(R.string.title)
-					.setMessage(R.string.about)
+					.setTitle(R.string.title).setMessage(R.string.about)
 					.setPositiveButton("OK", new OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 						}
 					}).create();
 			dialog.show();
+			break;
+
+		case R.id.item_feedback:
+			UMFeedbackService.openUmengFeedbackSDK(this);
 			break;
 
 		default:
@@ -176,7 +194,7 @@ public class GmudActivity extends Activity {
 				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			}
 		}
-		
+
 		// if (this.getResources().getConfiguration().orientation ==
 		// Configuration.ORIENTATION_LANDSCAPE) {
 		// } else if (this.getResources().getConfiguration().orientation ==

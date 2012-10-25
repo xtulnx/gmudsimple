@@ -32,5 +32,6 @@
         <item
             android:id="@+id/item_about"
             android:title="About"></item>
+        <item android:id="@+id/item_feedback" android:title="Feedback"></item>
     </group>
 </menu>
