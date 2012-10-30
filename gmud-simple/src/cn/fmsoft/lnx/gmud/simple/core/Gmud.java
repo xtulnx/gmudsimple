@@ -15,7 +15,7 @@ public class Gmud {
 
 	final static boolean DEBUG = true;
 	
-	final static String SAVE_PATH = "gmud_save";
+	public final static String SAVE_PATH = "gmud_save";
 
 	public final static int WQX_ORG_WIDTH = 160;
 	public final static int WQX_ORG_HEIGHT = 80;

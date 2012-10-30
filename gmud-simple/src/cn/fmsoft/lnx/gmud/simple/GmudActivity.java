@@ -5,17 +5,22 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
-import android.R.integer;
+import java.io.File;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.opengl.Visibility;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -28,13 +33,25 @@ import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
 public class GmudActivity extends Activity {
-//	final static int MENU_HOOKGAME = 0;
-//	final static int MENU_EXITAPPLICATION = 1;
-//	final static int MENU_ABOUT = 2;
-	
+	// final static int MENU_HOOKGAME = 0;
+	// final static int MENU_EXITAPPLICATION = 1;
+	// final static int MENU_ABOUT = 2;
+
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
-	private boolean bHideSoftKey= false;
+	private boolean bHideSoftKey = false;
+
+	private static PendingIntent sMainIntent;
+
+	protected static PendingIntent getPendingIntent(Context ctx) {
+		if (sMainIntent != null)
+			return sMainIntent;
+
+		Intent intent = new Intent(ctx, GmudActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+				| Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		return PendingIntent.getActivity(ctx, 0, intent, 0);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -43,9 +60,12 @@ public class GmudActivity extends Activity {
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.main);
 
-//		new Gmud(this);
+		sMainIntent = PendingIntent.getActivity(getBaseContext(), 0,
+				new Intent(getIntent()), getIntent().getFlags());
+
+		// new Gmud(this);
 		Gmud.bind(this);
-		
+
 		mRequestOritation = getRequestedOrientation();
 		Log.i("lnx", "Orientation = " + mRequestOritation);
 	}
@@ -72,6 +92,25 @@ public class GmudActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		// Video.VideoUpdate();
+
+		loadConfig();
+	}
+
+	private void loadConfig() {
+		SharedPreferences p = PreferenceManager
+				.getDefaultSharedPreferences(getBaseContext());
+		boolean lockScreen = p.getBoolean(getString(R.string.key_lock_screen),
+				bLockScreen);
+		if (lockScreen != bLockScreen) {
+			bLockScreen = lockScreen;
+			lock_screen();
+		}
+		boolean hideSoftKey = p.getBoolean(
+				getString(R.string.key_hide_softkey), bHideSoftKey);
+		if (hideSoftKey != bHideSoftKey) {
+			bHideSoftKey = hideSoftKey;
+			hide_softkey();
+		}
 	}
 
 	@Override
@@ -79,11 +118,11 @@ public class GmudActivity extends Activity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu_main, menu);
 		return true;
-//		
-//		menu.add(0, MENU_HOOKGAME, 0, "Hook");
-//		menu.add(0, MENU_EXITAPPLICATION, 0, "Exit Game");
-//		menu.add(0, MENU_ABOUT, 0, "About");
-//		return super.onCreateOptionsMenu(menu);
+		//
+		// menu.add(0, MENU_HOOKGAME, 0, "Hook");
+		// menu.add(0, MENU_EXITAPPLICATION, 0, "Exit Game");
+		// menu.add(0, MENU_ABOUT, 0, "About");
+		// return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
@@ -94,44 +133,30 @@ public class GmudActivity extends Activity {
 			Gmud.exit();
 			break;
 
-		case R.id.item_lockscreen:
-			bLockScreen = !item.isChecked();
-			item.setChecked(bLockScreen);
+		// case R.id.item_lockscreen:
+		// bLockScreen = !item.isChecked();
+		// item.setChecked(bLockScreen);
+		// lock_screen();
+		// break;
+		//
+		// case R.id.item_hidekey:
+		// bHideSoftKey = !item.isChecked();
+		// item.setChecked(bHideSoftKey);
+		// hide_softkey();
+		// break;
 
-			// 如果还没有横竖屏的设置,按宽高比计算
-			if (bLockScreen
-					&& (mRequestOritation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)) {
-				final Display display = getWindowManager().getDefaultDisplay();
-				if (display.getWidth() > display.getHeight()) {
-					mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-				} else {
-					mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-				}
-			}
+		// case R.id.item_hook:
+		// break;
 
-			setRequestedOrientation(bLockScreen ? mRequestOritation
-					: ActivityInfo.SCREEN_ORIENTATION_USER);
+		case R.id.item_setting:
+			Intent intent = new Intent(getBaseContext(), SettingActivity.class);
+			startActivity(intent);
 			break;
-			
-		case R.id.item_hidekey:
-			bHideSoftKey = !item.isChecked();
-			item.setChecked(bHideSoftKey);
-			
-			Gmud.setMinScale(!bHideSoftKey);
-			final Control control = (Control) findViewById(R.id.control);
-			control.hide(bHideSoftKey);
-			final View show = findViewById(R.id.show);
-			show.requestLayout();
-			break;
-			
-//		case R.id.item_hook:
-//			break;
 
 		case R.id.item_about:
 			Dialog dialog = new AlertDialog.Builder(this)
 					.setIcon(android.R.drawable.btn_star)
-					.setTitle(R.string.title)
-					.setMessage(R.string.about)
+					.setTitle(R.string.title).setMessage(R.string.about)
 					.setPositiveButton("OK", new OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
@@ -140,10 +165,42 @@ public class GmudActivity extends Activity {
 			dialog.show();
 			break;
 
+		// case R.id.item_backup:
+		// backup();
+		// break;
+		//
+		// case R.id.item_restore:
+		// restore();
+		// break;
+
 		default:
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void hide_softkey() {
+		Gmud.setMinScale(!bHideSoftKey);
+		final Control control = (Control) findViewById(R.id.control);
+		control.hide(bHideSoftKey);
+		final View show = findViewById(R.id.show);
+		show.requestLayout();
+	}
+
+	private void lock_screen() {
+		// 如果还没有横竖屏的设置,按宽高比计算
+		if (bLockScreen
+				&& (mRequestOritation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)) {
+			final Display display = getWindowManager().getDefaultDisplay();
+			if (display.getWidth() > display.getHeight()) {
+				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+			} else {
+				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+			}
+		}
+
+		setRequestedOrientation(bLockScreen ? mRequestOritation
+				: ActivityInfo.SCREEN_ORIENTATION_USER);
 	}
 
 	@Override
@@ -176,11 +233,59 @@ public class GmudActivity extends Activity {
 				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			}
 		}
-		
+
 		// if (this.getResources().getConfiguration().orientation ==
 		// Configuration.ORIENTATION_LANDSCAPE) {
 		// } else if (this.getResources().getConfiguration().orientation ==
 		// Configuration.ORIENTATION_PORTRAIT) {
 		// }
+	}
+
+	public final static String BACK_UP_DIR = "xtulnx/gmud/backup/";
+
+	private void backup() {
+		Context ctx = getBaseContext();
+		File dir = new File(Environment.getExternalStorageDirectory(),
+				BACK_UP_DIR);
+		if (!dir.exists() || !dir.isDirectory()) {
+			dir.delete();
+			dir.mkdirs();
+		}
+		Log.d("lnx", "path =" + dir.getPath());
+		File back = new File(dir, "backup.xml");
+		if (dir.exists()) {
+			new AlertDialog.Builder(this)
+					.setIcon(android.R.drawable.btn_star)
+					.setTitle(R.string.title)
+					.setMessage("Backup to " + back.getPath())
+					.setPositiveButton(android.R.string.yes,
+							new OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+
+								}
+							})
+					.setNeutralButton(android.R.string.cancel,
+							new OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									dialog.dismiss();
+								}
+							}).create().show();
+		}
+	}
+
+	private void restore() {
+
+		new AlertDialog.Builder(this).setIcon(android.R.drawable.btn_star)
+				.setTitle(R.string.title).setMessage(R.string.about)
+				.setPositiveButton("OK", new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				}).create().show();
 	}
 }
