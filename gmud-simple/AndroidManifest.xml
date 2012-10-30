@@ -4,6 +4,8 @@
     android:versionCode="1"
     android:versionName="0.1" >
 
+    <uses-sdk android:minSdkVersion="4" />
+
     <application
         android:name="cn.fmsoft.lnx.gmud.simple.GmudApp"
         android:icon="@drawable/tmp_icon"
@@ -20,6 +22,9 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity android:name="SettingActivity" android:launchMode="singleTask">
         </activity>
 
         <!-- For UMeng's Feedback -->

@@ -9,29 +9,36 @@
 
         <item
             android:id="@+id/item_exit"
-            android:title="Exit Game"></item>
-
+            android:title="Exit Game">
+        </item>
         <item
             android:id="@+id/item_setting"
             android:title="Setting">
-<menu >
-
-                <item
-                    android:id="@+id/item_hidekey"
-                    android:checkable="true"
-                    android:checked="false"
-                    android:title="Hide SoftKey"></item>
-
-                <item
-                    android:id="@+id/item_lockscreen"
-                    android:checkable="true"
-                    android:checked="false"
-                    android:title="Lock Screen"></item>
-            </menu></item>
-
+<!--             <menu> -->
+<!--                 <item -->
+<!--                     android:id="@+id/item_hidekey" -->
+<!--                     android:checkable="true" -->
+<!--                     android:checked="false" -->
+<!--                     android:title="Hide SoftKey"> -->
+<!--                 </item> -->
+<!--                 <item -->
+<!--                     android:id="@+id/item_lockscreen" -->
+<!--                     android:checkable="true" -->
+<!--                     android:checked="false" -->
+<!--                     android:title="Lock Screen"> -->
+<!--                 </item> -->
+<!--                 <item -->
+<!--                     android:id="@+id/item_backup" -->
+<!--                     android:title="Backup"/> -->
+<!--                 <item -->
+<!--                     android:id="@+id/item_restore" -->
+<!--                     android:title="Restore"/> -->
+<!--             </menu> -->
+        </item>
         <item
             android:id="@+id/item_about"
             android:title="About"></item>
         <item android:id="@+id/item_feedback" android:title="Feedback"></item>
     </group>
+
 </menu>
