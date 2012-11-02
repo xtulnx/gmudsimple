@@ -8,12 +8,15 @@ public class Magic {
 			150, 120, 160, 70, 110, 180, 200, 180, 160
 		};
 
-	static final String magic_name[] = new String[]{
-		"流星飞掷", "雷动九天", "红莲出世", "冰心决", "雪花六出", "神倒鬼跌", "三花", "落英缤纷", "柳浪闻莺", "变熊术", 
-		"猛虎啸", "闪光弹", "雷火弹", "掌心雷", "连珠雷", "火焰弹", "烈焰球", "三味火", "火风暴", "寒冰弹", 
-		"雾棱镖", "冰凌剑", "暴风雪", "化掌为刀", "八卦刀影掌", "忍术烟幕", "忍法影分身", "旋风三连斩", "迎风一刀斩", "震字决", 
-		"挤字决", "乱环决", "阴阳决", "缠绵决", "连字决", "三环套月", "八阵刀影掌", "飞鹰召唤", "变鹰术"
-	};
+	static final String magic_name[] = new String[] {
+	/* 0 */"流星飞掷", "雷动九天", "红莲出世", "冰心决", "雪花六出",
+	/* 5 */"神倒鬼跌", "三花", "落英缤纷", "柳浪闻莺", "变熊术",
+	/* 10 */"猛虎啸", "闪光弹", "雷火弹", "掌心雷", "连珠雷",
+	/* 15 */"火焰弹", "烈焰球", "三味火", "火风暴", "寒冰弹",
+	/* 20 */"雾棱镖", "冰凌剑", "暴风雪", "化掌为刀", "八卦刀影掌",
+	/* 25 */"忍术烟幕", "忍法影分身", "旋风三连斩", "迎风一刀斩", "震字决",
+	/* 30 */"挤字决", "乱环决", "阴阳决", "缠绵决", "连字决",
+	/* 35 */"三环套月", "八阵刀影掌", "飞鹰召唤", "变鹰术" };
 
 	static final String need_wait = "刚用完外功，还是歇歇吧.";
 
@@ -684,9 +687,9 @@ public class Magic {
 		for (int l = 0; l < 10; l++)
 			Battle.sBattle.a_int_array2d_static[id_active][l] = 255;
 
-		int i1 = Battle.sBattle.fighter_data[id_active][36];
-		int j1 = Battle.sBattle.fighter_data[id_active][29];
-		int k1 = Items.item_attribs[j1][1];
+		int i1 = Battle.sBattle.fighter_data[id_active][36]; // 内功类型
+		int j1 = Battle.sBattle.fighter_data[id_active][29]; // 武器
+		int k1 = Items.item_attribs[j1][1]; // 武器类型 0无 1刀 6剑 7杖 9鞭
 		if (i1 != 255)
 			switch (i1)
 			{
@@ -695,9 +698,9 @@ public class Magic {
 
 			case 14: //连珠雷
 				{
-					int l1 = Calc1(id_active, 0, 12);
-					int j2 = Calc1(id_active, 0, 13);
-					int l2 = Calc1(id_active, 1, 11);
+					int l1 = Calc1(id_active, 0, 12); // 八卦游身掌
+					int j2 = Calc1(id_active, 0, 13); // 八阵八卦掌
+					int l2 = Calc1(id_active, 1, 11); // 八卦刀
 					if (k1 == 0)
 					{
 						j++;
@@ -1179,16 +1182,22 @@ public class Magic {
 		return str;
 	}
 
-	static int Calc1(int i, int j, int l)  //calc 1
+	/**
+	 * 技能等级/2 + （武器？)加成/4
+	 * @param id_player
+	 * @param type {@link Player#select_skills}
+	 * @param skill_id
+	 * @return
+	 */
+	static int Calc1(int id_player, int type, int skill_id) // calc 1
 	{
-		int i1;
-		if ((i1 = Battle.sBattle.fighter_data[i][30 + j * 2]) != l)
+		final int[] data = Battle.sBattle.fighter_data[id_player];
+		if (data[30 + type * 2] != skill_id)
 			return 0;
-		int j1 = 0;
-		int k1;
-		if ((k1 = Battle.sBattle.fighter_data[i][46 + j * 2]) != 255)
-			j1 = 0 + Battle.sBattle.fighter_data[i][46 + j * 2 + 1] / 4;
-		return j1 += Battle.sBattle.fighter_data[i][30 + j * 2 + 1] / 2;
+		int level = data[30 + type * 2 + 1] / 2;
+		if (data[46 + type * 2] != 255)
+			level += 0 + data[46 + type * 2 + 1] / 4;
+		return level;
 	}
 
 	static int Calc2(int id_player, int j, int skill_id, int test_level)  //calc 2

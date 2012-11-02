@@ -502,14 +502,13 @@ public class uibattle {
 		Video.VideoUpdate();
 	}
 
-	static void DrawMagicMenu(int i, int l, int i1)
-	{
+	static void DrawMagicMenu(int id_player, int l, int i1) {
 		int j1 = Gmud.WQX_ORG_WIDTH / 2 - 84 - 4;
 		if (j1 <= 0)
 			j1 = 10;
 		int k1 = 12;
-		int l1 = ( k1 + (16 + 2)) + 12 * 5;
-		int i2= Gmud.WQX_ORG_WIDTH /2 - l1;
+		int l1 = (k1 + (16 + 2)) + 12 * 5;
+		int i2 = Gmud.WQX_ORG_WIDTH / 2 - l1;
 		if (i2 > 0)
 			i2 /= 2;
 		else
@@ -518,18 +517,21 @@ public class uibattle {
 		int j2 = 13;
 		int k2 = j2 * 6 + 8;
 		int l2 = k1 + 4;
-		if (Battle.sBattle.a_int_array2d_static[i][l + 1] >= 0 && Battle.sBattle.a_int_array2d_static[i][l + 1] < 39)
+
+		final int data[] = Battle.sBattle.a_int_array2d_static[id_player];
+		if (data[l + 1] >= 0 && data[l + 1] < 39)
 			l2 += k1;
 		Video.VideoClearRect(j1, i2, k2, l2);
 		Video.VideoDrawRectangle(j1, i2, k2, l2);
 		int j3;
-		for (int i3 = 0; i3 < 2 && (j3 = Battle.sBattle.a_int_array2d_static[i][l + i3]) >= 0; i3++)
-		{
+		for (int i3 = 0; i3 < 2 && (j3 = data[l + i3]) >= 0; i3++) {
 			if (j3 > 38)
 				return;
-			Video.VideoDrawStringSingleLine(Magic.magic_name[j3], j1 + 18, i2 + 1 + i3 * (k1 + 1));
+			Video.VideoDrawStringSingleLine(Magic.magic_name[j3], j1 + 18, i2
+					+ 1 + i3 * (k1 + 1));
 			if (i3 == i1)
-				UI.DrawCursor(j1 + (j2 - 8) / 2, i2 + i3 * (k1 + 1) + (k1 - 9) / 2);
+				UI.DrawCursor(j1 + (j2 - 8) / 2, i2 + i3 * (k1 + 1) + (k1 - 9)
+						/ 2);
 		}
 	}
 
