@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cn.fmsoft.lnx.gmud.simple"
-    android:versionCode="1"
-    android:versionName="0.1" >
+    android:versionCode="2"
+    android:versionName="0.2" >
 
-    <uses-sdk android:minSdkVersion="4" />
+    <uses-sdk android:minSdkVersion="7" />
 
     <application
         android:name="cn.fmsoft.lnx.gmud.simple.GmudApp"
@@ -44,8 +44,6 @@
             android:name="UMENG_CHANNEL"
             android:value="GGVFans" />
     </application>
-
-    <uses-sdk android:minSdkVersion="4" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
