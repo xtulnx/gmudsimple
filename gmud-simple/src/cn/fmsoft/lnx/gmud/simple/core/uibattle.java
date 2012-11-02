@@ -273,7 +273,7 @@ public class uibattle {
 						Input.ClearKeyStatus();
 						return;
 					}
-					Battle.sBattle.d_int_static = 1;
+					Battle.sBattle.bEscape = true;
 					//Battle.sBattle.b_int_static = -1;
 					Input.ClearKeyStatus();
 					return;
@@ -504,20 +504,19 @@ public class uibattle {
 
 	static void DrawMagicMenu(int i, int l, int i1)
 	{
-		int j1;
-		if ((j1 = Gmud.WQX_ORG_WIDTH / 2 - 84 - 4) <= 0)
+		int j1 = Gmud.WQX_ORG_WIDTH / 2 - 84 - 4;
+		if (j1 <= 0)
 			j1 = 10;
-		int k1;
-		int l1;
-		l1 = (l1 = (l1 = k1 = 12) + (16 + 2)) + 12 * 5;
-		int i2;
-		if ((i2 = Gmud.WQX_ORG_WIDTH /2 - l1) > 0)
+		int k1 = 12;
+		int l1 = ( k1 + (16 + 2)) + 12 * 5;
+		int i2= Gmud.WQX_ORG_WIDTH /2 - l1;
+		if (i2 > 0)
 			i2 /= 2;
 		else
 			i2 = 0;
 		i2 += 12 + 16 + 16;
-		int j2;
-		int k2 = (j2 = 13) * 6 + 8;
+		int j2 = 13;
+		int k2 = j2 * 6 + 8;
 		int l2 = k1 + 4;
 		if (Battle.sBattle.a_int_array2d_static[i][l + 1] >= 0 && Battle.sBattle.a_int_array2d_static[i][l + 1] < 39)
 			l2 += k1;

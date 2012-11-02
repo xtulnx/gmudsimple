@@ -21,7 +21,8 @@ public class Battle {
 	int a_int_array1d_static[] = new int[256];
 	int b_int_array1d_static[] = new int[256];
 	
-	int d_int_static;  //end flag ?
+	/** 是否逃脱 */
+	boolean bEscape;  //end flag ? 
 	int e_int_static;
 
 	private int f_int_array1d_static[] = new int[4];
@@ -363,7 +364,7 @@ public class Battle {
 
 	boolean BattleIsEnd()
 	{
-		if (d_int_static == 1)
+		if (bEscape)
 			return false;   //逃跑成功
 		if (is_try == 0)
 		{
@@ -691,7 +692,7 @@ public class Battle {
 		uibattle.weapon_id[0] = uibattle.weapon_id[1] = 0;
 		a_boolean_static = false;
 		CopyData();
-		d_int_static = 0;
+		bEscape = false;
 		uibattle.menu_id = 0;
 		active_id = CalcActOrder();     //计算出招先后
 		boolean flag = true;
@@ -1448,7 +1449,7 @@ public class Battle {
 		int k2 = NPC.NPC_attrib[i1][16];
 		
 		// 如果不是“切磋”且不是“逃跑”，刷新战斗结果
-		if (is_try == 0 && d_int_static == 0)
+		if (is_try == 0 && !bEscape)
 			if (fighter_data[0][1] <= 0) // player Hp < 0
 			{
 				Gmud.sPlayer.PlayerDead(); // player dead
