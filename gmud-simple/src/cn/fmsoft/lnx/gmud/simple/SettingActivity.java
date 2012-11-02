@@ -18,13 +18,13 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
@@ -93,6 +93,17 @@ public class SettingActivity extends PreferenceActivity {
 				}
 			});
 		}
+
+		ListPreference connect = (ListPreference) ps
+				.findPreference(getString(R.string.key_choose_connect));
+		connect.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference,
+					Object newValue) {
+				tryConnect(newValue.toString());
+				return true;
+			}
+		});
 	}
 
 	/** 判断是否有存档 */
@@ -294,5 +305,14 @@ public class SettingActivity extends PreferenceActivity {
 
 		Toast.makeText(getBaseContext(), R.string.tip_restore_failed,
 				Toast.LENGTH_SHORT).show();
+	}
+
+	private void tryConnect(String mode) {
+		if (getString(R.string.key_connect_wifi).equals(mode)) {
+		} else if (getString(R.string.key_connect_bluetooth).equals(mode)) {
+			Toast.makeText(getBaseContext(),
+					R.string.tip_connect_bluetooth_failed, Toast.LENGTH_LONG)
+					.show();
+		}
 	}
 }

@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string-array name="soft_key"><item>Quit</item>
-<item>Enter</item>
-<item>Down</item>
-<item>Left</item>
-<item>Up</item>
-<item>Right</item>
-<item>LL</item>
-<item>RR</item>
-<item>Fly</item>
-</string-array>
+
+    <string-array name="soft_key">
+        <item>Quit</item>
+        <item>Enter</item>
+        <item>Down</item>
+        <item>Left</item>
+        <item>Up</item>
+        <item>Right</item>
+        <item>LL</item>
+        <item>RR</item>
+        <item>Fly</item>
+    </string-array>
+
+    <!-- Used in online connect -->
+    <string-array name="entries_choose_connect">
+        <item>@string/title_connect_wifi</item>
+        <item>@string/title_connect_bluetooth</item>
+    </string-array>
+
+    <!-- Used in online connect -->
+    <string-array name="entryvalues_choose_connect">
+        <item>@string/key_connect_wifi</item>
+        <item>@string/key_connect_bluetooth</item>
+    </string-array>
+
 </resources>

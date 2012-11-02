@@ -2,6 +2,27 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 public class NPCINFO {
 	// [180][18]
+	/**
+	 * <nl>
+	 * <li>[0] 聊天内容 -1特殊对白(任务) 0打哈哈的聊天 [其它]专有对白（68卖花妞 69葛朗台 70 何铁手）</li>
+	 * <li>[1] class id 0百姓(含顾炎武和独行大侠) 255可交易</li>
+	 * <li>[2] 年龄</li>
+	 * <li>[3] 经验值</li>
+	 * <li>[4] 加力</li>
+	 * <li>[5] 膂力</li>
+	 * <li>[6] 敏捷</li>
+	 * <li>[7] 悟性</li>
+	 * <li>[8] 根骨</li>
+	 * <li>[9] ? Hit 命中</li>
+	 * <li>[10] ? Avoid 闪避</li>
+	 * <li>[11] hp</li>
+	 * <li>[12] hp-max</li>
+	 * <li>[13] fp|mp</li>
+	 * <li>[14] fp-level|mp-level</li>
+	 * <li>[15] hp-full</li>
+	 * <li>[16] Money</li>
+	 * </nl>
+	 */
 	static final int NPC_attribute[][] = new int[][] {
 			{
 				-1, 255, 37, 5000, 10, 16, 24, 25, 21, 27, 

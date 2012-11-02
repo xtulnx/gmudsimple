@@ -909,25 +909,6 @@ public class Battle {
 		}
 	}
 
-	boolean ba()
-	{
-		int i1 = fighter_data[active_id][9];
-		int j1 = fighter_data[active_id][62];
-		int k1 = active_id != 0 ? 0 : 1;
-		int l1 = fighter_data[k1][62];
-		int i2;
-		if ((i2 = f(fighter_data[active_id][64] / 100) - f(fighter_data[k1][64] / 100)) > 50)
-			i2 = 50;
-		if (i2 < -50)
-			i2 = -50;
-		int j2;
-		if ((j2 = (j2 = (j2 = (i1 - fighter_data[k1][9]) + 50) + (j1 - l1)) + i2) < 1)
-			j2 = 10;
-		if (j2 > 90)
-			j2 = 90;
-		return util.RandomBool(j2);
-	}
-
 	void c(int i1, int j1, int k1)
 	{
 		b_int_array1d_static[7] = i1;
@@ -1385,7 +1366,8 @@ public class Battle {
 		return i1;
 	}
 
-	int CalcActOrder() // 计算出招先后
+	/** 计算出招先后 */
+	int CalcActOrder()
 	{
 		int agility = fighter_data[active_id][9];
 		int level = fighter_data[active_id][62];
@@ -1399,12 +1381,9 @@ public class Battle {
 		int j2 = (agility - fighter_data[id_rival][9]) + 50 + (level - level_rival) + i2;
 		if (j2 < 1)
 			j2 = 10;
-		if (j2 > 95)
+		if (j2 > 95) // 90?
 			j2 = 95;
-		int k2 = 1;
-		if (util.RandomBool(j2))
-			k2 = 0;
-		return k2;
+		return util.RandomBool(j2)?0:1;
 	}
 
 	int f(int i1) {

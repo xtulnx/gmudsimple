@@ -34,11 +34,15 @@
 		\n欢迎关注项目主页：
 		\n  https://bitbucket.org/xtulnx/gmudsimple
         \n</string>
+
+    <!-- Interface -->
     <string name="title_interface">界面</string>
     <string name="key_hide_softkey">key_hide_softkey</string>
     <string name="title_hide_soft">隐藏虚拟键盘</string>
     <string name="key_lock_screen">key_lock_screen</string>
     <string name="title_lock_screen">锁定屏幕方向</string>
+
+    <!-- Backup -->
     <string name="title_store">存档</string>
     <string name="key_backup">key_backup</string>
     <string name="title_backup">备份存档</string>
@@ -55,5 +59,19 @@
     <string name="tip_restore_overwrite">还原备份数据将覆盖当前存档。是否继续？</string>
     <string name="tip_restore_success">还原成功，准备重启游戏……</string>
     <string name="tip_restore_failed">还原失败，请检查备份文件是否正确！</string>
+
+    <!-- online -->
+    <string name="title_online">联机</string>
+    <string name="key_open_online">key_open_online</string>
+    <string name="title_open_online">建立连接</string>
+    <string name="summary_open_online_off"></string>
+    <string name="key_choose_connect">key_choose_connect</string>
+    <string name="title_choose_connect">建立连接</string>
+    <string name="summary_choose_connect_off">无连接。</string>
+    <string name="key_connect_wifi">key_connect_wifi</string>
+    <string name="title_connect_wifi">以 wifi 方式连接</string>
+    <string name="key_connect_bluetooth">key_connect_bluetooth</string>
+    <string name="title_connect_bluetooth">以蓝牙方式连接</string>
+    <string name="tip_connect_bluetooth_failed">蓝牙方式建立连接失败！</string>
 
 </resources>
