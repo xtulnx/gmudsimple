@@ -187,8 +187,6 @@ public class Control extends View {
 		
 		int action = event.getAction() & MotionEvent.ACTION_MASK;
 		if (action == MotionEvent.ACTION_DOWN
-				|| action == MotionEvent.ACTION_CANCEL
-				|| action == MotionEvent.ACTION_UP
 				|| action == MotionEvent.ACTION_POINTER_DOWN
 				|| action == MotionEvent.ACTION_POINTER_UP) {
 
@@ -204,8 +202,12 @@ public class Control extends View {
 				mask |= checkSoftKey(x, y);
 			}
 			Input.GmudSetKey(mask);
+		} else if (action == MotionEvent.ACTION_CANCEL
+				|| action == MotionEvent.ACTION_UP) {
+			Input.GmudSetKey(0);
 		}
-		return super.onTouchEvent(event);
+		return true;
+		//return super.onTouchEvent(event);
 	}
 	
     @Override

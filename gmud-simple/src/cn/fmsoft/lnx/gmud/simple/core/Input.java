@@ -29,6 +29,7 @@ public class Input {
 	static int SetKeyFlag = -1;
 	static byte kbkeys[] = new byte[9];
 	static byte setKeytp[] = new byte[9];
+	static int scancode = 0;
 
 	/**
 	 * 初始化输入
@@ -74,6 +75,7 @@ public class Input {
 	
 	static public synchronized void GmudSetKey(int mask) {
 		inputstatus = mask;
+		scancode = mask;
 	}
 
 	static synchronized void GmudProcessKey(int key) {
