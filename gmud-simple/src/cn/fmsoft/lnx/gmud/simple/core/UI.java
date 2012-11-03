@@ -4,6 +4,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class UI {
+	/** 行高，小号字体，13像素 */
+	public static final int LINE_H_S = 13;
 	
 	/**
 	 * 是否自动[确认]，用于学习技能  */
@@ -528,25 +530,22 @@ public class UI {
 		}
 	}
 
-	static int DialogBx(String s1, int i1, int j1)
-	{
-		int k1 = 13;
-		int l1 = Gmud.WQX_ORG_WIDTH - 8 - i1;
-		ArrayList<String> as;
-		int i2 = (as = Video.SplitString(s1, l1 - 4)).size() * k1 + 4;
-		Video.VideoClearRect(i1, j1, l1, i2);
-		Video.VideoDrawRectangle(i1, j1, l1, i2);
-		int j2 = 0;
-		for (int l2 = 0; j2 < as.size() && l2 < i2; l2 += k1)
-		{
-			Video.VideoDrawStringSingleLine(as.get(j2)/*[j2].c_str()*/, i1 + 1, j1 + 1 + j2 * k1);
-			j2++;
+	static int DialogBx(String s1, int x, int y) {
+		int w = Gmud.WQX_ORG_WIDTH - 8 - x;
+		ArrayList<String> as = Video.SplitString(s1, w - 4);
+		int h = as.size() * LINE_H_S + 4;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		int line = 0;
+		for (int l2 = 0; line < as.size() && l2 < h; l2 += LINE_H_S) {
+			Video.VideoDrawStringSingleLine(as.get(line)/* [j2].c_str() */, x + 1,
+					y + 1 + line * LINE_H_S);
+			line++;
 		}
 
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
-		while(Input.inputstatus == 0)
-		{
+		while (Input.inputstatus == 0) {
 			Gmud.GmudDelay(100);
 		}
 		return Input.inputstatus;
@@ -1128,6 +1127,8 @@ public class UI {
 			{
 				int k5 = Gmud.sPlayer.item_package[l4][0];
 				String s1 = Items.item_names[k5];
+				if (k5 == 77) 
+					s1 = Gmud.sPlayer.weapon_name;
 				if (Items.item_repeat[k5] == 1)
 				{
 					s1 += " ×";
@@ -3297,5 +3298,62 @@ public class UI {
 		}
 	}
 
-	
+
+	// *********** UI-Online ************//
+	static final String s_online_pk[] = new String[] { "创建游戏", "加入游戏", "联机对战状态" };
+
+	static void DrawOnlinePkMenu(int sel) {
+		int x = 48, y = 30, w = 62, h = 27;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		Video.VideoDrawStringSingleLine(s_online_pk[0], x + LINE_H_S, y);
+		Video.VideoDrawStringSingleLine(s_online_pk[1], x + LINE_H_S, y
+				+ LINE_H_S);
+		Video.VideoFillRectangle(x + 3, y + 6 + sel * LINE_H_S, 6, 6);
+		Video.VideoDrawRectangle(x + 3, y + 6 + (1 - sel) * LINE_H_S,
+				6, 6);
+
+		x = 2;
+		y = 66;
+		w = Gmud.WQX_ORG_WIDTH - x - 2;
+		h = Gmud.WQX_ORG_HEIGHT - y - 2;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawLine(0, 66, 159, 66);
+		Video.VideoDrawStringSingleLine(s_online_pk[2], 6, 66);
+	}
+
+	/**
+	 * 选择联机模式
+	 * 
+	 * @return -1没有选择 0创建游戏 1加入游戏
+	 */
+	static int OnlinePkMenu() {
+		int sel = 0;
+		DrawOnlinePkMenu(sel);
+		Video.VideoUpdate();
+		Input.ClearKeyStatus();
+		Gmud.GmudDelay(150);
+		while (true) {
+			Input.ProcessMsg();
+			if ((Input.inputstatus & (Input.kKeyUp | Input.kKeyDown)) != 0) {
+				sel = 1 - sel;
+				DrawOnlinePkMenu(sel);
+				Video.VideoUpdate();
+			} else {
+				if ((Input.inputstatus & Input.kKeyEnt) != 0) // enter key
+				{
+					Gmud.GmudDelay(100);
+					Input.ClearKeyStatus();
+					return sel;
+				}
+				if ((Input.inputstatus & Input.kKeyExit) != 0) // esc
+				{
+					Gmud.GmudDelay(100);
+					return -1;
+				}
+			}
+			Input.ClearKeyStatus();
+			Gmud.GmudDelay(80);
+		}
+	}
 }

@@ -143,7 +143,7 @@ public class Map {
 
 		// XXX: 屏蔽武馆里面那面墙的地图属性。
 		if (id == 5 && map_event_data.data[11] == -321) {
-			map_event_data.data[11] = 255;
+			map_event_data.data[11] = 256 + 100;
 		}
 
 		if (Gmud.DEBUG) {
@@ -915,6 +915,9 @@ public class Map {
 					return;
 				Gmud.GmudDelay(100);
 			}
+		case 100: // ?? 武馆墙壁
+			int sel = UI.OnlinePkMenu();
+			return ;
 		}
 	}
 
