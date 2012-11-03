@@ -334,19 +334,19 @@ public class GmudMain extends Thread {
 				}
 				Video.VideoUpdate();
 				Gmud.GmudDelay(50);
-			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) // press left
+			} else if ((Input.scancode & Input.kKeyLeft) != 0) // press left
 			{
 				Input.ClearKeyStatus();
 				map.DirLeft(4);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(130);
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) // press
+				Gmud.GmudDelay(50);
+			} else if ((Input.scancode & Input.kKeyRight) != 0) // press
 																	// right
 			{
 				Input.ClearKeyStatus();
 				map.DirRight(4);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(130);
+				Gmud.GmudDelay(50);
 			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) // press enter
 			{
 				Input.ClearKeyStatus();
