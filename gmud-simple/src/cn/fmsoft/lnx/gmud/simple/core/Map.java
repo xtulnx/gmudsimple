@@ -916,7 +916,7 @@ public class Map {
 				Gmud.GmudDelay(100);
 			}
 		case 100: // ?? 武馆墙壁
-			int sel = UI.OnlinePkMenu();
+			Online.pk();
 			return ;
 		}
 	}

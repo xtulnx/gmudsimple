@@ -691,6 +691,7 @@ public class Battle {
 	{
 		uibattle.weapon_id[0] = uibattle.weapon_id[1] = 0;
 		a_boolean_static = false;
+		if (NPC_id>=0)
 		CopyData();
 		bEscape = false;
 		uibattle.menu_id = 0;
