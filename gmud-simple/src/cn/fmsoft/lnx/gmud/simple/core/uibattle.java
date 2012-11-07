@@ -92,7 +92,7 @@ public class uibattle {
 				if ((Input.inputstatus & Input.kKeyEnt) != 0) // enter
 				{
 					Battle.sBattle.fighter_data[id_active][0] = cur;
-					Battle.sBattle.a(id_active, 0, cur);
+					Battle.sBattle.stack_fighterdate_set(id_active, 0, cur);
 					if (cur == max) {
 						String str = String.format(Res.STR_FP_PLUS_LIMIT_STRING, max);
 						UI.DrawStringFromY(str, 660);
@@ -189,6 +189,7 @@ public class uibattle {
 		}
 	}
 
+	/** 战斗菜单 */
 	static void Main()
 	{
 		DrawMain();
@@ -539,8 +540,8 @@ public class uibattle {
 		int i1 = 0;
 		int j1;
 		Magic.Effect(j1 = Battle.sBattle.player_id);
-		int k1;
-		if ((k1 = Battle.sBattle.g(j1)) < 1)  //get Battle skill number
+		int k1 = Battle.sBattle.CountMagicEffect(j1);
+		if (k1 < 1)  //get Battle skill number
 			return 0;
 		DrawMagicMenu(Battle.sBattle.player_id, 0, 0);
 		Video.VideoUpdate();

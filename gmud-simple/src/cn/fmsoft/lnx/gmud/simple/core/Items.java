@@ -32,7 +32,33 @@ public class Items {
 			4590, 4590, 4590
 		};
 
+	/** 0食物，0，+food，+water，0，0，cost */
+	final static int ITEM_TYPE_FOOD = 0;
+	/** 1药物，type，+effect1，0，0，0，cost */
+	final static int ITEM_TYPE_DRUG = 1;
+	/** 2武器，type，+attack，+命中，+回避，0，cost  (255=-1;254=-2;253=-3)(weapon type 1刀 6剑 7杖 9鞭) */
+	final static int ITEM_TYPE_WEAPON = 2;
+	/**
+	 * 3装备，type，+defend，+命中，+回避，0，cost (equip type 0饰品 2衣 3背心/披风 5腰带 9钓竿 10鞋)
+	 * (defend 原始数据类型为 char，转成了 unsigned char, 所以 >127 的值是负数)
+	 */
+	final static int ITEM_TYPE_EQUIP = 3;
+	/** 4书，0，type，require HP，max_level，require EXP，cost */
+	final static int ITEM_TYPE_BOOK = 4;
+	/** 5其他，0，0，0，0，0，cost */
+	final static int ITEM_TYPE_OTHOR = 5;
+	
 	// [92][7]
+	/**
+	 * type，，effect1，，，，cost
+	 * 
+	 * @see Items#ITEM_TYPE_FOOD
+	 * @see Items#ITEM_TYPE_DRUG
+	 * @see Items#ITEM_TYPE_WEAPON
+	 * @see Items#ITEM_TYPE_EQUIP
+	 * @see Items#ITEM_TYPE_BOOK
+	 * @see Items#ITEM_TYPE_OTHOR
+	 */
 	static final int item_attribs[][] = new int[][] {
 	  //item effects
 		//type，，effect1，，，，cost
@@ -241,7 +267,8 @@ public class Items {
 		"兽王令牌", "茅山令牌"
 		};
 
-	// [92]
+	// 
+	/** (size:[92]) 物品是否可叠加 */
 	static final int item_repeat[] = new int[]{
 		0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 

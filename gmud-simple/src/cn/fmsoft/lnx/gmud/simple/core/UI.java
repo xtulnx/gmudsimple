@@ -1,6 +1,5 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class UI {
@@ -17,8 +16,12 @@ public class UI {
 
 	static final String old_award_words = "你被奖励了：20点实战经验 10点潜能 50金钱";
 
+	/** 主菜单文本 "查看", "物品", "技能", "功能" */
+	static final String main_menu_items[] = new String[] {"查看", "物品", "技能", "功能" };
+
 	// [199]
-	static final int dialog_point[] = new int []{0, 59, 112, 165, 220, 292, 322, 355, 394, 421, 
+	static final int dialog_point[] = new int []{
+		0, 59, 112, 165, 220, 292, 322, 355, 394, 421, 
 		475, 551, 580, 631, 688, 742, 799, 829, 884, 926, 
 		977, 1028, 1139, 1202, 1253, 1292, 1337, 1382, 1463, 1505, 
 		1538, 1595, 1658, 1712, 1781, 1829, 1907, 1952, 2030, 2093, 
@@ -50,53 +53,60 @@ public class UI {
 		}
 	}
 
-	static void BattleWin(int i1)
-	{
+	/**
+	 * 显示战斗胜利的界面
+	 * 
+	 * @param money
+	 *            获得的金钱
+	 * @param items
+	 *            获得的物品ID表
+	 */
+	static void BattleWin(int money, short[] items) {
 		String str = "战斗胜利，大获全胜!\n战斗获得\n金钱：";
-//		wchar_t num[8];
-//		str += _itow(i1, num, 10);
-		str += i1;
+		str += money;
 		str += "\n物品：";
-		int l1;
-		for (int j1 = 0; j1 < 5 && (l1 = Battle.sBattle.NPC_item[j1]) != 0; j1++)
-		{
-			str += Items.item_names[l1];
-			str += " ";
+		for (int i = 0; i < 5; i++) {
+			final int item_id = items[i];
+			if (item_id == 0)
+				break;
+			str += Items.item_names[item_id] + " ";
 		}
+
 		DrawDialog(str);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(200);
-		while(Input.inputstatus != Input.kKeyExit)
+		while (Input.inputstatus != Input.kKeyExit)
 			Gmud.GmudDelay(100);
 	}
 
-	static void DrawMapTip(String s1)
-	{
-		int i1 = 12;
+	/** 在屏幕下方绘制单行文本，如果有多行，则分多次输出 */
+	static void DrawMapTip(String s1) {
+		int lineH = 12; // 行高
 		ArrayList<String> as = Video.SplitString(s1, Gmud.WQX_ORG_WIDTH - 3);
-		for (int j1 = 0; j1 < as.size();)
-		{
-			Video.VideoClearRect(0, Gmud.WQX_ORG_WIDTH / 2 - i1 - 4, Gmud.WQX_ORG_WIDTH, i1 + 3);
-			Video.VideoDrawRectangle(0, Gmud.WQX_ORG_WIDTH / 2 - i1 - 4, Gmud.WQX_ORG_WIDTH - 1, i1 + 3);
-			Video.VideoDrawStringSingleLine(as.get(j1)/*[j1].c_str()*/, 2, Gmud.WQX_ORG_WIDTH / 2 - i1 - 2);
+		for (int i = 0, c = as.size(); i < c; i++) {
+			Video.VideoClearRect(0, Gmud.WQX_ORG_HEIGHT - lineH - 4,
+					Gmud.WQX_ORG_WIDTH, lineH + 3);
+			Video.VideoDrawRectangle(0, Gmud.WQX_ORG_HEIGHT - lineH - 4,
+					Gmud.WQX_ORG_WIDTH - 1, lineH + 3);
+			Video.VideoDrawStringSingleLine(as.get(i)/* [j1].c_str() */, 2,
+					Gmud.WQX_ORG_HEIGHT - lineH - 2);
 			Video.VideoUpdate();
-			j1++;
 			Input.ClearKeyStatus();
-			while(Input.inputstatus == 0)
+			while (Input.inputstatus == 0)
 				Gmud.GmudDelay(100);
 		}
 	}
 
-	static void ShowDialog2(int id)
-	{
-		String s1 = Res.readtext(5, dialog_point[id], dialog_point[1 + id]);
-		int j1 = 13;
+	/** 加载资源，并显示不超过5行的多行文本框 */
+	static void ShowDialog2(int id) {
+		String s = Res.readtext(5, dialog_point[id], dialog_point[1 + id]);
+		int lineH = 13;
 		Video.VideoFillRectangle(0, 0, 160, 80, 0);
-		ArrayList<String> as = Video.SplitString(s1, Gmud.WQX_ORG_WIDTH - 16);
+		ArrayList<String> as = Video.SplitString(s, Gmud.WQX_ORG_WIDTH - 16);
 		for (int i2 = 0; i2 < as.size() && i2 < 5; i2++)
-			Video.VideoDrawStringSingleLine(as.get(0+i2)/*[0 + i2].c_str()*/, 12, 10 + i2 * j1, 2);
-
+			Video.VideoDrawStringSingleLine(as.get(0 + i2)/* [0 + i2].c_str() */,
+					12, 10 + i2 * lineH, 2);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 	}
@@ -108,28 +118,31 @@ public class UI {
 		DrawDialog(s1);
 	}
 
-	static void DrawDialog(String s1)
-	{
-		int i1 = 13 * 2;
+	/** 在顶端显示最多2行的文本，如果有更多行数，则分批输出 */
+	static void DrawDialog(String s1) {
+		int height = 13 * 2; // 输出区域的高度，2行
 		ArrayList<String> as = Video.SplitString(s1, Gmud.WQX_ORG_WIDTH);
-		for (int j1 = 0; j1 < as.size();)
-		{
-			Video.VideoClearRect(1, 1, Gmud.WQX_ORG_WIDTH - 2, i1);
-			Video.VideoDrawRectangle(1, 1, Gmud.WQX_ORG_WIDTH - 2, i1);
-			Video.VideoDrawStringSingleLine(as.get(j1)/*[j1].c_str()*/, 1, 2);
-			if (++j1 < as.size())
-			{
-				Video.VideoDrawStringSingleLine(as.get(j1)/*[j1].c_str()*/, 1, 14);
-				j1++;
+		for (int i = 0, c = as.size(); i < c;) {
+			// 清空输出区域，绘制边框
+			Video.VideoClearRect(1, 1, Gmud.WQX_ORG_WIDTH - 2, height);
+			Video.VideoDrawRectangle(1, 1, Gmud.WQX_ORG_WIDTH - 2, height);
+
+			Video.VideoDrawStringSingleLine(as.get(i), 1, 2);
+
+			// 如果还有文本，则再输出一行
+			if (++i < c) {
+				Video.VideoDrawStringSingleLine(as.get(i), 1, 14);
+				i++;
 			}
 			Video.VideoUpdate();
 			Input.ClearKeyStatus();
 			Gmud.GmudDelay(300);
-			if (j1 < as.size())
-				DrawFlashCursor(Gmud.WQX_ORG_WIDTH - 14, i1 - 10, 8);
-			else
-			{
-				while(Input.inputstatus == 0)
+			if (i < c) {
+				// 如果还有文本，就闪光标
+				DrawFlashCursor(Gmud.WQX_ORG_WIDTH - 14, height - 10, 8);
+			} else {
+				// 等待任意键返回
+				while (Input.inputstatus == 0)
 					Gmud.GmudDelay(100);
 			}
 		}
@@ -186,35 +199,35 @@ public class UI {
 //			Video.VideoDrawLine(x + k1 + 1, y + k1 + 1, x + k1 + 1, (y + 10) - k1);
 	}
 
-	static void DrawMainMenu(int id)
-	{
-		int j1 = 13 * 2;
-		int k1 = 160 - 16;
-		byte byte0 = 8;
-		if (k1 < 64 + j1 * 4)
-		{
-			k1 = 160 - 2;
-			byte0 = 1;
+	/** 绘制主菜单 */
+	static void DrawMainMenu(int menu_id) {
+		int w = 13 * 2; // 每个菜单项占 2个字 的宽度
+		int width = 160 - 16;
+		int x = 8;
+		if (width < 64 + w * 4) {
+			// 如果宽度不够显示
+			width = 160 - 2;
+			x = 1;
 		}
-		int l1 = 13 + j1;
-		int i2 = 15;
-		Video.VideoClearRect(byte0, 0, k1, i2);
-		Video.VideoDrawRectangle(byte0, 0, k1, i2);
-		Video.VideoDrawStringSingleLine("查看", byte0 + 11, 2);
-		Video.VideoDrawStringSingleLine("物品", byte0 + l1 + 11, 2);
-		Video.VideoDrawStringSingleLine("技能", byte0 + 2 * l1 + 11, 2);
-		Video.VideoDrawStringSingleLine("功能", byte0 + 3 * l1 + 11, 2);
-		int j2 = byte0 + 2 + id * l1;
-		int k2;
-		if ((k2 = (i2 - 11) / 2) == 0)
-			k2 = 2;
-		DrawCursor(j2, k2);
+		int item_width = 13 + w; // 菜单项的宽度（含光标区域）
+		int height = 15;
+		Video.VideoClearRect(x, 0, width, height);
+		Video.VideoDrawRectangle(x, 0, width, height);
+		for (int i=0, xx=x+11;i<4; i++) {
+			Video.VideoDrawStringSingleLine(main_menu_items[i], xx, 2);
+			xx+=item_width;
+		}
+		int cx = x + 2 + menu_id * item_width;
+		int cy = (height - 11) / 2;
+		if (cy == 0)
+			cy = 2;
+		DrawCursor(cx, cy);
 	}
 
 	static void MainMenu()
 	{
-		int j1 = 0;
-		DrawMainMenu(0);
+		int menu_id = 0;
+		DrawMainMenu(menu_id);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		while(Input.Running)
@@ -222,51 +235,51 @@ public class UI {
 			Input.ProcessMsg();
 			if ((Input.inputstatus & Input.kKeyLeft)!=0)
 			{
-				if (j1 > 0)
-					j1--;
+				if (menu_id > 0)
+					menu_id--;
 				else
-					j1 = 3;
-				DrawMainMenu(j1);
+					menu_id = 3;
+				DrawMainMenu(menu_id);
 				Video.VideoUpdate();
 			}
 			else
 			if ((Input.inputstatus & Input.kKeyRight)!=0)
 			{
-				if (j1 < 3)
-					j1++;
+				if (menu_id < 3)
+					menu_id++;
 				else
-					j1 = 0;
-				DrawMainMenu(j1);
+					menu_id = 0;
+				DrawMainMenu(menu_id);
 				Video.VideoUpdate();
 			}
 			else
 			if((Input.inputstatus & Input.kKeyEnt)!=0)
 			{
-				if (j1 == 0)
+				if (menu_id == 0)
 				{
 					ViewPlayer();
 					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(j1);
+					DrawMainMenu(menu_id);
 					Video.VideoUpdate();
 				}
 				else
-				if (j1 == 1)
+				if (menu_id == 1)
 				{
 					PlayerItem();
 					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(j1);
+					DrawMainMenu(menu_id);
 					Video.VideoUpdate();
 				}
 				else
-				if (j1 == 2)
+				if (menu_id == 2)
 				{
 					PlayerSkill();
 					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(j1);
+					DrawMainMenu(menu_id);
 					Video.VideoUpdate();
 				}
 				else
-				if (j1 == 3)
+				if (menu_id == 3)
 				{
 					Input.ClearKeyStatus();
 					if(SystemMenu() != 0)
@@ -278,7 +291,7 @@ public class UI {
 					}
 					Gmud.sMap.DrawMap(-1);
 					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(j1);
+					DrawMainMenu(menu_id);
 					Video.VideoUpdate();
 				}
 			}
@@ -295,83 +308,70 @@ public class UI {
 		}
 	}
 
-	static void Fly()
-	{
-		int i1 = -1;
-		for (int j1 = 0; j1 < 19; j1++)
-			if(GmudData.flyable_map[j1] == Gmud.sMap.map_id)
-				i1 = j1;
+	static void Fly() {
+		// 检查当前地图是否可飞
+		int can_fly = -1;
+		for (int i = 0; i < 19; i++)
+			if (GmudData.flyable_map[i] == Gmud.sMap.map_id)
+				can_fly = i;
+		if (can_fly < 0)
+			return;
 
-		if (i1 < 0)  //室内
+		// 等级不够
+		if (Gmud.sPlayer.GetFlySkillLevel() < 30)
 			return;
-		if (Gmud.sPlayer.GetFlySkillLevel() < 30)  //等级不够
-			return;
-		if (Gmud.sPlayer.fp < 200)
-		{
-//			wstring aa("你的内力不足，无法施展轻功。");
-//			UI.DrawDialog(&aa);
+
+		// 扣 fp 先
+		if (Gmud.sPlayer.fp < 200) {
 			UI.DrawDialog("你的内力不足，无法施展轻功。");
 			return;
 		}
 		Gmud.sPlayer.fp -= 200;
-		int k1 = 0;
-		int l1 = 0;
-		boolean flag = false;
-		DrawFly(0, 0);
+
+		// 让玩家选择目标地图
+		int top = 0;
+		int sel = 0;
+		DrawFly(top, sel);
 		Video.VideoUpdate();
-		//*/
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(100);
-		while (true)
-		{
+		while (true) {
 			Input.ProcessMsg();
-			if((Input.inputstatus & Input.kKeyUp)!=0)
-			{
-				if (k1 > 0)
-					k1--;
-				else
-				if (l1 > 0)
-				{
-					l1--;
-				} else
-				{
-					l1 = 5;
-					k1 = 3;
+			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+				if (top > 0)
+					top--;
+				else if (sel > 0) {
+					sel--;
+				} else {
+					// 让光标指向最后一项
+					sel = 5;
+					top = 3;
 				}
-				DrawFly(l1, k1);
+				DrawFly(sel, top);
 				Video.VideoUpdate();
-			} else
-			if ((Input.inputstatus & Input.kKeyDown)!=0)
-			{
-				if (k1 < 3)
-					k1++;
-				else
-				if (l1 < 5)
-				{
-					l1++;
-				} else
-				{
-					l1 = 0;
-					k1 = 0;
+			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+				if (top < 3)
+					top++;
+				else if (sel < 5) {
+					sel++;
+				} else {
+					sel = 0;
+					top = 0;
 				}
-				DrawFly(l1, k1);
+				DrawFly(sel, top);
 				Video.VideoUpdate();
-			}
-			else
-			{
-				if ((Input.inputstatus & Input.kKeyEnt)!=0)
-				{
-					int j2 = l1 + k1;
-					int k2 = GmudData.fly_dest_map[j2];   //read map
-					Gmud.sMap.LoadMap(k2);
+			} else {
+				if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+					int index = sel + top;
+					int map_id = GmudData.fly_dest_map[index]; // read map
+					Gmud.sMap.LoadMap(map_id);
 					Gmud.sMap.stack_pointer = 0;
 					Gmud.sMap.SetPlayerLocation(0, 4);
 					Gmud.sMap.DrawMap(0);
 					Input.ClearKeyStatus();
 					return;
 				}
-				if ((Input.inputstatus & Input.kKeyExit)!=0)
-				{
+				if ((Input.inputstatus & Input.kKeyExit) != 0) {
 					Gmud.GmudDelay(120);
 					return;
 				}
@@ -379,128 +379,104 @@ public class UI {
 			Input.ClearKeyStatus();
 			Gmud.GmudDelay(80);
 		}
-		//*/
 	}
 
-	static void DrawSysMenu(int id)
-	{
-		int j1 = 13;
-		int l1 = 39;
+	static void DrawSysMenu(int menu_id) {
+		int lineH = 13;
+		int width = 39;
 		int i2 = 16 + 40;
-		int j2 = 13 * 5;
-		int k2;
-		if ((k2 = 8 + 3 * i2) + l1 >= Gmud.WQX_ORG_WIDTH)
-			k2 = Gmud.WQX_ORG_WIDTH - l1 - 2;
-		Video.VideoClearRect(k2, 4, l1, j2);
-		Video.VideoDrawRectangle(k2, 4, l1, j2);
-		for (int i3 = 0; i3 < 5; i3++)
-		{
-			Video.VideoDrawStringSingleLine(sys_menu_words[i3], k2 + 10, 5 + j1 * i3);
-			if (i3 == id)
-				DrawCursor(k2 + 2, 5 + j1 * i3);
+		int height = 13 * 5;
+		int x = 8 + 3 * i2;
+		if (x + width >= Gmud.WQX_ORG_WIDTH)
+			x = Gmud.WQX_ORG_WIDTH - width - 2;
+		Video.VideoClearRect(x, 4, width, height);
+		Video.VideoDrawRectangle(x, 4, width, height);
+		for (int i = 0, y = 4 + 1; i < 5; i++, y += lineH) {
+			Video.VideoDrawStringSingleLine(sys_menu_words[i], x + 10, y);
+			if (i == menu_id)
+				DrawCursor(x + 2, y);
 		}
 	}
 
-	static int SystemMenu()
-	{
-		int j1 = 0;
-		DrawSysMenu(0);
+	static int SystemMenu() {
+		int menu_id = 0;
+		DrawSysMenu(menu_id);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(100);
-		while (true)
-		{
+		while (true) {
 			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp)!=0)
-			{
-				if (j1 > 0)
-					j1--;
+			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+				if (menu_id > 0)
+					menu_id--;
 				else
-					j1 = 4;
-				DrawSysMenu(j1);
+					menu_id = 4;
+				DrawSysMenu(menu_id);
 				Video.VideoUpdate();
-			} else
-			if ((Input.inputstatus & Input.kKeyDown)!=0)
-			{
-				if (j1 < 4)
-					j1++;
+			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+				if (menu_id < 4)
+					menu_id++;
 				else
-					j1 = 0;
-				DrawSysMenu(j1);
+					menu_id = 0;
+				DrawSysMenu(menu_id);
 				Video.VideoUpdate();
-			} else
-			if ((Input.inputstatus & Input.kKeyEnt)!=0)
-			{
-				if (j1 == 0)
-				{
+			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+				if (menu_id == 0) {
 					FPMenu();
 					return 1;
 				}
-				if (j1 == 1)
-				{
+				if (menu_id == 1) {
 					MPMenu();
 					return 1;
 				}
-				if (j1 == 2)
-				{
+				if (menu_id == 2) {
 					PractMenu();
 					return 1;
 				}
-				if (j1 == 3)  //save
+				if (menu_id == 3) // save
 				{
 					Input.ClearKeyStatus();
-					if(task.temp_tasks_data[30] >= 100)
-					{
-						//save file
+					if (task.temp_tasks_data[30] >= 100) {
+						// save file
 						String str = "存档成功!";
-						if(Gmud.WriteSave())
+						if (Gmud.WriteSave())
 							DrawTip(str);
-						else
-						{
+						else {
 							str = "存档失败!";
 							DrawTip(str);
 						}
-					}
-					else
-					{
+					} else {
 						String str = "请稍后再存";
 						DrawTip(str);
 					}
 					Video.VideoUpdate();
 					Gmud.GmudDelay(100);
-					while(Input.inputstatus != Input.kKeyExit)
-					{
+					while (Input.inputstatus != Input.kKeyExit) {
 						Input.ProcessMsg();
 						Gmud.GmudDelay(100);
 					}
 					return 0;
 				}
-				if (j1 == 4)  //exit
+				if (menu_id == 4) // exit
 				{
 					Gmud.GmudDelay(100);
 					Input.ClearKeyStatus();
 					int l1 = Gmud.WQX_ORG_WIDTH / 2 / 2 - 10;
 					String str = "您确定要离开游戏吗?\n([输入]确认 [跳出]放弃)";
 					int i2 = DialogBx(str, 10, l1);
-					while(true)
-					{
-						if ((Input.inputstatus & Input.kKeyEnt)!=0)
-						{
-							if (task.temp_tasks_data[30] > 360)
-							{
+					while (true) {
+						if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+							if (task.temp_tasks_data[30] > 360) {
 								Gmud.GmudDelay(100);
 								Input.ClearKeyStatus();
 								str = "您已经很久没有存档了,存档吗?\n([输入]确认 [跳出]放弃)";
 								i2 = DialogBx(str, 10, l1 + 10);
-								while (true)
-								{
+								while (true) {
 									Input.ProcessMsg();
-									if ((i2 & Input.kKeyEnt)!=0)
-									{
+									if ((i2 & Input.kKeyEnt) != 0) {
 										Gmud.WriteSave();
 										Gmud.exit();
-									} else
-									if ((i2 & Input.kKeyExit)!=0)
+									} else if ((i2 & Input.kKeyExit) != 0)
 										Gmud.exit();
 									i2 = Input.inputstatus;
 									Input.ClearKeyStatus();
@@ -508,18 +484,14 @@ public class UI {
 								}
 							}
 							Gmud.exit();
-						}
-						else
-						if ((Input.inputstatus & Input.kKeyExit)!=0)
+						} else if ((Input.inputstatus & Input.kKeyExit) != 0)
 							break;
 						i2 = Input.inputstatus;
 						Input.ClearKeyStatus();
-						Gmud.GmudDelay(100);	
+						Gmud.GmudDelay(100);
 					}
 				}
-			} else
-			if ((Input.inputstatus & Input.kKeyExit)!=0)
-			{
+			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
 				Gmud.GmudDelay(50);
 				return 0;
 			}
@@ -528,51 +500,45 @@ public class UI {
 		}
 	}
 
-	static int DialogBx(String s1, int i1, int j1)
-	{
-		int k1 = 13;
-		int l1 = Gmud.WQX_ORG_WIDTH - 8 - i1;
-		ArrayList<String> as;
-		int i2 = (as = Video.SplitString(s1, l1 - 4)).size() * k1 + 4;
-		Video.VideoClearRect(i1, j1, l1, i2);
-		Video.VideoDrawRectangle(i1, j1, l1, i2);
-		int j2 = 0;
-		for (int l2 = 0; j2 < as.size() && l2 < i2; l2 += k1)
-		{
-			Video.VideoDrawStringSingleLine(as.get(j2)/*[j2].c_str()*/, i1 + 1, j1 + 1 + j2 * k1);
-			j2++;
-		}
+	static int DialogBx(String s1, int x, int y) {
+		final int lineH = 13;
+		final int width = Gmud.WQX_ORG_WIDTH - 8 - x;
+		final ArrayList<String> as = Video.SplitString(s1, width - 4);
+		final int size = as.size();
 
+		int height = size * lineH + 4;
+		Video.VideoClearRect(x, y, width, height);
+		Video.VideoDrawRectangle(x, y, width, height);
+		for (int i = 0, top = 0; i < size && top < height; i++, top += lineH) {
+			Video.VideoDrawStringSingleLine(as.get(i), x + 1, y + 1 + top);
+		}
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
-		while(Input.inputstatus == 0)
-		{
+		while (Input.inputstatus == 0) {
 			Gmud.GmudDelay(100);
 		}
 		return Input.inputstatus;
 	}
 
-	static void DrawTip(String s1)
-	{
-		int i1 = s1.length() * 13;
-		int j1 = 13 + 4;
-		int k1;
-		if ((k1 = (Gmud.WQX_ORG_WIDTH - i1) / 2) < 0)
-			k1 = 0;
-		int l1;
-		if ((l1 = (Gmud.WQX_ORG_WIDTH / 2 - j1) / 2 - 10) < 0)
-			l1 = 0;
-		Video.VideoClearRect(k1, l1, i1, j1);
-		Video.VideoDrawRectangle(k1, l1, i1, j1);
-		Video.VideoDrawStringSingleLine(s1, k1 + 2, l1 + 2);
+	static void DrawTip(String s1) {
+		int width = s1.length() * 13;
+		int height = 13 + 4;
+		int x = (Gmud.WQX_ORG_WIDTH - width) / 2;
+		if (x < 0)
+			x = 0;
+		int y = (Gmud.WQX_ORG_WIDTH / 2 - height) / 2 - 10;
+		if (y < 0)
+			y = 0;
+		Video.VideoClearRect(x, y, width, height);
+		Video.VideoDrawRectangle(x, y, width, height);
+		Video.VideoDrawStringSingleLine(s1, x + 2, y + 2);
 	}
 
-	static void DrawStringFromY(String s1, int i1)
-	{
-		int j1 = 13;
-		int k1 = 41;
-		Video.VideoClearRect(0, k1, Gmud.WQX_ORG_WIDTH, j1 * 3);
-		Video.VideoDrawString(s1, 0, k1);
+	static void DrawStringFromY(String s1, int i1) {
+		int lineH = 13;
+		int y = 41;
+		Video.VideoClearRect(0, y, Gmud.WQX_ORG_WIDTH, lineH * 3);
+		Video.VideoDrawString(s1, 0, y);
 	}
 
 	/**
@@ -632,50 +598,56 @@ public class UI {
 		}
 	}
 
-	static void DrawProgressBox(int i1, int j1, int k1, int l1)
-	{
-		i1 *= 1000;
-		j1 *= 1000;
-		int j2 = 32;
-		int k2 = 8;
-		int l2 = (Gmud.WQX_ORG_WIDTH * 2) / 5;
+	/**
+	 * 绘制进度条
+	 * 
+	 * @param max
+	 *            总值
+	 * @param cur
+	 *            当前进度值
+	 * @param numerator
+	 *            分子数值
+	 * @param denominator
+	 *            分母数值
+	 */
+	static void DrawProgressBox(int max, int cur, int numerator, int denominator) {
+		max *= 1000;
+		cur *= 1000;
+		int x = 32;
+		int h = 8;
+		int bar_w = (Gmud.WQX_ORG_WIDTH * 2) / 5; // 进度条的宽度为屏幕的 2/5
 		int i3 = 39;
-		int j3;
-		if ((j3 = l2 + i3 + 12) > Gmud.WQX_ORG_WIDTH)
-			j3 = Gmud.WQX_ORG_WIDTH;
-		if (Gmud.WQX_ORG_WIDTH - j3 < 32)
-			j2 = Gmud.WQX_ORG_WIDTH - j3;
-		int k3 = k2 / 4;
-		Video.VideoClearRect(j2, 0, j3, k2 + 2);
-		Video.VideoDrawRectangle(j2, k3, l2, k2);
-		int l3;
-		if (i1 <= l2)
-		{
-			if (i1 <= 0)
-				i1 = 1;
-			int i4;
-			l3 = (i4 = l2 / i1) * j1;
-		} else
-		{
-			int j4 = i1 / l2;
-			if (i1 % l2 > 0)
+		int width = bar_w + i3 + 12; // 总宽度=进度条+空隙+数字
+		if (width > Gmud.WQX_ORG_WIDTH)
+			width = Gmud.WQX_ORG_WIDTH;
+		if (Gmud.WQX_ORG_WIDTH - width < 32)
+			x = Gmud.WQX_ORG_WIDTH - width;
+		int y = h / 4;
+		
+		// 先绘制空框
+		Video.VideoClearRect(x, 0, width, h + 2);
+		Video.VideoDrawRectangle(x, y, bar_w, h);
+		int pro_w; // 进度值
+		if (cur >= max) {
+			pro_w = bar_w;
+		} else if (max <= bar_w) {
+			if (max <= 0)
+				max = 1;
+			pro_w = (bar_w / max) * cur;
+		} else {
+			int j4 = max / bar_w;
+			if (max % bar_w > 0)
 				j4++;
 			if (j4 <= 0)
 				j4 = 1;
-			l3 = j1 / j4;
-		} 
-		if (l3 > l2)
-			l3 = l2;
-		if (j1 >= i1)
-			l3 = l2;
-		Video.VideoFillRectangle(j2, k3, l3, k2);
+			pro_w = cur / j4;
+		}
+		if (pro_w > bar_w)
+			pro_w = bar_w;
+		Video.VideoFillRectangle(x, y, pro_w, h);
 
-//		wchar_t aa[15];
-//		wstring num = _itow(k1, aa, 10);
-//		num += "/";
-//		num +=  _itow(l1, aa, 10);
-		String num = String.format("%d/%d", k1, l1);
-		Video.VideoDrawNumberData(num, j2 + l2 + 3, k2/2);
+		String num = String.format("%d/%d", numerator, denominator);
+		Video.VideoDrawNumberData(num, x + bar_w + 3, h / 2);
 	}
 
 	/**
@@ -744,22 +716,23 @@ public class UI {
 
 	static final String player_attrib_menu_words[] = new String[] {"膂力", "敏捷", "根骨", "悟性"};
 
-	static void DrawViewPlayer(int id)
+	static void DrawViewPlayer(int menu_id)
 	{
-		int j1 = 160 - 8;
-		int k1 = 80 - 4;
-		Video.VideoClearRect(4, 2, j1, k1);
-		Video.VideoDrawRectangle(4, 2, j1, k1);
-		int l1 = 13 * 2;
+		int width = 160 - 8;
+		int height = 80 - 4;
+		Video.VideoClearRect(4, 2, width, height);
+		Video.VideoDrawRectangle(4, 2, width, height);
+		int l1 = 13 * 2; // 两个字的宽度
 		int i2 = 13;
-		Video.VideoDrawStringSingleLine(player_menu_words[id], 25, 5);
-		for (int j2 = 0; j2 < 4; j2++)
-			if (j2 != id)
+		Video.VideoDrawStringSingleLine(player_menu_words[menu_id], 25, 5);
+		// 绘制方块
+		for (int j2 = 0; j2 < 4; j2++) {
+			if (j2 != menu_id)
 				Video.VideoDrawRectangle(32 + l1 + j2 * 14, (i2 - 10) / 2 + 5, 8, 8);
 			else
 				Video.VideoFillRectangle(32 + l1 + j2 * 14, (i2 - 10) / 2 + 5, 9, 9, 0);
-
-		switch(id)
+		}
+		switch(menu_id)
 		{
 		case 0:
 			DrawPlayerStatus();
@@ -776,45 +749,35 @@ public class UI {
 		}
 	}
 
-	static void ViewPlayer()
-	{
-		int j1 = 0;
+	static void ViewPlayer() {
+		int menu_id = 0;
 		DrawViewPlayer(0);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(100);
-		while(Input.Running)
-		{
+		while (Input.Running) {
 			Input.ProcessMsg();
 			Video.VideoUpdate();
-			if ((Input.inputstatus & Input.kKeyLeft)!=0)
-			{
-				if (j1 > 0)
-					j1--;
+			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+				if (menu_id > 0)
+					menu_id--;
 				else
-					j1 = 3;
-				DrawViewPlayer(j1);
+					menu_id = 3;
+				DrawViewPlayer(menu_id);
 				Video.VideoUpdate();
-			}
-			else
-			if ((Input.inputstatus & Input.kKeyRight)!=0)
-			{
-				if (j1 < 3)
-					j1++;
+			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+				if (menu_id < 3)
+					menu_id++;
 				else
-					j1 = 0;
-				DrawViewPlayer(j1);
+					menu_id = 0;
+				DrawViewPlayer(menu_id);
 				Video.VideoUpdate();
-			}
-			else
-			{
-				if ((Input.inputstatus & Input.kKeyEnt)!=0)
-				{
+			} else {
+				if ((Input.inputstatus & Input.kKeyEnt) != 0) {
 					Gmud.GmudDelay(100);
 					return;
 				}
-				if ((Input.inputstatus & Input.kKeyExit)!=0)
-				{
+				if ((Input.inputstatus & Input.kKeyExit) != 0) {
 					Gmud.GmudDelay(100);
 					return;
 				}
@@ -1019,27 +982,35 @@ public class UI {
 		Video.VideoDrawStringSingleLine(Gmud.sPlayer.GetConsortName()/*.c_str()*/, 8, 18);
 	}
 
-	static void DrawFly(int i1, int j1)
-	{
-		if (i1 > 5)
+	/**
+	 * 绘制轻功飞图菜单（4个项）
+	 * 
+	 * @param top
+	 *            列表第一项在地图表的位置
+	 * @param sel
+	 *            当前选择（在可见列表的中的位置）[0,4)
+	 */
+	static void DrawFly(int top, int sel) {
+		if (top > 5) {
+			// 只有前 9(5+4) 个地图可以飞
 			return;
-		int k1 = 13;
-		int l1 = k1 * 4;
-		int i2 = 13;
-		int j2 = i2 * 4;
-		int k2 = 4;
-		int l2 = 4;
-		Video.VideoClearRect(4, 4, j2, l1);
-		Video.VideoDrawRectangle(4, 4, j2, l1);
-		int i3 = 0;
-		int j3;
-		if ((j3 = (k1 - 12) / 2) < 0)
-			j3 = 0;
-		for (; i3 < 4; i3++)
-		{
-			Video.VideoDrawStringSingleLine(GmudData.map_name[i3 + i1], k2 + 10, (int)(4 + 1 + i3 * 12.5));
-			if (i3 == j1)
-				DrawCursor(k2 + 3, l2 + 1 + i3 * k1 + j3);
+		}
+		int lineH = 13; // 行高
+		int height = lineH * 4;
+		int width = lineH * 4;
+		int gap_l = 4; // 左边的空隙
+		int gap_t = 4; // 顶部的空隙
+		Video.VideoClearRect(gap_l, gap_t, width, height);
+		Video.VideoDrawRectangle(gap_l, gap_t, width, height);
+		// 让 光标 在垂直方向上剧中
+		int oy = (lineH - 12) / 2;
+		if (oy < 0)
+			oy = 0;
+		for (int i = 0; i < 4; i++) {
+			Video.VideoDrawStringSingleLine(GmudData.map_name[i + top],
+					gap_l + 10, (int) (gap_t + 1 + i * 12.5));
+			if (i == sel)
+				DrawCursor(gap_l + 3, gap_t + 1 + i * lineH + oy);
 		}
 	}
 
@@ -1594,7 +1565,7 @@ public class UI {
 					i3 = j3 = 0;
 					Video.VideoClearRect(0, Gmud.WQX_ORG_WIDTH / 2 - i1, Gmud.WQX_ORG_WIDTH, i1);
 					if(Battle.sBattle!=null)
-						Battle.sBattle.c();
+						Battle.sBattle.CopyPlayerSelectSkills();
 				}
 				DrawList(skill_menu_words, k2, l2, i3, j3, k1, 1);
 				if (j2 > 0 && k1 != 0)

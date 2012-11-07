@@ -29,7 +29,8 @@ public class GmudData {
 	static final String class_name[] = new String[] {
 			"普通百姓", "八卦门", "花间派", "红莲教", "尹贺谷", "太极门", "雪山剑派", "兽王派", "茅山派"
 			};
-	static final String map_name[] = new String[] {   //map name
+	/** (size:11) */
+	static final String map_name[] = new String[] {
 			"平安镇", "商家堡", "玉女峰", "五指山", "冰火岛", "武当山", "大雪山", "黑森林", "灵心观", "铸剑谷", 
 			"桃花源"
 			};

@@ -10,6 +10,7 @@ public class Player {
 
 	/* keep single instance */
 	static private Player sInstance;
+
 	static synchronized Player getInstance() {
 		if (sInstance == null) {
 			sInstance = new Player();
@@ -38,7 +39,7 @@ public class Player {
 	int unknow1, unknow2, unknow3;
 
 	/**
-	 * .[][0]:技能ID[0,53] .[][1]:技能等级 .[][2]:已学习的点数 .[][3]:未知  
+	 * .[][0]:技能ID[0,53] .[][1]:技能等级 .[][2]:已学习的点数 .[][3]:未知
 	 * .[][4]:当前级别技能提升技能的点数=(Level+1)*(Level+1)/(GetSavvy()*2*10 + Rnd(16))
 	 */
 	int skills[][] = new int[32][5];
@@ -46,20 +47,20 @@ public class Player {
 	int lasting_tasks[] = new int[40];
 
 	long played_time;
-	int/*char*/ equips[] = new int[16];
-	
+
+	/** (size:16) 当前的装备表 [15]武器 */
+	int/* char */equips[] = new int[16];
+
 	/**
 	 * [0]:拳脚 [1]:兵刃 [2]:轻功 [3]:内功(255表示没有) [4]:招架 [5]:知识 [6]:法术
 	 */
 	int select_skills[] = new int[8];
-	
-	/**
-	 * [0]:ID [1]:是否已装备 [2]:数量
-	 */
+
+	/** (size:32,3) [0]:ID [1]:是否已装备 [2]:数量 */
 	int item_package[][] = new int[32][3];
-	
-//	byte player_name[] = new byte[16];
-//	char weapon_name[] = new char[16]; // wchar_t
+
+	// byte player_name[] = new byte[16];
+	// char weapon_name[] = new char[16]; // wchar_t
 	// char consort_name[] = new char[16];
 
 	String player_name;
@@ -68,17 +69,18 @@ public class Player {
 
 	String intArray2String(int num[], int size) {
 		StringBuilder builder = new StringBuilder();
-//		builder.append(size);
+		// builder.append(size);
 		for (int i = 0; i < size; i++) {
 			builder.append(num[i]);
 			builder.append(',');
 		}
 		return builder.toString();
 	}
+
 	String intArray2String(int num[][], int size_v, int size_h) {
 		StringBuilder builder = new StringBuilder();
-//		builder.append(size_v);
-//		builder.append(size_h);
+		// builder.append(size_v);
+		// builder.append(size_h);
 		for (int i = 0; i < size_v; i++) {
 			for (int j = 0; j < size_h; j++) {
 				builder.append(num[i][j]);
@@ -107,75 +109,77 @@ public class Player {
 			}
 		}
 	}
-	
+
 	boolean Clean(Context context) {
 
-		SharedPreferences preferences; 
-		preferences = context.getSharedPreferences(Gmud.SAVE_PATH, Context.MODE_PRIVATE); //其中fileName表示存放配置的配置文件名称 
+		SharedPreferences preferences;
+		preferences = context.getSharedPreferences(Gmud.SAVE_PATH,
+				Context.MODE_PRIVATE); // 其中fileName表示存放配置的配置文件名称
 
 		Editor editor = preferences.edit();
 		editor.putString("key", "");
-		
+
 		editor.commit();
-		
+
 		return true;
 	}
-	
+
 	boolean Save(Context context) {
-		SharedPreferences preferences; 
-		preferences = context.getSharedPreferences(Gmud.SAVE_PATH, Context.MODE_PRIVATE); //其中fileName表示存放配置的配置文件名称
+		SharedPreferences preferences;
+		preferences = context.getSharedPreferences(Gmud.SAVE_PATH,
+				Context.MODE_PRIVATE); // 其中fileName表示存放配置的配置文件名称
 
 		Editor editor = preferences.edit();
-				
-		editor
-		.putString("player_name", player_name)
-		.putString("weapon_name", weapon_name)
-		.putString("consort_name", consort_name)
-		.putInt("image_id",image_id)
-		.putInt("sex",sex)
-		.putInt("hp",hp)
-		.putInt("hp_max",hp_max)
-		.putInt("hp_full",hp_full)
-		.putInt("fp",fp)
-		.putInt("fp_level",fp_level)
-		.putInt("fp_plus",fp_plus)
-		.putInt("mp",mp)
-		.putInt("mp_level",mp_level)
-		.putInt("mp_plus",mp_plus)
-		.putInt("money",money)
-		.putInt("exp",exp)
-		.putInt("potential",potential)
-		.putInt("water",water)
-		.putInt("food",food)
-		.putInt("pre_force",pre_force)
-		.putInt("pre_agility",pre_agility)
-		.putInt("pre_savvy",pre_savvy)
-		.putInt("pre_aptitude",pre_aptitude)
-		.putInt("face_level",face_level)
-		.putInt("class_id",class_id)
-		.putInt("teacher_id",teacher_id)
-		.putInt("bliss",bliss)
-		.putInt("married",married)
-		.putInt("unknow1",unknow1)
-		.putInt("unknow2",unknow2)
-		.putInt("unknow3",unknow3)
-		.putString("skills", intArray2String(skills, 32, 5))
-		.putString("lasting_tasks", intArray2String(lasting_tasks, 40))
-		.putString("equips", intArray2String(equips, 16))
-		.putString("select_skills", intArray2String(select_skills, 8))
-		.putString("item_package", intArray2String(item_package, 32, 3))
-		.putLong("played_time", played_time);
-		
+
+		editor.putString("player_name", player_name)
+				.putString("weapon_name", weapon_name)
+				.putString("consort_name", consort_name)
+				.putInt("image_id", image_id)
+				.putInt("sex", sex)
+				.putInt("hp", hp)
+				.putInt("hp_max", hp_max)
+				.putInt("hp_full", hp_full)
+				.putInt("fp", fp)
+				.putInt("fp_level", fp_level)
+				.putInt("fp_plus", fp_plus)
+				.putInt("mp", mp)
+				.putInt("mp_level", mp_level)
+				.putInt("mp_plus", mp_plus)
+				.putInt("money", money)
+				.putInt("exp", exp)
+				.putInt("potential", potential)
+				.putInt("water", water)
+				.putInt("food", food)
+				.putInt("pre_force", pre_force)
+				.putInt("pre_agility", pre_agility)
+				.putInt("pre_savvy", pre_savvy)
+				.putInt("pre_aptitude", pre_aptitude)
+				.putInt("face_level", face_level)
+				.putInt("class_id", class_id)
+				.putInt("teacher_id", teacher_id)
+				.putInt("bliss", bliss)
+				.putInt("married", married)
+				.putInt("unknow1", unknow1)
+				.putInt("unknow2", unknow2)
+				.putInt("unknow3", unknow3)
+				.putString("skills", intArray2String(skills, 32, 5))
+				.putString("lasting_tasks", intArray2String(lasting_tasks, 40))
+				.putString("equips", intArray2String(equips, 16))
+				.putString("select_skills", intArray2String(select_skills, 8))
+				.putString("item_package", intArray2String(item_package, 32, 3))
+				.putLong("played_time", played_time);
+
 		editor.putString("key", "lnx");
-		
+
 		editor.commit();
 		return true;
 	}
-	
+
 	boolean load(Context context) {
-		SharedPreferences preferences; 
-		preferences = context.getSharedPreferences(Gmud.SAVE_PATH, Context.MODE_PRIVATE);
-		
+		SharedPreferences preferences;
+		preferences = context.getSharedPreferences(Gmud.SAVE_PATH,
+				Context.MODE_PRIVATE);
+
 		String key = preferences.getString("key", "");
 		if (key == "") {
 			return false;
@@ -184,46 +188,48 @@ public class Player {
 		player_name = preferences.getString("player_name", player_name);
 		weapon_name = preferences.getString("weapon_name", weapon_name);
 		consort_name = preferences.getString("consort_name", consort_name);
-		
-		image_id = preferences.getInt("image_id",image_id);
-		sex = preferences.getInt("sex",sex);
-		hp = preferences.getInt("hp",hp);
-		hp_max = preferences.getInt("hp_max",hp_max);
-		hp_full = preferences.getInt("hp_full",hp_full);
-		fp = preferences.getInt("fp",fp);
-		fp_level = preferences.getInt("fp_level",fp_level);
-		fp_plus = preferences.getInt("fp_plus",fp_plus);
-		mp = preferences.getInt("mp",mp);
-		mp_level = preferences.getInt("mp_level",mp_level);
-		mp_plus = preferences.getInt("mp_plus",mp_plus);
-		money = preferences.getInt("money",money);
-		exp = preferences.getInt("exp",exp);
-		potential = preferences.getInt("potential",potential);
-		water = preferences.getInt("water",water);
-		food = preferences.getInt("food",food);
-		pre_force = preferences.getInt("pre_force",pre_force);
-		pre_agility = preferences.getInt("pre_agility",pre_agility);
-		pre_savvy = preferences.getInt("pre_savvy",pre_savvy);
-		pre_aptitude = preferences.getInt("pre_aptitude",pre_aptitude);
-		face_level = preferences.getInt("face_level",face_level);
-		class_id = preferences.getInt("class_id",class_id);
-		teacher_id = preferences.getInt("teacher_id",teacher_id);
-		bliss = preferences.getInt("bliss",bliss);
-		married = preferences.getInt("married",married);
-		unknow1 = preferences.getInt("unknow1",unknow1);
-		unknow2 = preferences.getInt("unknow2",unknow2);
-		unknow3 = preferences.getInt("unknow3",unknow3);
-		
 
-		String2IntArray(preferences.getString("skills",""), skills, 32, 5);
-		String2IntArray(preferences.getString("lasting_tasks",""), lasting_tasks, 40);
-		String2IntArray(preferences.getString("equips",""), equips, 16);
-		String2IntArray(preferences.getString("select_skills",""), select_skills, 8);
-		String2IntArray(preferences.getString("item_package",""), item_package, 32, 3);
+		image_id = preferences.getInt("image_id", image_id);
+		sex = preferences.getInt("sex", sex);
+		hp = preferences.getInt("hp", hp);
+		hp_max = preferences.getInt("hp_max", hp_max);
+		hp_full = preferences.getInt("hp_full", hp_full);
+		fp = preferences.getInt("fp", fp);
+		fp_level = preferences.getInt("fp_level", fp_level);
+		fp_plus = preferences.getInt("fp_plus", fp_plus);
+		mp = preferences.getInt("mp", mp);
+		mp_level = preferences.getInt("mp_level", mp_level);
+		mp_plus = preferences.getInt("mp_plus", mp_plus);
+		money = preferences.getInt("money", money);
+		exp = preferences.getInt("exp", exp);
+		potential = preferences.getInt("potential", potential);
+		water = preferences.getInt("water", water);
+		food = preferences.getInt("food", food);
+		pre_force = preferences.getInt("pre_force", pre_force);
+		pre_agility = preferences.getInt("pre_agility", pre_agility);
+		pre_savvy = preferences.getInt("pre_savvy", pre_savvy);
+		pre_aptitude = preferences.getInt("pre_aptitude", pre_aptitude);
+		face_level = preferences.getInt("face_level", face_level);
+		class_id = preferences.getInt("class_id", class_id);
+		teacher_id = preferences.getInt("teacher_id", teacher_id);
+		bliss = preferences.getInt("bliss", bliss);
+		married = preferences.getInt("married", married);
+		unknow1 = preferences.getInt("unknow1", unknow1);
+		unknow2 = preferences.getInt("unknow2", unknow2);
+		unknow3 = preferences.getInt("unknow3", unknow3);
+
+		String2IntArray(preferences.getString("skills", ""), skills, 32, 5);
+		String2IntArray(preferences.getString("lasting_tasks", ""),
+				lasting_tasks, 40);
+		String2IntArray(preferences.getString("equips", ""), equips, 16);
+		String2IntArray(preferences.getString("select_skills", ""),
+				select_skills, 8);
+		String2IntArray(preferences.getString("item_package", ""),
+				item_package, 32, 3);
 		played_time = preferences.getLong("played_time", played_time);
-		
+
 		GmudTemp.ClearAllData();
-		
+
 		return true;
 	}
 
@@ -236,41 +242,40 @@ public class Player {
 
 		image_id = sex = face_level = class_id = teacher_id = 0;
 		bliss = married = unknow1 = unknow2 = unknow3 = 0;
-		
+
 		item_package[0][0] = 42;
 		item_package[0][1] = 0;
 		item_package[0][2] = 1;
 		int i;
-		for(i = 0; i < 16; i++)
+		for (i = 0; i < 16; i++)
 			equips[i] = 0;
-		for(i = 1; i < 32; i++)
+		for (i = 1; i < 32; i++)
 			item_package[i][0] = item_package[i][1] = item_package[i][2] = 0;
 
-		for(i = 0; i < 8; i++)
+		for (i = 0; i < 8; i++)
 			select_skills[i] = 255;
-		for(i = 0; i < 32; i++)
-		{
+		for (i = 0; i < 32; i++) {
 			skills[i][0] = 255;
 			skills[i][1] = skills[i][2] = skills[i][3] = skills[i][4] = 0;
 		}
 
-		for(i = 0; i< 40;i++)
+		for (i = 0; i < 40; i++)
 			lasting_tasks[i] = 0;
 		GmudTemp.ClearAllData();
 		played_time = 0;
-//		for(i = 0; i<16; i++)
-//			player_name[i] = 0;
-//		for(i = 0; i<16; i++)
-//			weapon_name[i] = 0;
-//		for(i = 0; i<16; i++)
-//			consort_name[i] = 0;
-		
+		// for(i = 0; i<16; i++)
+		// player_name[i] = 0;
+		// for(i = 0; i<16; i++)
+		// weapon_name[i] = 0;
+		// for(i = 0; i<16; i++)
+		// consort_name[i] = 0;
+
 		// initialization
 		player_name = "[No Name]";
 		weapon_name = null;
 		consort_name = null;
 	}
-	
+
 	public Player() {
 		reset();
 	}
@@ -311,6 +316,7 @@ public class Player {
 
 	/**
 	 * 饮水最大
+	 * 
 	 * @return
 	 */
 	int GetWaterMax() {
@@ -319,6 +325,7 @@ public class Player {
 
 	/**
 	 * 取生命值(Health Point)上限，与内力、年龄有关
+	 * 
 	 * @return HP Max
 	 */
 	int GetHPMax() {
@@ -327,6 +334,7 @@ public class Player {
 
 	/**
 	 * 年龄增量（14起）
+	 * 
 	 * @return
 	 */
 	int GetAge() {
@@ -335,7 +343,9 @@ public class Player {
 
 	/**
 	 * 计算技能的等级，如果此技能无效或未学，返回0
-	 * @param id 技能ID
+	 * 
+	 * @param id
+	 *            技能ID
 	 * @return 技能等级
 	 */
 	int GetSkillLevel(int id) {
@@ -388,8 +398,8 @@ public class Player {
 					k1 += GetSkillLevel(k2) / 3;
 				}
 			}
-			k1 = (k1 = (k1 = (k1 += (GetSkillLevel(select_skills[3]) * 2) / 3) + GetSkillLevel(0)
-					/ 3)
+			k1 = (k1 = (k1 = (k1 += (GetSkillLevel(select_skills[3]) * 2) / 3)
+					+ GetSkillLevel(0) / 3)
 					+ (GetSkillLevel(select_skills[2]) * 2) / 3)
 					+ GetSkillLevel(7) / 3;
 			int l2;
@@ -430,7 +440,8 @@ public class Player {
 
 	/**
 	 * 设置相貌等级,含技能提升 {驻颜术} {扶桑忍术}
-	 * @return 
+	 * 
+	 * @return
 	 */
 	int SetFaceLevel() {
 		int i = GetSkillLevel(10) / 15 + GetSkillLevel(26) / 15 + face_level;
@@ -451,7 +462,7 @@ public class Player {
 	}
 
 	/**
-	 *  
+	 * 
 	 * @return 加力max
 	 */
 	int GetPlusFPMax() {
@@ -466,6 +477,7 @@ public class Player {
 
 	/**
 	 * Mana Point
+	 * 
 	 * @return 法点max
 	 */
 	int GetPlusMPMax() {
@@ -493,8 +505,9 @@ public class Player {
 	int GetForce() {
 		int i1 = GetSkillLevel(1);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 4 && equips[15] == 77)
-			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/; // 自制武器加成，下同
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 4
+				&& equips[15] == 77)
+			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */; // 自制武器加成，下同
 		return i1 / 10 + pre_force + j1;
 	}
 
@@ -505,8 +518,9 @@ public class Player {
 	int GetAgility() {
 		int i1 = GetSkillLevel(7);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 3 && equips[15] == 77)
-			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 3
+				&& equips[15] == 77)
+			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
 		return i1 / 10 + pre_agility + j1;
 	}
 
@@ -517,8 +531,9 @@ public class Player {
 	int GetSavvy() {
 		int i1 = GetSkillLevel(9);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 6 && equips[15] == 77)
-			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 6
+				&& equips[15] == 77)
+			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
 		return i1 / 10 + pre_savvy + j1;
 	}
 
@@ -526,8 +541,9 @@ public class Player {
 	int GetAptitude() {
 		int i1 = GetSkillLevel(0);
 		int j1 = 0;
-		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 5 && equips[15] == 77)
-			j1 = 20-(lasting_tasks[8]&3)*5/*Items.item_attribs[77][4]*/;
+		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 5
+				&& equips[15] == 77)
+			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
 		return i1 / 10 + pre_aptitude + j1;
 	}
 
@@ -549,7 +565,6 @@ public class Player {
 		return str;
 	}
 
-
 	/**
 	 * 重置 技能升级 需要的点数 = (当前等级+1)*(当前等级+1) / 悟性 * 2 * 10 + Rnd(16)
 	 * 
@@ -563,7 +578,7 @@ public class Player {
 		else
 			k1 += util.RandomInt(16);
 		skills[id][4] = k1;
-//		skills[id][2] = 0;
+		// skills[id][2] = 0;
 	}
 
 	// 出手等级
@@ -584,7 +599,8 @@ public class Player {
 		int k1 = GetSkillLevel(j1 = select_skills[3]);
 		int l1 = GetAptitude();
 		int i2;
-		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本内功/20 + 门派内功/20 + 后天根骨 / 5
+		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本内功/20 + 门派内功/20 + 后天根骨
+														// / 5
 			i2 = 1;
 		if (i2 > 60)
 			i2 = 60;
@@ -598,7 +614,8 @@ public class Player {
 		int k1 = GetSkillLevel(j1 = select_skills[6]);
 		int l1 = GetSavvy();
 		int i2;
-		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本法术/20 + 选择法术/10 + 后天悟性 / 5
+		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本法术/20 + 选择法术/10 + 后天悟性
+														// / 5
 			i2 = 1;
 		if (i2 > 60)
 			i2 = 60;
@@ -652,25 +669,26 @@ public class Player {
 			k2 = GetSkillLevel(j2);
 		int l2;
 		int i3;
-		if ((i3 = (l2 = i2 / 2 + k2) / 5 + k1 / 5) <= 0) // 基本内功/10 + 门派内功/5 + 对应基本招式 / 5
+		if ((i3 = (l2 = i2 / 2 + k2) / 5 + k1 / 5) <= 0) // 基本内功/10 + 门派内功/5 +
+															// 对应基本招式 / 5
 			i3 = 1;
 		if (i3 > 60)
 			i3 = 60;
 		return i3;
 	}
 
-
 	/**
 	 * 可练功招式数, [0,2] [拳脚，兵刃，轻功]
-	 * @return 招式数量
-	 * GmuTemp.temp_array_20_2[0,2] 用于保存技能等级
+	 * 
+	 * @return 招式数量 GmuTemp.temp_array_20_2[0,2] 用于保存技能等级
 	 */
 	int GetPracticeSkillNumber() {
 		int i1 = 0;
 		for (int j1 = 0; j1 < 3; j1++) {
 			int k1;
 			int l1;
-			if (select_skills[j1] != 255 && (l1 = GetSkillLevel(k1 = select_skills[j1])) != 0) {
+			if (select_skills[j1] != 255
+					&& (l1 = GetSkillLevel(k1 = select_skills[j1])) != 0) {
 				GmudTemp.temp_array_20_2[i1][0] = k1; // 技能ID
 				GmudTemp.temp_array_20_2[i1][1] = l1; // 等级
 				i1++;
@@ -679,119 +697,140 @@ public class Player {
 		return i1;
 	}
 
-	// 存在id物品num个，返回物品栏编号
-	int ExistItem(int id, int num) {
-		for (int k1 = 0; k1 < 32; k1++)
-			if (item_package[k1][0] == id && item_package[k1][2] >= num)
-				return k1;
+	/** 检查是否存在id物品有num个，返回 背包索引，如果不存在物品或数量不够，返回-1 */
+	int ExistItem(int item_id, int num) {
+		for (int index = 0; index < 32; index++)
+			if (item_package[index][0] == item_id
+					&& item_package[index][2] >= num)
+				return index;
 
 		return -1;
 	}
 
-	// 增加一个物品
-	boolean GainOneItem(int id) {
-		if (id <= 0)
+	/**
+	 * 增加一个物品
+	 * 
+	 * @param item_id
+	 *            物品ID
+	 * @return
+	 */
+	boolean GainOneItem(int item_id) {
+		if (item_id <= 0)
 			return false;
-		int j1;
-		if ((j1 = Items.item_repeat[id]) > 0) // item 可叠加
-		{
-			for (int k1 = 0; k1 < 32; k1++)
-				if (item_package[k1][0] == id && item_package[k1][2] < 255) {
-					item_package[k1][2]++;
+		// item 可叠加
+		if (Items.item_repeat[item_id] > 0) {
+			for (int i = 0; i < 32; i++) {
+				if (item_package[i][0] == item_id && item_package[i][2] < 255) {
+					item_package[i][2]++;
 					return true;
 				}
-
+			}
 		}
-		for (int l1 = 0; l1 < 32; l1++)
-			// 不可叠加处理
-			if (item_package[l1][0] == 0) {
-				item_package[l1][0] = id;
-				item_package[l1][1] = 0;
-				item_package[l1][2] = 1;
+		// 找个空位添加物品
+		for (int i = 0; i < 32; i++) {
+			if (item_package[i][0] == 0) {
+				item_package[i][0] = item_id;
+				item_package[i][1] = 0;
+				item_package[i][2] = 1;
 				return true;
 			}
+		}
 
+		// 没法添加
 		return false;
 	}
 
-	void LoseOneItem(int i1) {
-		for (int j1 = 0; j1 < 32; j1++)
-			if (item_package[j1][0] == i1)
-				DeleteOneItem(j1);
+	void LoseOneItem(int item_id) {
+		for (int index = 0; index < 32; index++)
+			if (item_package[index][0] == item_id)
+				DeleteOneItem(index);
 	}
 
 	/**
 	 * 删除物品
-	 * @param i1 当前包裹中的编号
-	 * @param j1 需要删除的数量
+	 * 
+	 * @param package_index
+	 *            当前包裹中的编号
+	 * @param count
+	 *            需要删除的数量
 	 */
-	void LoseItem(int i1, int j1) {
-		int k1 = -1;
-		
+	void LoseItem(int package_index, int count) {
+		int index = -1;
+
 		// TODO: 其实应该不用下面的循环，待分析 @lnx
-		if (0 <= i1 && i1 < 32) {
-			i1 = item_package[i1][0];
-		}
-		
-		for (int l1 = 0; l1 < 32; l1++) {
-			if (item_package[l1][0] != i1)
-				continue;
-			if (k1 >= 0 && item_package[l1][1] == 0) {
-				k1 = l1;
-				continue;
-			}
-			if (k1 < 0)
-				k1 = l1;
+		if (0 <= package_index && package_index < 32) {
+			// 转成ID
+			package_index = item_package[package_index][0];
 		}
 
-		if (k1 >= 0) {
-			item_package[k1][2] -= j1;
-			if (item_package[k1][2] <= 0) {
-				if (item_package[k1][1] == 1) {
-					for (int i2 = 0; i2 < 16; i2++)
-						if (equips[i2] == i1)
+		// 根据物品ID找最后一个
+		for (int i = 0; i < 32; i++) {
+			if (item_package[i][0] != package_index)
+				continue;
+			// 又找到了物品，并且没有被【已装备】
+			if (index >= 0 && item_package[i][1] == 0) {
+				index = i;
+				continue;
+			}
+			if (index < 0) {
+				// 记录找到的物品
+				index = i;
+			}
+		}
+
+		if (index >= 0) {
+			item_package[index][2] -= count;
+			if (item_package[index][2] <= 0) {
+				// 物品删没有了，如果此物品【已装备】，需要解除装备
+				if (item_package[index][1] == 1) {
+					for (int i2 = 0; i2 < 16; i2++) {
+						if (equips[i2] == package_index) {
 							equips[i2] = 0;
-
+						}
+					}
 				}
-				item_package[k1][0] = item_package[k1][1] = item_package[k1][2] = 0;
+				item_package[index][0] = item_package[index][1] = item_package[index][2] = 0;
 			}
-			return;
-		} else {
-			return;
 		}
-
 	}
 
-	void DeleteOneItem(int i1) {
-		if (i1 == -1)
+	/** 删除一个背包中的物品， */
+	void DeleteOneItem(int package_index) {
+		if (package_index == -1)
 			return;
-		int j1 = item_package[i1][0];
-		if (item_package[i1][1] == 1)
+
+		// 如果【已装备】则不删除
+		if (item_package[package_index][1] == 1)
 			return;
-		if (j1 < 0 || j1 > 91)
+
+		int item_id = item_package[package_index][0];
+		if (item_id < 0 || item_id > 91)
 			return;
-		int k1 = Items.item_attribs[j1][0];
-		int l1 = Items.item_attribs[j1][1];
-		if (k1 == 2) {
-			if (item_package[i1][1] != 0)
+
+		int item_type = Items.item_attribs[item_id][0]; // 物品类型
+		if (item_type == 2) {
+			// 武器
+			if (item_package[package_index][1] != 0)
 				UnEquipWeapon();
-		} else if (k1 == 3 && item_package[i1][1] != 0)
-			UnEquipArmor(l1);
-		item_package[i1][0] = item_package[i1][1] = item_package[i1][2] = 0;
+		} else if (item_type == 3 && item_package[package_index][1] != 0) {
+			int item_equip_type = Items.item_attribs[item_id][1]; // 装备类型，
+			UnEquipArmor(item_equip_type);
+		}
+		item_package[package_index][0] = item_package[package_index][1] = item_package[package_index][2] = 0;
 	}
 
-	boolean a(int i1, int j1) {
-		if (item_package[i1][2] >= j1) {
-			item_package[i1][2] -= j1;
-			if (item_package[i1][2] == 0) {
-				int k1 = item_package[i1][0];
-				for (int l1 = 0; l1 < 16; l1++)
-					if (equips[l1] == k1)
-						equips[l1] = 0;
+	private boolean _LostItems(int package_index, int count) {
+		if (item_package[package_index][2] >= count) {
+			item_package[package_index][2] -= count;
+			if (item_package[package_index][2] == 0) {
+				int item_id = item_package[package_index][0];
+				for (int i = 0; i < 16; i++)
+					if (equips[i] == item_id)
+						equips[i] = 0;
 
-				item_package[i1][0] = 0;
-				item_package[i1][1] = 0;
-				DeleteOneItem(i1);
+				item_package[package_index][0] = 0;
+				item_package[package_index][1] = 0;
+				DeleteOneItem(package_index);
 			}
 			return true;
 		} else {
@@ -799,139 +838,135 @@ public class Player {
 		}
 	}
 
-	String UseItem(int i1)
-{
-	int j1;
-	if ((j1 = item_package[i1][0]) < 0 || j1 > 91)
-		return "";
-	int k1 = Items.item_attribs[j1][0];  //type
-	int l1 = Items.item_attribs[j1][1];
-	switch(k1)  //switch type
-	{
-	case 5:
-	default:
-		break;
+	String UseItem(int package_index) {
+		int item_id = item_package[package_index][0];
+		if (item_id < 0 || item_id > 91)
+			return "";
+		int item_group = Items.item_attribs[item_id][0]; // 物品类别
+		int item_type = Items.item_attribs[item_id][1]; // 小类型
+		switch (item_group) // switch type
+		{
+		case 5:
+		default:
+			break;
 
-	case 0: 
-		{ // 吃食物
-			if (Battle.sBattle!=null)
+		case 0: { // 吃食物
+			// 战斗状态不能吃食物
+			if (Battle.sBattle != null)
 				break;
-			int i2 = Items.item_attribs[j1][2];
-			int j2 = Items.item_attribs[j1][3];
 			if (food >= GetFoodMax())
 				return "你再也吃不下任何东西了";
-			food += i2;
-			water += j2;
-			item_package[i1][2]--;
-			if (item_package[i1][2] <= 0)
-			{
-				item_package[i1][0] = 0;
-				item_package[i1][1] = 0;
-				item_package[i1][2] = 0;
+			food += Items.item_attribs[item_id][2];
+			water += Items.item_attribs[item_id][3];
+			item_package[package_index][2]--;
+			if (item_package[package_index][2] <= 0) {
+				item_package[package_index][0] = 0;
+				item_package[package_index][1] = 0;
+				item_package[package_index][2] = 0;
 			}
+		}
 			break;
-		}
-	case 1: // 用药
-		if (Battle.sBattle != null && l1 == 0) {
-			int player_id = Battle.sBattle.player_id;
-			int hp_max_tmp = Battle.sBattle.fighter_data[player_id][2];
-			int hp_full_tmp = Battle.sBattle.fighter_data[player_id][3];
-			if (hp_max_tmp >= hp_full_tmp)
-				break;
-			hp_max_tmp += Items.item_attribs[j1][2];
-			if (hp_max_tmp > hp_full_tmp)
-				hp_max_tmp = hp_full_tmp;
-			item_package[i1][2]--;
-			if (item_package[i1][2] <= 0) {
-				item_package[i1][0] = 0;
-				item_package[i1][1] = 0;
-				item_package[i1][2] = 0;
-			}
-			Battle.sBattle.fighter_data[player_id][2] = hp_max_tmp;
-			Battle.sBattle.a(player_id, 2, hp_max_tmp);
-			break;
-		}
-		if (l1 == 0) {
-			if(hp_max == hp_full)
-				break;
-			hp_max += Items.item_attribs[j1][2];
-			if (hp_max > hp_full)
-				hp_max = hp_full;
-			item_package[i1][2]--;
-			if (item_package[i1][2] <= 0) {
-				item_package[i1][0] = 0;
-				item_package[i1][1] = 0;
-				item_package[i1][2] = 0;
-			}
-			break;
-		}
-		if (l1 != 1 || Battle.sBattle != null)
-			break;
-		if (lasting_tasks[13] < 10000)
-		{
-			fp_level += item_package[i1][2];
-			lasting_tasks[13] += 1;
-		}
-		item_package[i1][2]--;
-		if (item_package[i1][2] <= 0)
-		{
-			item_package[i1][2] = 0;
-			item_package[i1][0] = 0;
-			item_package[i1][1] = 0;
-		}
-		break;
-
-	case 2: //weapon
-      if ((Battle.sBattle != null) && (item_package[i1][0] == 77))
-    	  break; // 战斗的时候不换自制武器（影响玩家属性计算）
-      
-		if (item_package[i1][1] == 0)
-			EquipWeapon(i1);
-		else
-			UnEquipWeapon();
-		if(Battle.sBattle!=null)
-			Battle.sBattle.b();
-		break;
-
-	case 3: //equip
-		{
-			if (item_package[i1][1] == 0)
-				EquipArmor(l1, i1);
-			else
-				UnEquipArmor(l1);
-			if(Battle.sBattle!=null)
-				Battle.sBattle.b();
-			break;
-		}
-	case 4: //read book
-		{
-			if (Battle.sBattle!=null)
-				break;
 			
-			int k2 = GetSkillLevel(9);
+		case 1: // 用药
+			if (Battle.sBattle != null && item_type == 0) {
+				// 疗伤，增加血量最大值hp-max
+				int player_id = Battle.sBattle.player_id;
+				int hp_max_tmp = Battle.sBattle.fighter_data[player_id][2];
+				int hp_full_tmp = Battle.sBattle.fighter_data[player_id][3];
+				if (hp_max_tmp >= hp_full_tmp)
+					break;
+				hp_max_tmp += Items.item_attribs[item_id][2];
+				if (hp_max_tmp > hp_full_tmp)
+					hp_max_tmp = hp_full_tmp;
+				item_package[package_index][2]--;
+				if (item_package[package_index][2] <= 0) {
+					item_package[package_index][0] = 0;
+					item_package[package_index][1] = 0;
+					item_package[package_index][2] = 0;
+				}
+				Battle.sBattle.fighter_data[player_id][2] = hp_max_tmp;
+				Battle.sBattle.stack_fighterdate_set(player_id, 2, hp_max_tmp);
+				break;
+			}
+			if (item_type == 0) {
+				if (hp_max == hp_full)
+					break;
+				hp_max += Items.item_attribs[item_id][2];
+				if (hp_max > hp_full)
+					hp_max = hp_full;
+				item_package[package_index][2]--;
+				if (item_package[package_index][2] <= 0) {
+					item_package[package_index][0] = 0;
+					item_package[package_index][1] = 0;
+					item_package[package_index][2] = 0;
+				}
+				break;
+			}
+			if (item_type != 1 || Battle.sBattle != null)
+				break;
+			if (lasting_tasks[13] < 10000) {
+				// 增加内力上限
+				fp_level += item_package[package_index][2];
+				lasting_tasks[13] += 1;
+			}
+			item_package[package_index][2]--;
+			if (item_package[package_index][2] <= 0) {
+				item_package[package_index][2] = 0;
+				item_package[package_index][0] = 0;
+				item_package[package_index][1] = 0;
+			}
+			break;
+
+		case 2: // weapon
+			if ((Battle.sBattle != null)
+					&& (item_package[package_index][0] == 77))
+				break; // 战斗的时候不换自制武器（影响玩家属性计算）
+
+			if (item_package[package_index][1] == 0)
+				EquipWeapon(package_index);
+			else
+				UnEquipWeapon();
+			if (Battle.sBattle != null)
+				Battle.sBattle.CopyPlayerEquips();
+			break;
+
+		case 3: // equip
+		{
+			if (item_package[package_index][1] == 0)
+				EquipArmor(item_type, package_index);
+			else
+				UnEquipArmor(item_type);
+			if (Battle.sBattle != null)
+				Battle.sBattle.CopyPlayerEquips();
+			break;
+		}
+		case 4: // read book
+		{
+			if (Battle.sBattle != null)
+				break;
+
+			int k2 = GetSkillLevel(9); // 读书写字
 			if (k2 == 0)
 				return "你还是个文盲!";
 			int l2 = k2 / 2;
 			if (l2 == 0)
 				l2 = 1;
-			int skill_id = Items.item_attribs[j1][2];
-			int hp_expend = Items.item_attribs[j1][3];
-			int max_level = Items.item_attribs[j1][4];
-			int require_EXP = Items.item_attribs[j1][5];
+			int skill_id = Items.item_attribs[item_id][2];
+			int hp_expend = Items.item_attribs[item_id][3];
+			int max_level = Items.item_attribs[item_id][4];
+			int require_EXP = Items.item_attribs[item_id][5];
 			int skill_pos;
 			if (GetSkillLevel(skill_id) == 0) {
 				skill_pos = AddNewSkill(skill_id);
 				if (skill_pos == -1) {
 					return "";
 				}
-				
+
 				skills[skill_pos][1] = 1;
 				SetNewSkill(skill_id);
 				/*
-				 * wchar_t str[9];
-				 * wcscpy(str, "你学会了");
-				 * wcscat(str, Skill.skill_name[i3]);
-				 * return str;
+				 * wchar_t str[9]; wcscpy(str, "你学会了"); wcscat(str,
+				 * Skill.skill_name[i3]); return str;
 				 */
 				return "你埋头研读,似乎有点心得";
 			}
@@ -948,82 +983,80 @@ public class Player {
 				return "你现在太疲倦了,没法研读";
 			skills[skill_pos][2] += l2;
 			hp -= hp_expend;
-			if (skills[skill_pos][2] > skills[skill_pos][4])
-			{
+			if (skills[skill_pos][2] > skills[skill_pos][4]) {
 				skills[skill_pos][4] = 0;
 				skills[skill_pos][1] += 1;
 				skills[skill_pos][2] = 0;
 				SetSkillUpgrate(skill_pos);
 				return "你的功夫进步了";
-			} else
-			{
+			} else {
 				return "你埋头研读,似乎有点心得";
 			}
 		}
-	}
-	return "";
-}
-
-	void EquipArmor(int i1, int j1) {
-		int k1;
-		if ((k1 = item_package[j1][0]) < 0 || k1 > 91)
-			return;
-		int l1;
-		if ((l1 = Items.item_attribs[k1][0]) != 3)
-			return;
-		if (equips[i1] != 0)
-			UnEquipArmor(i1);
-		item_package[j1][1] = 1;
-		equips[i1] = k1;
+		}
+		return "";
 	}
 
-	void UnEquipArmor(int i1) {
-		int j1;
-		if ((j1 = equips[i1]) == 0)
+	/** 装备物品，equip_index装备表的索引， package_index背包索引 */
+	void EquipArmor(int equip_index, int package_index) {
+		int item_id = item_package[package_index][0];
+		if (item_id < 0 || item_id > 91)
 			return;
-		int k1 = 0;
-		while (true) {
-			if (k1 >= 32)
-				break;
-			if (item_package[k1][0] == j1 && item_package[k1][1] != 0) {
-				item_package[k1][1] = 0;
+		// 物品属性必须是【3装备】
+		if (Items.item_attribs[item_id][0] != 3)
+			return;
+		if (equips[equip_index] != 0)
+			UnEquipArmor(equip_index);
+		item_package[package_index][1] = 1;
+		equips[equip_index] = item_id;
+	}
+
+	/** 卸除装备， equip_index当前装备表中的索引 */
+	void UnEquipArmor(int equip_index) {
+		int item_id = equips[equip_index];
+		if (item_id == 0)
+			return;
+
+		// 将背包中物品去掉【已装备】的标志
+		for (int i = 0; i < 32; i++) {
+			if (item_package[i][0] == item_id && item_package[i][1] != 0) {
+				item_package[i][1] = 0;
 				break;
 			}
-			k1++;
 		}
-		equips[i1] = 0;
+		equips[equip_index] = 0;
 	}
 
-	void EquipWeapon(int i1) {
-		int j1 = item_package[i1][0];
+	/** 佩戴武器, item_index背包物品索引 */
+	void EquipWeapon(int item_index) {
+		int item_id = item_package[item_index][0];
 		if (equips[15] != 0)
 			UnEquipWeapon();
-		if (j1 < 0 || j1 > 91)
+		if (item_id < 0 || item_id > 91)
 			return;
-		int k1;
-		if ((k1 = Items.item_attribs[j1][0]) != 2) {
+		// 物品类别，必须是 2武器
+		if (Items.item_attribs[item_id][0] != 2)
 			return;
-		} else {
-			item_package[i1][1] = 1;
-			equips[15] = j1;
-			return;
-		}
+		// 将背包的物品置上【已装备】的标记
+		item_package[item_index][1] = 1;
+		// 添加的装备表
+		equips[15] = item_id;
 	}
 
+	/** 卸除武器 */
 	void UnEquipWeapon() {
-		int i1;
-		if ((i1 = equips[15]) == 0)
+		int item_id = equips[15];
+		if (item_id == 0)
 			return;
-		int j1 = 0;
-		do {
-			if (j1 >= 32)
-				break;
-			if (item_package[j1][0] == i1 && item_package[j1][1] != 0) {
-				item_package[j1][1] = 0;
+
+		for (int i = 0; i < 32; i++) {
+			if (item_package[i][0] == item_id && item_package[i][1] != 0) {
+				// 刪除【已装备】的标记
+				item_package[i][1] = 0;
 				break;
 			}
-			j1++;
-		} while (true);
+		}
+		// 卸除装备
 		equips[15] = 0;
 	}
 
@@ -1040,6 +1073,7 @@ public class Player {
 
 	/**
 	 * 添加新技能，如果技能已存在，则返回序号，否则新建一个等级为1的技能。
+	 * 
 	 * @param id
 	 * @return
 	 */
@@ -1061,16 +1095,17 @@ public class Player {
 
 	/**
 	 * 添加新技能，如果该技能已经存在，直接返回它的索引序号
-	 * @param id 技能ID
-	 * @return 0 无效技能
-	 * -1 异常 
-	 * [0,32) 技能序号
+	 * 
+	 * @param id
+	 *            技能ID
+	 * @return 0 无效技能 -1 异常 [0,32) 技能序号
 	 */
 	int SetNewSkill(int id) {
 		if (id < 0 || id > 53)
 			return 0;
 		for (int j1 = 0; j1 < 32; j1++)
-			if (skills[j1][0] >= 0 && skills[j1][0] <= 53 && skills[j1][0] == id)
+			if (skills[j1][0] >= 0 && skills[j1][0] <= 53
+					&& skills[j1][0] == id)
 				return j1;
 
 		for (int k1 = 0; k1 < 32; k1++)
@@ -1084,76 +1119,75 @@ public class Player {
 		return -1;
 	}
 
-	// 勾选技能
-	void SelectSkill(int id, int type) {
-		if (id < 10)
+	/**
+	 * 勾选技能
+	 * @param skill_id
+	 * @param type
+	 */
+	void SelectSkill(int skill_id, int type) {
+		if (skill_id < 10)
 			return;
-		int k1;
-		if ((k1 = select_skills[type]) != 255)
+		int cur_id = select_skills[type];
+		if (cur_id != 255)
 			UnselectSkill(type);
-		select_skills[type] = id;
+		select_skills[type] = skill_id;
 	}
 
-	// 取消选择技能
+	/** 取消选择技能 */
 	void UnselectSkill(int type) {
 		select_skills[type] = 255;
 	}
 
 	// 请教
-	int StudySkill(int id, int maxlevel) {
-		int k1 = skills[id][0];
+	int StudySkill(int skill_index, int maxlevel) {
+		int k1 = skills[skill_index][0];
 		int l1;
-		if ((l1 = skills[id][1]) >= maxlevel)
+		if ((l1 = skills[skill_index][1]) >= maxlevel)
 			return 4;
 		if (exp < l1 * 2 * (l1 * 2))
 			return 1;
-		if (skills[id][4] <= 0)
-			SetSkillUpgrate(id);
+		if (skills[skill_index][4] <= 0)
+			SetSkillUpgrate(skill_index);
 		int i2;
-		if ((i2 = skills[id][2]) > skills[id][4]) {
-			skills[id][2] = skills[id][4];
+		if ((i2 = skills[skill_index][2]) > skills[skill_index][4]) {
+			skills[skill_index][2] = skills[skill_index][4];
 			return 0;
 		}
-		if (i2 == skills[id][4]) {
-			skills[id][2] = 0;
-			skills[id][4] = 0;
-			skills[id][1] += 1;
+		if (i2 == skills[skill_index][4]) {
+			skills[skill_index][2] = 0;
+			skills[skill_index][4] = 0;
+			skills[skill_index][1] += 1;
 			return 5;
 		}
 		if (potential <= 0)
 			return 2;
 		if (k1 == 9 && money <= 0)
 			return 3;
-		if ((i2 += 4) / 10 != skills[id][2] / 10) {
+		if ((i2 += 4) / 10 != skills[skill_index][2] / 10) {
 			potential -= 1;
 			if (k1 == 9)
 				money -= 1;
 		}
-		skills[id][2] = i2;
+		skills[skill_index][2] = i2;
 		return 0;
 	}
 
-
 	/**
 	 * 练功
-	 * @param id 技能的序号
-	 * @return 0 正常学习
-	 * 1 很难提高，需要向师傅请教 
-	 * 2 需要提升内功
-	 * 3 打坐不够
-	 * 4 没有趁手兵器
-	 * 5 有伤
-	 * 6 升级
+	 * 
+	 * @param id
+	 *            技能的序号
+	 * @return 0 正常学习 1 很难提高，需要向师傅请教 2 需要提升内功 3 打坐不够 4 没有趁手兵器 5 有伤 6 升级
 	 */
 	int PracticeSkill(int id) {
-		
+
 		// 要先疗伤
 		if (hp_full != hp_max)
 			return 5;
 
 		// 计算基本功的等级
 		final int k1;
-		
+
 		final int j1 = skills[id][0]; // 实际技能ID
 		if (j1 == select_skills[2]) {
 			// 如果是已选择的轻功
@@ -1193,12 +1227,12 @@ public class Player {
 					return 4;
 			}
 		}
-		
+
 		// 已超过基本功
 		int k2;
 		if ((k2 = skills[id][1]) > k1)
 			return 1;
-		
+
 		// 查检内功修为是否足够
 		int l2 = GetSkillLevel(0);
 		int i3;
@@ -1210,19 +1244,18 @@ public class Player {
 		int k3 = l2 / 2 + j3; // (基本内功/2 + 门派内功)
 		if (k2 > k3)
 			return 2;
-		
+
 		int l3 = k3 * 10;
 		if (class_id == 8)
 			l3 += exp / 1000;
 		int i4;
 		if ((i4 = ((k2 + 1) * ((l3 * 1000) / k3)) / 1000) > fp_level)
 			return 3;
-		
-		
+
 		int j4;
 		if ((j4 = skills[id][4]) <= 0)
 			SetSkillUpgrate(id);
-		
+
 		int k4;
 		if ((k4 = skills[id][2]) > skills[id][4]) {
 			skills[id][2] = skills[id][4];
@@ -1234,7 +1267,7 @@ public class Player {
 			skills[id][1] += 1;
 			return 6;
 		} else {
-			k4+=1+k1/5+GetSavvy()/10;
+			k4 += 1 + k1 / 5 + GetSavvy() / 10;
 			skills[id][2] = k4;
 			return 0;
 		}
@@ -1309,11 +1342,13 @@ public class Player {
 			return 2;
 		int j1;
 		int k1;
-		if ((k1 = GetSkillLevel(j1 = select_skills[3])) == 0 || j1 == 255) // no 门派内功
+		if ((k1 = GetSkillLevel(j1 = select_skills[3])) == 0 || j1 == 255) // no
+																			// 门派内功
 			return 1;
 		if (fp >= fp_level * 2) {
 			int l1;
-			l1 = (l1 = (i1 / 2 + k1) * 10) + exp / 1000; // max = 基本内功*5+门派内功*10+（年龄-14）*10+经验/1000
+			l1 = (l1 = (i1 / 2 + k1) * 10) + exp / 1000; // max =
+															// 基本内功*5+门派内功*10+（年龄-14）*10+经验/1000
 			if (fp_level < l1) {
 				fp = 0;
 				fp_level += 1;
@@ -1323,17 +1358,15 @@ public class Player {
 				return 3;
 			}
 		} else {
-			fp += 2+(i1+k1*2)/40; // @lnx: 增加一个与技能相关的量，让打坐加快
+			fp += 2 + (i1 + k1 * 2) / 40; // @lnx: 增加一个与技能相关的量，让打坐加快
 			return 0;
 		}
 	}
 
 	/**
 	 * 冥思
-	 * @return 0:正常 
-	 * 1:没有选择
-	 * 2:基本法术不够
-	 * 3:已达到上限
+	 * 
+	 * @return 0:正常 1:没有选择 2:基本法术不够 3:已达到上限
 	 */
 	int Think() {
 		int i1;
@@ -1356,7 +1389,7 @@ public class Player {
 				return 3;
 			}
 		} else {
-			mp += 3+(i1+k1*2)/40; // @lnx: 增加一个与技能相关的量，让打坐加快
+			mp += 3 + (i1 + k1 * 2) / 40; // @lnx: 增加一个与技能相关的量，让打坐加快
 			return 0;
 		}
 	}
@@ -1399,19 +1432,23 @@ public class Player {
 		int k1 = 0;
 		int l1 = 0;
 		for (int i2 = i1; i2 < 32; i2++) {
-			if (skills[i2][0] < 0 || skills[i2][0] > 53 || Skill.skill_type[skills[i2][0]] != j1
+			if (skills[i2][0] < 0
+					|| skills[i2][0] > 53
+					|| Skill.skill_type[skills[i2][0]] != j1
 					&& (j1 != 4 || Skill.skill_type[skills[i2][0]] >= 2 || skills[i2][0] <= 9))
 				continue;
 			if (l1 == 0) {
 				GmudTemp.temp_array_32_2[l1][0] = i2;
-				GmudTemp.temp_array_32_2[l1][1] = (select_skills[j1] != skills[i2][0] ? 0 : 1);
+				GmudTemp.temp_array_32_2[l1][1] = (select_skills[j1] != skills[i2][0] ? 0
+						: 1);
 				l1++;
 				k1 = i2;
 				continue;
 			}
 			if (l1 < 32) {
 				GmudTemp.temp_array_32_2[l1][0] = i2;
-				GmudTemp.temp_array_32_2[l1][1] = (select_skills[j1] != skills[i2][0] ? 0 : 1);
+				GmudTemp.temp_array_32_2[l1][1] = (select_skills[j1] != skills[i2][0] ? 0
+						: 1);
 			}
 			l1++;
 		}
