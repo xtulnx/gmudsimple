@@ -76,8 +76,8 @@ b_int_array1d_static[256]
 
 f_int_array1d_static[4]
 --------------------
-[0]描述动作? 
-[1]
+[0] ? 指定招式动作，仅用于自动/重复 物理攻击(PhyAttack)，如雪花六出等
+[1] ? 指定的攻击加成
 [2]
 [3]武器？
 
@@ -88,4 +88,9 @@ f_int_array1d_static[4]
 c_int_array2d_static[2][9]:拆招描述，见 Skill#a
 --------------------
 [0]
+[1] ? PhyAttack 中计算伤害值时 -= [1] * ai[id_rival]
+[4] ? 命中率
+[5] 
+[6] ? 影响 对方的 hp-max
+[7] ? 影响 对方的 hp
 [8] 描述索引

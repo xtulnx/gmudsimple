@@ -22,6 +22,7 @@ public class uibattle {
 //	vector<wstring> desc_words;
 	static ArrayList<String> desc_words;
 
+	/** 双方的武器，用于显示招式时输出 */
 	static int weapon_id[] = new int[2];
 
 	/**
@@ -43,7 +44,7 @@ public class uibattle {
 	 */
 	static void DrawPlusFp() {
 		
-		final int id_active = Battle.sBattle.active_id;
+		final int id_active = Battle.sBattle.m_active_id;
 		
 		// 无内功，直接返回
 		if (Battle.sBattle.fighter_data[id_active][36] == 255) {
@@ -332,7 +333,7 @@ public class uibattle {
 		Video.VideoClear();
 		int l;
 		int i = l = 12;
-		int i1 = Battle.sBattle.player_id==0?1:0;
+		int i1 = Battle.sBattle.m_player_id==0?1:0;
 		l = (l += 16 + 2) + 12 * 5;
 		int j1;
 		if ((j1 = 80 - l) > 0)
@@ -340,10 +341,10 @@ public class uibattle {
 		else
 			j1 = 0;
 		int k1 = (160 - 8) / 2 + 30;
-		Video.VideoDrawStringSingleLine(Battle.sBattle.player_name/*.c_str()*/, 4, j1);
-		Video.VideoDrawStringSingleLine(Battle.sBattle.NPC_name/*.c_str()*/, k1, j1);
+		Video.VideoDrawStringSingleLine(Battle.sBattle.m_player_name/*.c_str()*/, 4, j1);
+		Video.VideoDrawStringSingleLine(Battle.sBattle.m_npc_name/*.c_str()*/, k1, j1);
 		j1 += i + 2;
-		if (hit_id == Battle.sBattle.player_id)
+		if (hit_id == Battle.sBattle.m_player_id)
 			Video.VideoDrawImage(hit_img, 18, j1);    //draw hit
 		else
 			Video.VideoDrawImage(player_img, 18, j1);
@@ -355,17 +356,17 @@ public class uibattle {
 		j1 += 19;
 		Video.VideoDrawImage(hp_img, 4, j1);
 		int l1 = 4 + 20;
-		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.player_id][1], Battle.sBattle.fighter_data[Battle.sBattle.player_id][2], Battle.sBattle.fighter_data[Battle.sBattle.player_id][3], l1, j1 + 4, true);
+		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][1], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][2], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][3], l1, j1 + 4, true);
 		DrawHPRect(Battle.sBattle.fighter_data[i1][1], Battle.sBattle.fighter_data[i1][2], Battle.sBattle.fighter_data[i1][3], k1 + 2, j1 + 4, false);
 		j1 += 16;
 		Video.VideoDrawImage(fp_img, 4, j1);
-		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.player_id][4], Battle.sBattle.fighter_data[Battle.sBattle.player_id][5], Battle.sBattle.fighter_data[Battle.sBattle.player_id][5], l1, j1 + 4, true);
+		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][4], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][5], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][5], l1, j1 + 4, true);
 		DrawHPRect(Battle.sBattle.fighter_data[i1][4], Battle.sBattle.fighter_data[i1][5], Battle.sBattle.fighter_data[i1][5], k1 + 2, j1 + 4, false);
 		j1 += 16;
-		if(Battle.sBattle.fighter_data[Battle.sBattle.player_id][42] != 255)
+		if(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][42] != 255)
 		{
 			Video.VideoDrawImage(mp_img, 4, j1);
-			DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.player_id][6], Battle.sBattle.fighter_data[Battle.sBattle.player_id][7], Battle.sBattle.fighter_data[Battle.sBattle.player_id][7], l1, j1 + 4, true);
+			DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][6], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][7], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][7], l1, j1 + 4, true);
 			j1 += 16;
 		}
 		//u.a(0);
@@ -391,8 +392,8 @@ public class uibattle {
 	static void PhyAttack(int attack_type, int attack_desc)
 	{
 		String str_desc;
-		int id_active = Battle.sBattle.active_id;
-		int id_player = Battle.sBattle.player_id;
+		int id_active = Battle.sBattle.m_active_id;
+		int id_player = Battle.sBattle.m_player_id;
 		switch (attack_type)
 		{
 		case 0: //物理攻击
@@ -400,11 +401,11 @@ public class uibattle {
 			if (id_active == id_player)
 			{
 				str_desc = util.ReplaceStr(str_desc, "N", "你");
-				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name);
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 			} else
 			{
-				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.NPC_name);
+				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 				str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 			}
@@ -425,11 +426,11 @@ public class uibattle {
 				int k2 = Battle.sBattle.a_int_array1d_static[13];
 				if (id_active == id_player)
 				{
-					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.m_npc_name/*.c_str()*/);
 					str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 				} else
 				{
-					str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.m_npc_name/*.c_str()*/);
 					str_desc = util.ReplaceStr(str_desc, "SB", "你");
 					str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 				}
@@ -439,8 +440,8 @@ public class uibattle {
 			}
 		case 2: //hit result
 			{
-				int j3;
-				str_desc = Skill.GetHitDesc(j3 = attack_desc & 0xff);
+				int j3 = attack_desc & 0xff;
+				str_desc = Skill.GetHitDesc(j3);
 				int k3 = attack_desc / 256;
 //				wstring s2("");
 				String s2="";
@@ -448,17 +449,17 @@ public class uibattle {
 					s2 = Skill.GetHitDesc(k3);
 				if (id_active == id_player)
 				{
-					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+					str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.m_npc_name/*.c_str()*/);
 					if (j3 != 36)
 					{
 						str_desc += "(";
-						str_desc += Battle.sBattle.NPC_name;
+						str_desc += Battle.sBattle.m_npc_name;
 						str_desc += s2/*.c_str()*/;
 						str_desc += ")";
 					}
 					break;
 				}
-				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.m_npc_name/*.c_str()*/);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 				if (j3 != 36)
 				{
@@ -470,14 +471,16 @@ public class uibattle {
 			}
 		case 3: //？？？
 //			s1 = desc_words[l];
+			// XXX: 不支持
+			Gmud.exit();
 			str_desc = desc_words.get(attack_desc);
 			if (id_active == id_player)
 			{
 				str_desc = util.ReplaceStr(str_desc, "N", "你");
-				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.m_npc_name/*.c_str()*/);
 			} else
 			{
-				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "N", Battle.sBattle.m_npc_name/*.c_str()*/);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
 			break;
@@ -486,10 +489,10 @@ public class uibattle {
 			str_desc = Skill.GetHitDesc(attack_desc);
 			if (id_active == id_player)
 			{
-				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "SB", Battle.sBattle.m_npc_name/*.c_str()*/);
 			} else
 			{
-				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.NPC_name/*.c_str()*/);
+				str_desc = util.ReplaceStr(str_desc, "你", Battle.sBattle.m_npc_name/*.c_str()*/);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
 			break;
@@ -539,11 +542,11 @@ public class uibattle {
 		int l = 0;
 		int i1 = 0;
 		int j1;
-		Magic.Effect(j1 = Battle.sBattle.player_id);
+		Magic.Effect(j1 = Battle.sBattle.m_player_id);
 		int k1 = Battle.sBattle.CountMagicEffect(j1);
 		if (k1 < 1)  //get Battle skill number
 			return 0;
-		DrawMagicMenu(Battle.sBattle.player_id, 0, 0);
+		DrawMagicMenu(Battle.sBattle.m_player_id, 0, 0);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(150);
@@ -570,7 +573,7 @@ public class uibattle {
 					}
 				}
 				i1 = 0;
-				DrawMagicMenu(Battle.sBattle.player_id, l, i1);
+				DrawMagicMenu(Battle.sBattle.m_player_id, l, i1);
 				Video.VideoUpdate();
 				Input.ClearKeyStatus();
 				Gmud.GmudDelay(50);
@@ -589,7 +592,7 @@ public class uibattle {
 						l = 0;
 						i1 = 0;
 					}
-					DrawMagicMenu(Battle.sBattle.player_id, l, i1);
+					DrawMagicMenu(Battle.sBattle.m_player_id, l, i1);
 					Video.VideoUpdate();
 					Gmud.GmudDelay(50);
 				} else
@@ -597,7 +600,7 @@ public class uibattle {
 					int l1;
 					String s;
 					if ((Input.inputstatus & Input.kKeyEnt)!=0)  //enter
-						if ((s = Magic.UseMagic(l1 = Battle.sBattle.a_int_array2d_static[Battle.sBattle.player_id][l + i1])).length() == 0)
+						if ((s = Magic.UseMagic(l1 = Battle.sBattle.a_int_array2d_static[Battle.sBattle.m_player_id][l + i1])).length() == 0)
 						{
 							return 1;
 						} else

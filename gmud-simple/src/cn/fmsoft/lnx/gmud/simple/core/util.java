@@ -73,4 +73,25 @@ public class util {
 		// }
 		// Video::VideoUpdate();
 	}
+
+	/**
+	 * 将储存成 unsigned char 类型的数据还原成 char 类型。
+	 * 
+	 * @param unsigned_char
+	 * @return
+	 */
+	protected final static int unsigned2char(int unsigned_char) {
+		if (unsigned_char > 127)
+			unsigned_char -= 256;
+		return unsigned_char;
+	}
+
+	/** 将 val 限制在 [min, max]之间 */
+	protected final static int between(int val, int min, int max) {
+		if (val < min)
+			return min;
+		if (val > max)
+			return max;
+		return val;
+	}
 }

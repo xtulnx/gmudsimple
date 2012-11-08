@@ -2,23 +2,23 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 import cn.fmsoft.lnx.gmud.simple.core.NPC.NPCSKILLINFO;
 
-public class Battle {
-	String player_name;
-	String NPC_name;
+class Battle {
+	String m_player_name;
+	String m_npc_name;
 	int a_int_array2d_static[][] = new int[2][10];
 
 	/** (size:2,9) 见 {@link Skill#a}, [8]为描述索引 */
 	int c_int_array2d_static[][] = new int[2][9];
 
 	int fighter_data[][] = new int[2][256];
-	int is_try;
-	int player_id;
-	int active_id;
-	int NPC_id;
-	int NPC_image_id;
-	private short NPC_item[] = new short[5];
+	private int m_is_try;
+	int m_player_id;
+	int m_active_id;
+	int m_NPC_id;
+	int m_NPC_image_id;
+	private short m_NPC_item[] = new short[5];
 	/** NPC 的装备， [15]是武器 */
-	int NPC_equip[] = new int[16];
+	int m_NPC_equip[] = new int[16];
 	int NPC_select_skill[] = new int[16];
 
 	/** 用作 {@link #b_int_array1d_static} 的副本, [0,10)暂存可用招式ID用于NPC随机出招 */
@@ -30,25 +30,30 @@ public class Battle {
 	boolean bEscape; // end flag ?
 
 	/** 3个数值一组 */
-	private int stack_top;
+	private int m_stack_top;
 
 	/** (size:4) [0]描述动作? [3]武器？ */
 	private int f_int_array1d_static[] = new int[4];
-	private boolean a_boolean_static;
 
 	static Battle sBattle;
 
 	public Battle(int npc, int nimg, int tryflag) {
-		NPC_id = npc;
-		NPC_image_id = nimg;
-		is_try = tryflag;
-		player_id = 0;
-		active_id = 0;
+		m_NPC_id = npc;
+		m_NPC_image_id = nimg;
+		m_is_try = tryflag;
+		m_player_id = 0;
+		m_active_id = 0;
+		m_stack_top = 0;
+
+		// 初始化 战斗数据栈
+		int[] stack = b_int_array1d_static;
+		int[] data = fighter_data[0];
+		int[] data_rival = fighter_data[1];
 		for (int i = 0; i < 256; i++) {
-			b_int_array1d_static[i] = -1;
-			fighter_data[0][i] = fighter_data[1][i] = 0;
+			stack[i] = -1;
+			data[i] = 0;
+			data_rival[i] = 0;
 		}
-		stack_top = 0;
 	}
 
 	/**
@@ -90,7 +95,8 @@ public class Battle {
 	/**
 	 * 记录 {@link #fighter_data} 值的变化（伤害结果？）。 先在栈中查找，如果存在则直接替换，否则入栈。如果栈满则不添加。
 	 * 
-	 * @param id 角色ID
+	 * @param id
+	 *            角色ID
 	 * @param type
 	 *            {@link #fighter_data} 的元素索引, 0=fpPlus 1=hp 2=hp_max 4=fp
 	 * @param val
@@ -98,7 +104,7 @@ public class Battle {
 	 */
 	void stack_fighterdate_set(int id, int type, int val) {
 		int[] fighter_stack = b_int_array1d_static;
-		for (int top = 0; top < stack_top; top += 3) {
+		for (int top = 0; top < m_stack_top; top += 3) {
 			// 查找栈，如果(角色ID)及（类型?）相同，则更改成新的（伤害？）
 			if (fighter_stack[top + 32] == id
 					&& fighter_stack[top + 1 + 32] == type) {
@@ -108,18 +114,48 @@ public class Battle {
 		}
 
 		// 如果栈空间不足（从[32]开始使用），就不记录，直接返回
-		if (stack_top + 3 > 256 - 32)
+		if (m_stack_top + 3 > 256 - 32)
 			return;
 
-		fighter_stack[stack_top + 32] = id;
-		fighter_stack[stack_top + 1 + 32] = type;
-		fighter_stack[stack_top + 2 + 32] = val;
-		stack_top += 3;
+		fighter_stack[m_stack_top + 32] = id;
+		fighter_stack[m_stack_top + 1 + 32] = type;
+		fighter_stack[m_stack_top + 2 + 32] = val;
+		m_stack_top += 3;
+	}
+	
+	/***
+	 * 获取攻击后的对手受伤程度的描述ID
+	 * 
+	 * @param id
+	 *            当前角色ID
+	 * @param damage
+	 *            伤害值
+	 * @return 对手受伤严重程度的描述值
+	 */
+	private final int getHitDescId(int id, int damage) {
+		final int id_rival = id == 0 ? 1 : 0;
+		final int skill_id;
+		final int weapon_type;
+		final int rival_hp_full = fighter_data[id_rival][3];
+		final int weapon = fighter_data[id][29];
+		if (weapon == 0) {
+			weapon_type = 0;
+			// 拳脚技能
+			int skill_fist = fighter_data[id][30];
+			if (skill_fist == 255)
+				skill_fist = 1;
+			skill_id = skill_fist;
+		} else {
+			weapon_type = Items.item_attribs[weapon][1];
+			// 兵刃技能
+			int skill_weapon = fighter_data[id][32];
+			if (skill_weapon == 255)
+				skill_weapon = Skill.weapon_to_base_skill[weapon_type];
+			skill_id = skill_weapon;
+		}
+		return GetHitDesc(weapon_type, damage, rival_hp_full, skill_id);
 	}
 
-	// TODO:
-	// Bug: 0级买麻绳与卖花妞战斗，普通攻击的描述变成“闪避”类的文本
-	// 相关变量：b_int_array1d_static[5] = 246 c_int_array2d_static[?][8]
 	/** 物理攻击，返回伤害值（掉血量） */
 	int PhyAttack(boolean flag) {
 		int ai[] = new int[2];
@@ -128,13 +164,13 @@ public class Battle {
 		b_int_array1d_static[3] = util.RandomInt(16);
 
 		ai[0] = ai[1] = 0;
-		int id = active_id;
-		int id_rival = active_id != 0 ? 0 : 1;
+		int id = m_active_id;
+		int id_rival = m_active_id != 0 ? 0 : 1;
 		// int i1;
 		// if ((i1 = a(n = jdField_g_of_type_Int == 0 ? 1 : 0, 1)) == 0)
 		// return 0;
 		int k1 = 50;
-		if (active_id == player_id)
+		if (m_active_id == m_player_id)
 			k1 = 60;
 
 		// 经验差距
@@ -157,173 +193,221 @@ public class Battle {
 			agility_gap += CalaAvtiveSpeed(id, 1, 0);
 
 		int i2 = 0;
-		for (int j3 = 0; j3 < 2; j3++) {
-			// 武器
-			i2 = fighter_data[j3][29];
 
-			// 空手
+		// 双方各随机产生一次普通攻击
+		for (int i = 0; i < 2; i++) {
+			// 武器
+			i2 = fighter_data[i][29];
+
+			final int skill_level;
+			final int skill_id;
 			if (i2 == 0) {
-				int skill_id = fighter_data[j3][30];
-				// 无拳脚技能
-				if (skill_id == 255) {
-					c_int_array2d_static[j3][8] = ib(j3, 1, 1);
+				// 空手, 使用拳脚攻击
+				int skill_fist = fighter_data[i][30];
+				if (skill_fist != 255) {
+					skill_id = skill_fist;
+					skill_level = fighter_data[i][31];
+					ai[i] = skill_level;
 				} else {
-					int skill_level = fighter_data[j3][31];
-					c_int_array2d_static[j3][8] = ib(j3, skill_id, skill_level);
-					ai[j3] = skill_level;
+					// 无拳脚技能时，就使用 1级的基本拳脚
+					skill_id = 1;
+					skill_level = 1;
 				}
 			} else {
 				// 武器类型
 				int weapon_type = Items.item_attribs[i2][1];
 				// 兵刃技能
-				int skill_id = fighter_data[j3][32];
-				// 兵刃技能有效，并且武器类型相符
-				if (skill_id != 255
-						&& Skill.skill_weapon_type[skill_id] == weapon_type) {
-					int skill_level = fighter_data[j3][33];
-					c_int_array2d_static[j3][8] = ib(j3, skill_id, skill_level);
-					ai[j3] = skill_level;
-				} else { // XXX: 鞭类武器(9)时，描述文本变成闪避
+				int skill_weapon = fighter_data[i][32];
+				if (skill_weapon != 255
+						&& Skill.skill_weapon_type[skill_weapon] == weapon_type) {
+					// 兵刃技能有效，并且武器类型相符
+					skill_id = skill_weapon;
+					skill_level = fighter_data[i][33];
+					ai[i] = skill_level;
+				} else {
+					// 否则使用 1级 与武器相关的基本兵刃技能
 					skill_id = Skill.weapon_to_base_skill[weapon_type];
-					c_int_array2d_static[j3][8] = ib(j3, skill_id, 1);
+					skill_level = 1;
 				}
 			}
+			// 随机产生攻击一次
+			c_int_array2d_static[i][8] = ib(i, skill_id, skill_level);
 		}
 
+		// TODO: 对当前角色直接使用 指定的攻击招式，见 雪花六出 的重复攻击
 		if (flag && f_int_array1d_static[0] >= 0) {
-			// 直接使用 描述动作？
-			c_int_array2d_static[id][8] = f_int_array1d_static[0];
-			int k3 = f_int_array1d_static[0];
-			for (int k4 = 0; k4 < 8; k4++)
-				c_int_array2d_static[id][k4] = Skill.a[k3][k4];
+			int attack_index = f_int_array1d_static[0];
+			for (int i = 0; i < 8; i++)
+				c_int_array2d_static[id][i] = Skill.a[attack_index][i];
+			c_int_array2d_static[id][8] = attack_index;
 		}
 
-		int i3 = 0;
-		i3 = 0 + (c_int_array2d_static[id][4] <= 127 ? c_int_array2d_static[id][4]
-				: -(256 - c_int_array2d_static[id][4]));
+		// TODO: 招式的命中？
+		int i3 = util.unsigned2char(c_int_array2d_static[id][4]);
+
 		// 等级差
-		int l3 = (fighter_data[id][62] / 5 - fighter_data[id_rival][62] / 5) * 12;
-		if (l3 < -60)
-			l3 = -60;
-		if (l3 > 60)
-			l3 = 60;
-		k1 += CalcHit(id) + l3 + i3 + agility_gap + exp_gap;
+		int level_gap = (fighter_data[id][62] / 5 - fighter_data[id_rival][62] / 5) * 12;
+		if (level_gap < -60)
+			level_gap = -60;
+		if (level_gap > 60)
+			level_gap = 60;
+
+		// 击中的概率
+		k1 += CalcHit(id) + level_gap + i3 + agility_gap + exp_gap;
 		if (k1 > 99)
 			k1 = 99;
 		if (k1 < 1)
 			k1 = 1;
 		int i6 = CalaAvtiveSpeed(id_rival, 4, 4);
 		if (i6 > 0 && i6 < 20)
-			k1 = 100;
+			k1 = 100; // 表示必中
 		if (util.RandomBool(k1)) {
-			int k6 = CalcAvoid(id_rival); // 回避率
-			int j7 = 0;
-			int j8 = fighter_data[id_rival][34]; // 轻功
-			if (j8 > 0 && j8 < 94)
-				j7 = CalcExpLevel(fighter_data[id_rival][35]);
-			k6 += j7;
+			// 回避率
+			int avoid = CalcAvoid(id_rival);
+
+			// 轻功
+			int skill_dodge = fighter_data[id_rival][34];
+			int skill_dodge_level = fighter_data[id_rival][35];
+			if (skill_dodge > 0 && skill_dodge < 94) {
+				avoid += CalcExpLevel(skill_dodge_level);
+			}
+
+			// 必中的情况下，将对手的闪避置0
 			if (i6 > 0 && i6 < 20)
-				k6 = 0;
-			if (util.RandomBool(k6)) {
-				int l8 = c_int_array2d_static[id][8];
-				int k9 = 0;
-				b(0, l8, 1);
-				if (fighter_data[id_rival][34] != 255) // 如果 对手有轻功，使用他的轻功招式描述
-					k9 = ib(id_rival, fighter_data[id_rival][34],
-							fighter_data[id_rival][35]);
-				else
-					k9 = util.RandomInt(5) + 243; // 随机取[243,248)间的招式描述
-				d(0, k9, 1);
+				avoid = 0;
+
+			if (util.RandomBool(avoid)) {
+				// 对手闪掉了 当前角色的攻击
+				// step1.记录 你 出的招，物理攻击
+				b(0, c_int_array2d_static[id][8], 1);
+				final int attack_desc;
+				if (skill_dodge != 255) {
+					// 如果 对手有轻功，使用他的轻功招式描述
+					attack_desc = ib(id_rival, skill_dodge, skill_dodge_level);
+				} else {
+					// 随机取[243,248)间的招式描述,普通闪避，“但是被SB机灵地躲开了。“
+					attack_desc = util.RandomInt(5) + 243;
+				}
+				// step2.记录 对手的闪避招式
+				d(0, attack_desc, 1);
 				fighter_data[id][29] = weapon_id;
 				return 0;
 			}
-			int i9 = 0;
-			i9 = 0 + fighter_data[id_rival][8]; // 臂力
+
+			int i9 = 0; // ? 还是闪避？
+			i9 += fighter_data[id_rival][8]; // 臂力
 			if (fighter_data[id_rival][54] != 255) // 基本招架
 				i9 += fighter_data[id_rival][55] / 2;
 			if (fighter_data[id_rival][38] != 255) // 招架
 				i9 += fighter_data[id_rival][39];
-			i9 = CalcExpLevel(i9 += c_int_array2d_static[id_rival][5] <= 127 ? c_int_array2d_static[id_rival][5]
-					: -(255 - c_int_array2d_static[id_rival][5]));
+			i9 += util.unsigned2char(c_int_array2d_static[id_rival][5]);
+			i9 = CalcExpLevel(i9);
 			if (i6 > 0 && i6 < 20)
 				i9 = 0;
 			if (util.RandomBool(i9)) {
-				int l9 = c_int_array2d_static[id][8];
-				b(0, l9, 1);
-				int k10;
-				if (i2 == 0)
-					k10 = 252;
-				else
-					k10 = util.RandomInt(4) + 248;
-				d(0, k10, 1);
+				// 被对手闪避了
+				// step1.记录 你 出的招，物理攻击
+				b(0, c_int_array2d_static[id][8], 1);
+				final int attack_desc;
+				if (i2 == 0) {
+					// 拳脚的闪避, "结果被SB挡开了。"
+					attack_desc = 252;
+				} else {
+					// 有武器时的闪避
+					attack_desc = util.RandomInt(4) + 248;
+				}
+				// step2.记录 对手的闪避招式
+				d(0, attack_desc, 1);
 				fighter_data[id][29] = weapon_id;
 				return 0;
 			}
 		} else {
+			// 被对手闪避了
+
 			int l6 = c_int_array2d_static[id][8];
-			if (util.RandomBool(65)) { // ? 如果击中了，加入攻击描述
+			if (util.RandomBool(65)) {
+				// step1.记录 你 出的招，物理攻击
 				b(0, l6, 1);
-				int k7;
+				int desc;
 				if (i2 == 0)
-					k7 = 252;
+					desc = 252;
 				else
-					k7 = util.RandomInt(4) + 248;
-				d(0, k7, 1);
+					desc = util.RandomInt(4) + 248;
+				// step2.记录 对手的闪避招式
+				d(0, desc, 1);
 			} else {
-				int l7 = 0;
+				int desc = 0;
 				b(0, l6, 1);
 				if (fighter_data[id_rival][34] != 255) // 如果 对手有轻功
-					l7 = ib(id_rival, fighter_data[id_rival][34],
+					desc = ib(id_rival, fighter_data[id_rival][34],
 							fighter_data[id_rival][35]);
 				else
-					l7 = util.RandomInt(5) + 243;
-				d(0, l7, 1);
+					desc = util.RandomInt(5) + 243;
+				// step2.记录 对手的闪避招式
+				d(0, desc, 1);
 			}
 			fighter_data[id][29] = weapon_id; // 恢复武器
 			return 0;
 		}
-		if ((i6 = CalaAvtiveSpeed(id_rival, 5, 4)) > 0 && i6 < 20
+		i6 = CalaAvtiveSpeed(id_rival, 5, 4);
+		if (i6 > 0 && i6 < 20
 				&& util.RandomBool(CalaAvtiveSpeed(id_rival, 5, 0))) {
 			b(0, c_int_array2d_static[id][8], 1);
 			d(1, CalaAvtiveSpeed(id_rival, 5, 2), 1);
 			fighter_data[id][29] = weapon_id;
 			return 0;
 		}
-		int i8 = CalcAttack(id); // 计算攻击
-		int i7 = 0 + i8; // 伤害值
+
 		fighter_data[id][29] = weapon_id;
-		int k8 = c_int_array2d_static[id][6];
-		i7 += c_int_array2d_static[id][7];
+
+		int attack = CalcAttack(id); // 计算攻击
+		int damage = attack; // 伤害值
+
+		damage += c_int_array2d_static[id][7];
+
+		// 内伤：降低对方的 hp-max
+		int injury = c_int_array2d_static[id][6];
+
 		// XXX: 不同？！
 		if (fighter_data[id][29] > 800 || fighter_data[id][30] > 800)
 			Video.exit(1); // error exit
-		int j9 = fighter_data[id][0]; // 加力
-		if (fighter_data[id][4] > 0) // 内力 -= 加力
-		{
-			int i10 = stackB_find(id, 4);
-			if (i10 < 0)
-				i10 = fighter_data[id][4];
-			if (i10 >= j9) {
-				i10 -= j9;
+
+		// 加力，扣除内力消耗
+		int fp_plus = fighter_data[id][0];
+		if (fighter_data[id][4] > 0) {
+			int cur_fp = stackB_find(id, 4);
+			if (cur_fp < 0)
+				cur_fp = fighter_data[id][4];
+			if (cur_fp >= fp_plus) {
+				cur_fp -= fp_plus;
 			} else {
-				j9 = i10;
-				i10 = 0;
+				fp_plus = cur_fp;
+				cur_fp = 0;
 			}
-			stack_fighterdate_set(id, 4, i10);
+			stack_fighterdate_set(id, 4, cur_fp);
 		} else {
-			j9 = 0;
+			// 内力不足则不使用加力
+			fp_plus = 0;
 		}
-		i7 += i2 == 0 ? j9 : j9 / 2;
+
+		// 有武器时只用一半的加力值
+		damage += i2 == 0 ? fp_plus : fp_plus / 2;
+
 		if (flag)
-			i7 += f_int_array1d_static[1];
-		if ((i7 = (i7 = (i7 -= CalcDefenseB(id_rival))
-				- c_int_array2d_static[id_rival][1] * ai[id_rival])
-				- fighter_data[id_rival][4] / 10) < 0)
-			i7 = 1;
-		if (i7 < 8)
-			i7 += 8;
-		int j10 = 10 + (c_int_array2d_static[id][3] <= 127 ? c_int_array2d_static[id][3]
-				: -(256 - c_int_array2d_static[id][3]));
+			damage += f_int_array1d_static[1];
+
+		// 减去防御
+		damage -= CalcDefenseB(id_rival);
+		// TODO: 减去对手攻击技能水平
+		damage -= c_int_array2d_static[id_rival][1] * ai[id_rival];
+		// 减去 对手内力/10
+		damage -= fighter_data[id_rival][4] / 10;
+		if (damage < 0)
+			damage = 1;
+		if (damage < 8)
+			damage += 8;
+
+		int j10 = 10 + util.unsigned2char(c_int_array2d_static[id][3]);
 		if (flag)
 			j10 += f_int_array1d_static[2];
 		if (j10 < 1)
@@ -331,74 +415,81 @@ public class Battle {
 		if (j10 > 70)
 			j10 = 70;
 		if (util.RandomBool(j10)) {
-			i7 += util.RandomInt(fighter_data[id][8]); // 臂力
+			// 臂力
+			damage += util.RandomInt(fighter_data[id][8]);
 			if (i2 == 0)
-				k8 = i7;
+				injury = damage;
 		}
-		int l10;
-		if (util.RandomBool((l10 = fighter_data[id_rival][11]) * 2)
-				&& (i7 -= i7 / 3) > k8)
-			k8 = i7;
-		int i11;
-		if (util.RandomBool(i11 = CalcDefense(id_rival)))
-			k8 = 0;
-		if (k8 > i7)
-			k8 = i7;
-		if (i7 <= i8 / 2)
-			i7 = i8 / 2 + util.RandomInt(i8 / 2);
-		int j11 = c_int_array2d_static[id][8];
-		b(0, j11, 1);
-		int k11 = 0;
-		int l11 = 0;
-		if ((i2 = fighter_data[id][29]) == 0) {
-			int i12 = 1;
-			if (fighter_data[id][30] != 255)
-				i12 = fighter_data[id][30];
-			k11 = ia(0, i7, fighter_data[id_rival][3], i12);
-		} else {
-			int j12 = 1;
-			if (fighter_data[id][32] != 255)
-				j12 = fighter_data[id][32];
-			int l12;
-			k11 = ia(l12 = Items.item_attribs[i2][1], i7,
-					fighter_data[id_rival][3], j12);
+
+		// 对手的根骨
+		if (util.RandomBool(fighter_data[id_rival][11] * 2)) {
+			damage -= damage / 3;
+			if (damage > injury)
+				injury = damage;
 		}
-		int k12 = stackB_find(id_rival, 1);
-		int i13 = stackB_find(id_rival, 2);
-		if (k12 < 0)
-			k12 = fighter_data[id_rival][1];
-		if (i13 < 0)
-			i13 = fighter_data[id_rival][2];
-		int j13 = k12 - i7; // 扣除 hp
-		int k13 = i13 - k8; // 扣除 hp-max
-		if (j13 < 0)
-			j13 = 0;
-		if (k13 < 0)
-			k13 = 0;
-		stack_fighterdate_set(id_rival, 1, j13);
-		stack_fighterdate_set(id_rival, 2, k13);
-		if ((l11 = 9 - j13 / (fighter_data[id_rival][3] / 10)) < 0)
-			l11 = 0;
+
+		// 如果对手的防御好，就可以免 hp-max 伤害
+		if (util.RandomBool(CalcDefense(id_rival)))
+			injury = 0;
+
+		if (injury > damage)
+			injury = damage;
+
+		// 如果最终伤害不及攻击力的一半，则随机取攻击力一半以上的值
+		if (damage <= attack / 2)
+			damage = attack / 2 + util.RandomInt(attack / 2);
+
+		// step1.记录 你出的招
+		b(0, c_int_array2d_static[id][8], 1);
+
+		// 对方受伤后的描述
+		final int hit_desc = getHitDescId(id, damage);
+
+		// 扣除 对方的 hp
+		int rival_hp = stackB_find(id_rival, 1);
+		if (rival_hp < 0)
+			rival_hp = fighter_data[id_rival][1];
+		rival_hp -= damage;
+		if (rival_hp < 0)
+			rival_hp = 0;
+		stack_fighterdate_set(id_rival, 1, rival_hp);
+
+		// 扣除 对方的 hp-max
+		int rival_hp_max = stackB_find(id_rival, 2);
+		if (rival_hp_max < 0)
+			rival_hp_max = fighter_data[id_rival][2];
+		rival_hp_max -= injury;
+		if (rival_hp_max < 0)
+			rival_hp_max = 0;
+		stack_fighterdate_set(id_rival, 2, rival_hp_max);
+
+		// 严重程度＝9-当前血量/(上限/10)
+		int severity = 9 - rival_hp / (fighter_data[id_rival][3] / 10);
+		if (severity < 0)
+			severity = 0;
 		if (i2 != 0) {
-			if (l11 == 9 && util.RandomInt(2) == 1)
-				l11 = 10;
-			l11 += 47;
+			// 有武器的描述，会带“伤”字
+			if (severity == 9 && util.RandomInt(2) == 1)
+				severity = 10;
+			// "看起来气血充盈，并没有受伤"...
+			severity += 47;
 		} else {
-			l11 += 37;
+			// 空手的描述, "看起来充满活力，一点也不累"..
+			severity += 37;
 		}
-		k11 = l11 * 256 + k11;
-		d(2, k11, 1);
-		return i7;
+		// 记录 伤害结果 (attack_type==2)，描述是组合值( a*256 + desc)
+		d(2, severity * 256 + hit_desc, 1);
+		return damage;
 	}
 
 	boolean BattleIsEnd() {
 		if (bEscape)
 			return false; // 逃跑成功
 
-		if (is_try == 0) {// 有一方 hp<=0 战斗结束
+		if (m_is_try == 0) {// 有一方 hp<=0 战斗结束
 			if (fighter_data[0][1] <= 0 || fighter_data[1][1] <= 0)
 				return false; // 退出
-		} else if (is_try == 1
+		} else if (m_is_try == 1
 				&& (fighter_data[0][1] < fighter_data[0][3] / 2 || fighter_data[1][1] < fighter_data[1][3] / 2)) // 切磋
 			return false; // 退出
 		return true;
@@ -406,12 +497,12 @@ public class Battle {
 
 	void CopyData() {
 		CopyPlayerData();
-		CopyNPCData(NPC_id);
+		CopyNPCData(m_NPC_id);
 	}
 
 	void CopyPlayerData() {
-		int id = player_id;
-		player_name = Gmud.sPlayer.player_name;
+		int id = m_player_id;
+		m_player_name = Gmud.sPlayer.player_name;
 		for (int i = 0; i < 128; i++)
 			fighter_data[id][i] = 0;
 
@@ -490,7 +581,7 @@ public class Battle {
 	void CopyNPCData(int npc_id) {
 		if (npc_id < 0 || npc_id > 179)
 			return;
-		NPC_name = NPC.NPC_names[npc_id]; // npc name
+		m_npc_name = NPC.NPC_names[npc_id]; // npc name
 
 		// clean data
 		for (int i = 0; i < 128; i++)
@@ -529,7 +620,7 @@ public class Battle {
 		// npc equipt
 		NPCEquip(npc_id);
 		for (int i = 0; i < 16; i++)
-			fighter_data[1][14 + i] = NPC_equip[i];
+			fighter_data[1][14 + i] = m_NPC_equip[i];
 
 		// npc select skill
 		NPCSetSkill(npc_id);
@@ -560,7 +651,7 @@ public class Battle {
 	}
 
 	/**
-	 * 读取 NPC 的装备，存入 {@link #NPC_equip}
+	 * 读取 NPC 的装备，存入 {@link #m_NPC_equip}
 	 * 
 	 * @param npc_id
 	 */
@@ -568,7 +659,7 @@ public class Battle {
 		if (npc_id < 0 || npc_id > 179)
 			return;
 		for (int i = 0; i < 16; i++)
-			NPC_equip[i] = 0;
+			m_NPC_equip[i] = 0;
 
 		for (int i = 0; i < 5; i++) {
 			int item_id = NPC.NPC_item[npc_id][i];
@@ -577,11 +668,11 @@ public class Battle {
 
 			if (Items.item_attribs[item_id][0] == 2) {
 				// 是武器
-				NPC_equip[15] = item_id;
+				m_NPC_equip[15] = item_id;
 			} else if (Items.item_attribs[item_id][0] == 3) {
 				// 装备
 				int equip_type = Items.item_attribs[item_id][1];
-				NPC_equip[equip_type] = item_id;
+				m_NPC_equip[equip_type] = item_id;
 			}
 		}
 	}
@@ -619,7 +710,7 @@ public class Battle {
 		}
 
 		// 佩戴的武器ID
-		int weapon_id = NPC_equip[15];
+		int weapon_id = m_NPC_equip[15];
 
 		for (int i = 0; i < size; i++) {
 			int skill_id = skills[1 + i * 2];
@@ -807,15 +898,14 @@ public class Battle {
 
 	void BattleMain() {
 		uibattle.weapon_id[0] = uibattle.weapon_id[1] = 0;
-		a_boolean_static = false;
 		CopyData();
 		bEscape = false;
 		uibattle.menu_id = 0;
-		active_id = CalcActOrder(); // 计算出招先后
+		m_active_id = CalcActOrder(); // 计算出招先后
 		boolean flag = true;
 
 		uibattle.player_img = Res.loadimage(Gmud.sPlayer.image_id * 6 + 74 + 4);
-		uibattle.NPC_img = Res.loadimage(NPC_image_id);
+		uibattle.NPC_img = Res.loadimage(m_NPC_image_id);
 		uibattle.hp_img = Res.loadimage(244);
 		uibattle.fp_img = Res.loadimage(245);
 		uibattle.mp_img = Res.loadimage(246);
@@ -846,8 +936,8 @@ public class Battle {
 		// DeleteObject(uibattle.NPC_img);
 		// DeleteObject(uibattle.player_img);
 
-		player_name = "";
-		NPC_name = "";
+		m_player_name = "";
+		m_npc_name = "";
 		Gmud.GmudDelay(200);
 
 	}
@@ -856,16 +946,28 @@ public class Battle {
 	 * 清除战斗队列
 	 */
 	void ClearActiveQueue() {
-		stack_top = 0;
+		m_stack_top = 0;
 		for (int i = 0; i < 256; i++) {
 			a_int_array1d_static[i] = -1;
 			b_int_array1d_static[i] = -1;
 		}
 	}
 
-	int CalaAvtiveSpeed(int i1, int j1, int k1) {
+	/***
+	 * 
+	 * @see Battle#d(int, int, int, int)
+	 * @see #a(int, int, int, int, int, int, int)
+	 * @param id
+	 *            角色ID
+	 * @param j1
+	 *            类别
+	 * @param k1
+	 *            序号[0,5)
+	 * @return
+	 */
+	int CalaAvtiveSpeed(int id, int j1, int k1) {
 		if (k1 < 5)
-			return fighter_data[i1][70 + j1 * 5 + k1];
+			return fighter_data[id][70 + j1 * 5 + k1];
 		else
 			return 0;
 	}
@@ -887,17 +989,17 @@ public class Battle {
 	}
 
 	/** 更新栈头信息 */
-	void h() {
+	private void update_stack() {
 		final int[] stack = b_int_array1d_static;
 		// 设置栈元素个数
-		stack[0] = stack_top;
+		stack[0] = m_stack_top;
 		// 计算 hash 值
-		if (stack_top > 0)
+		if (m_stack_top > 0)
 			stack[1] = stack_hash_code(stack);
 		else
 			stack[1] = 0;
 		// 记录当前角色ID
-		stack[2] = active_id;
+		stack[2] = m_active_id;
 	}
 
 	/**
@@ -923,12 +1025,12 @@ public class Battle {
 	}
 
 	/** 处理战斗栈数据，并输出招式描述 */
-	private void f() {
+	private void dispose_battle_stack() {
 		final int[] stack = a_int_array1d_static;
 		int hash_code = stack[1];
 		if (stack_hash_code(stack) != hash_code)
 			return;
-		
+
 		// 输出攻击方的出招
 		e(stack[4], stack[5], stack[6]);
 
@@ -943,7 +1045,7 @@ public class Battle {
 			if (value == -123 && index >= 14 && index - 14 < 16) {
 				// 解除装备或武器？ 物品索引范围是[14,29]
 				int item_id = fighter_data[id][index];
-				if (id == player_id) {
+				if (id == m_player_id) {
 					if (index == 29)
 						Gmud.sPlayer.UnEquipWeapon();
 					else
@@ -959,19 +1061,21 @@ public class Battle {
 			}
 		}
 
-		int j2 = active_id != 0 ? 0 : 1;
-		if (stackA_find(j2, 1) >= 0) // 判断栈中的 hp 值
-			uibattle.hit_id = j2;
+		final int id_act = m_active_id;
+		final int id_rival = id_act != 0 ? 0 : 1;
+		if (stackA_find(id_rival, 1) >= 0) // 判断栈中的 hp 值
+			uibattle.hit_id = id_rival;
 		e(stack[7], stack[8], stack[9]);
 		Video.VideoUpdate();
+		// 输出 受伤情况
 		e(stack[10], stack[11], stack[12]);
 		Video.VideoUpdate();
-		int l2 = active_id;
+		
 		for (int j3 = 0; j3 < 8; j3++) {
 			for (int l3 = 0; l3 < 2; l3++) {
-				active_id = l3;
+				m_active_id = l3;
 				int j4 = CalaAvtiveSpeed(l3, j3, 4);
-				if ((j4) <= 0 || j4 >= 20)
+				if (j4 <= 0 || j4 >= 20)
 					continue;
 				if (j3 == 7) {
 					int k4 = CalaAvtiveSpeed(l3, j3, 2);
@@ -982,36 +1086,41 @@ public class Battle {
 					if (fighter_data[l3][1] < 0)
 						fighter_data[l3][1] = 0;
 				}
-				int l4;
-				if ((--j4) == 0 && (l4 = CalaAvtiveSpeed(l3, j3, 3)) >= 0)
-					e(1, l4, 1);
+				if ((--j4) == 0) {
+					int l4 = CalaAvtiveSpeed(l3, j3, 3);
+					if (l4 >= 0)
+						e(1, l4, 1);
+				}
 				d(l3, j3, 4, j4);
 			}
-
 		}
 
-		active_id = l2;
+		m_active_id = id_act;
 		uibattle.DrawMain();
 		Video.VideoUpdate();
 	}
 
 	void i() {
-		h();
+		update_stack();
 		for (int i = 0; i < 256; i++)
 			a_int_array1d_static[i] = b_int_array1d_static[i];
 
-		f();
+		dispose_battle_stack();
 
 		// 清空栈数据
 		for (int i = 0; i < 256; i++)
 			b_int_array1d_static[i] = -1;
 
-		stack_top = 0;
+		m_stack_top = 0;
 
+		// 
 		a(0, 0, 0, -1);
+		
 		uibattle.weapon_id[0] = fighter_data[0][29];
 		uibattle.weapon_id[1] = fighter_data[1][29];
-		active_id = active_id == 0 ? 1 : 0;
+		
+		// 轮回攻方
+		m_active_id = m_active_id == 0 ? 1 : 0;
 	}
 
 	void a(int i1, int j1, int k1, int l1) {
@@ -1022,9 +1131,9 @@ public class Battle {
 	}
 
 	void PlayerActive() {
-		if (player_id == active_id) {
+		if (m_player_id == m_active_id) {
 			ClearActiveQueue();
-			int i1 = CalaAvtiveSpeed(active_id, 4, 4);
+			int i1 = CalaAvtiveSpeed(m_active_id, 4, 4);
 			if (i1 > 0 && i1 < 20)
 				b(1, 99, 1);
 			else {
@@ -1041,8 +1150,8 @@ public class Battle {
 	 * @return 是否先手
 	 */
 	boolean CalcAct() {
-		final int id_rival = active_id != 0 ? 0 : 1;
-		final int[] data = fighter_data[active_id];
+		final int id_rival = m_active_id != 0 ? 0 : 1;
+		final int[] data = fighter_data[m_active_id];
 		final int[] data_rival = fighter_data[id_rival];
 
 		// 经验等级差
@@ -1075,11 +1184,11 @@ public class Battle {
 		b_int_array1d_static[9] = k1;
 	}
 
-	/** 记录出招后的结果，见 {@link #b(int, int, int)} */
-	void d(int i1, int j1, int k1) {
-		b_int_array1d_static[10] = i1;
-		b_int_array1d_static[11] = j1;
-		b_int_array1d_static[12] = k1;
+	/** 记录出招后(对手)的结果，见 {@link #b(int, int, int)} */
+	void d(int attack_type, int desc_start, int desc_count) {
+		b_int_array1d_static[10] = attack_type;
+		b_int_array1d_static[11] = desc_start;
+		b_int_array1d_static[12] = desc_count;
 	}
 
 	/**
@@ -1088,7 +1197,7 @@ public class Battle {
 	 * @param id
 	 *            角色ID
 	 * @param skill_id
-	 *            技能ID
+	 *            技能ID，可以是[攻击类技能]或[身法类技能]
 	 * @param skill_level
 	 *            技能等级
 	 * @return 描述表({@link Skill#a})的索引
@@ -1166,12 +1275,7 @@ public class Battle {
 				// 如果是“武器”或“装备”，则加上“命中率”
 				if (Items.item_attribs[item_id][0] == 2
 						|| Items.item_attribs[item_id][0] == 3) {
-					int item_hit = Items.item_attribs[item_id][3];
-					if (item_hit <= 127) {
-						hit += item_hit;
-					} else {
-						hit += item_hit - 256;
-					}
+					hit += util.unsigned2char(Items.item_attribs[item_id][3]);
 				}
 			}
 		}
@@ -1200,12 +1304,7 @@ public class Battle {
 				// 如果是武器或者装备
 				if (Items.item_attribs[item_id][0] == 2
 						|| Items.item_attribs[item_id][0] == 3) {
-					int item_avoid = Items.item_attribs[item_id][4];
-					if (item_avoid <= 127) {
-						avoid += item_avoid;
-					} else {
-						avoid += item_avoid - 256;
-					}
+					avoid = util.unsigned2char(Items.item_attribs[item_id][4]);
 				}
 			}
 		}
@@ -1228,13 +1327,7 @@ public class Battle {
 			int item_id = fighter_data[id][14 + i];
 			if (item_id > 0 && item_id < 92
 					&& Items.item_attribs[item_id][0] == 3) {
-				int equip_defense = Items.item_attribs[item_id][2];
-				if (equip_defense <= 127) {
-					defense += equip_defense;
-				} else {
-					// 负数在 unsigned char 类型的下
-					defense += equip_defense - 256;
-				}
+				defense = util.unsigned2char(Items.item_attribs[item_id][2]);
 			}
 		}
 		return defense;
@@ -1281,12 +1374,7 @@ public class Battle {
 			int equip_id = data[14 + i];
 			if (equip_id > 0 && equip_id < 92
 					&& Items.item_attribs[equip_id][0] == 2) {
-				int weapon_attack = Items.item_attribs[equip_id][2];
-				if (weapon_attack <= 127) {
-					attack += weapon_attack;
-				} else {
-					attack += weapon_attack - 256;
-				}
+				attack = util.unsigned2char(Items.item_attribs[equip_id][2]);
 			}
 		}
 
@@ -1331,7 +1419,7 @@ public class Battle {
 	 * @return 描述文本
 	 */
 	String Breath() {
-		int id = active_id;
+		int id = m_active_id;
 		int[] data = fighter_data[id];
 		int j1 = Gmud.sPlayer.GetSkillLevel(0);
 		if (Gmud.sPlayer.select_skills[3] == 255 || j1 == 0)
@@ -1369,7 +1457,7 @@ public class Battle {
 	 */
 	int stackA_find(int id, int type) {
 		final int[] stack = a_int_array1d_static;
-		for (int i = 0; i < stack_top; i += 3)
+		for (int i = 0; i < m_stack_top; i += 3)
 			if (stack[i + 32] == id && stack[i + 1 + 32] == type)
 				return stack[i + 2 + 32];
 		return -1;
@@ -1419,124 +1507,165 @@ public class Battle {
 
 	int stackB_find(int id, int type) {
 		int[] stack = b_int_array1d_static;
-		for (int t = 0; t < stack_top; t += 3)
+		for (int t = 0; t < m_stack_top; t += 3)
 			if (stack[t + 32] == id && stack[t + 1 + 32] == type)
 				return stack[t + 2 + 32];
 
 		return -1;
 	}
 
-	void b(int i1, int j1, int k1, int l1) {
-		if (k1 <= 0) {
-			d(0, 247, 1);
+	/**
+	 * 计算对手（由技能导致）受伤的 hp，并根据 最后hp与hp_full的关系，产生受伤后的描述。
+	 * 
+	 * @param desc_start
+	 *            描述起点 magic
+	 * @param desc_max
+	 *            可用描述数量，根据hp/hp_full依次取
+	 * @param damage
+	 *            伤害值（掉血量）
+	 * @param id_rival
+	 *            角色ID, 一般是 对手的ID
+	 */
+	void GetMagicHitDesc(int desc_start, int desc_max, int damage, int id_rival) {
+		if (damage <= 0) {
+			d(0, 247, 1); // "但是被SB及时地避开。"
 			return;
 		}
-		int i2 = 0;
-		if ((i2 = stackB_find(l1, 1)) < 0)
-			i2 = fighter_data[l1][1];
-		if (k1 < 0)
-			k1 = 0;
-		if ((i2 -= k1) < 0)
-			i2 = 0;
-		stack_fighterdate_set(l1, 1, i2);
-		int j2 = 0;
-		if ((j2 = i2 / (fighter_data[l1][3] / j1)) >= j1)
-			j2 = j1 - 1;
-		if (j2 < 0)
-			j2 = 0;
-		j2 += i1;
-		d(1, j2, 1);
+		
+		// 更新 hp
+		int hp = stackB_find(id_rival, 1);
+		if (hp < 0)
+			hp = fighter_data[id_rival][1];
+		if (damage < 0)
+			damage = 0;
+		hp -= damage;
+		if (hp < 0)
+			hp = 0;
+		stack_fighterdate_set(id_rival, 1, hp);
+
+		// 计算目前hp等级(健康状态)
+		final int hp_full = fighter_data[id_rival][3];
+		int level = hp / (hp_full / desc_max);
+		level = util.between(level, 0, desc_max - 1);
+		
+		// 技能攻击
+		d(1, desc_start + level, 1);
 	}
 
-	/** i1武器类别 k1角色ID l1技能ID */
-	void c(int i1, int j1, int k1, int l1) {
-		if (j1 <= 0) {
-			d(0, 247, 1);
+	/** 
+	 * 产生 对手被击中（受伤） 及 伤后状态的描述。
+	 * @see #GetHitDesc(int, int, int, int)
+	 * @param weapon_type  武器类别 0拳头 1刀 6剑 7杖 9鞭
+	 * @param damage 伤害值
+	 * @param id_rival 角色ID，一般是对手的ID
+	 * @param skill_id 技能ID
+	 */
+	void GetDamageDesc(int weapon_type, int damage, int id_rival, int skill_id) {
+		if (damage <= 0) {
+			d(0, 247, 1); // "但是被SB及时地避开。"
 			return;
 		}
-		int i2 = ia(i1, j1, fighter_data[k1][3], l1);
-		int j2 = 0;
-		int k2 = 0;
-		if ((k2 = stackB_find(k1, 1)) < 0)
-			k2 = fighter_data[k1][1];
-		if ((j2 = 9 - k2 / (fighter_data[k1][3] / 10)) < 0)
-			j2 = 0;
-		if (j2 > 9)
-			j2 = 9;
-		if (i1 != 0) {
-			if (j2 == 9 && util.RandomInt(2) == 1)
-				j2 = 10;
-			j2 += 47;
+
+		final int hp_full = fighter_data[id_rival][3];
+		int desc = GetHitDesc(weapon_type, damage, hp_full, skill_id);
+		int hp = stackB_find(id_rival, 1);
+		if (hp < 0)
+			hp = fighter_data[id_rival][1];
+		int level = 9 - hp / (hp_full / 10);
+		level = util.between(level, 0, 9);
+		if (weapon_type != 0) {
+			if (level == 9 && util.RandomInt(2) == 1)
+				level = 10; // "受伤过重，随时都可能断气"
+			level += 47; // "看起来气血充盈，并没有受伤"
 		} else {
-			j2 += 37;
+			level += 37; // "看起来充满活力，一点也不累"
 		}
-		i2 = j2 * 256 + i2;
-		d(2, i2, 1);
+		d(2,  level * 256 + desc, 1);
 	}
 
-	/** i1武器类别 k1血量上限hp-full l1技能ID */
-	int ia(int i1, int j1, int k1, int l1) {
-		j1 *= 1000;
-		if ((k1 *= 10) == 0)
-			k1 = 10;
-		int i2;
-		if ((i2 = j1 / k1) > 100)
-			i2 = 100;
-		if (i2 < 0)
-			i2 = 0;
-		int l3;
-		int i4;
-		switch (i1) {
+	/**
+	 * 根据伤害与血量上限的关系，产生 被击中（受伤） 的描述[0,34)。
+	 * 
+	 * @param weapon_type
+	 *            武器类别 0拳头 1刀 6剑 7杖 9鞭
+	 * @param damage
+	 *            伤害值
+	 * @param hpfull
+	 *            血量上限hp-full
+	 * @param skill_id
+	 *            技能ID
+	 * @return 描述。eg. 7结果SB痛苦地闷哼了一声，显然受了点内伤
+	 */
+	int GetHitDesc(int weapon_type, final int damage, final int hpfull,
+			final int skill_id) {
+		int tmp;
+
+		// 计算掉血占上限的百分比
+		int per;
+		tmp = (hpfull == 0 ? 10 : (hpfull * 10));
+		per = (damage * 1000) / tmp;
+		if (per > 100)
+			per = 100;
+		if (per < 0)
+			per = 0;
+
+		switch (weapon_type) {
 		case 0: // 拳头
 		{
-			if (l1 == 44) { // 鹰抓功
-				int j2;
-				if ((j2 = i2 / 12) > 6)
-					j2 = 6;
-				return j2 + 12;
+			// [0,6]
+			int level = per / 12;
+			if (level > 6)
+				level = 6;
+
+			if (skill_id == 44) {
+				// 鹰抓功，使用描述 [12,18] "结果SB被抓出了五条淡淡的血痕"
+				return level + 12;
 			}
-			if (util.RandomBool(65))
-				return 7;
-			int k2;
-			if ((k2 = i2 / 12) > 6)
-				k2 = 6;
-			int i3 = k2 != 6 ? k2 : 5;
-			int k3;
-			if ((k3 = util.RandomInt(4)) == 0)
-				return i3;
-			if (k3 == 1)
-				return 6 + i3;
-			if (k3 == 2)
-				return 12 + k2;
-			if (k3 == 3)
-				return 19 + k2;
-			else
-				return 7;
+
+			if (util.RandomBool(65)) {
+			} else {
+				// [0,5]
+				int level_min = level != 6 ? level : 5;
+				int group = util.RandomInt(4);
+				if (group == 0)
+					return level_min; // "结果一击命中，SB被打肿了一块老高"
+				if (group == 1)
+					return 6 + level_min; // "结果一击命中，SB痛得弯下腰"
+				if (group == 2)
+					return 12 + level; // "结果SB被抓出了五条淡淡的血痕"
+				if (group == 3)
+					return 19 + level; // "结果对SB造成了轻微的伤害"
+			}
+			return 7;
 		}
+
 		case 1: // 刀
 		{
-			int l2 = i2 / 25;
-			return 26 + l2;
+			// [0,4)
+			int level = per / 25;
+			return 26 + level; // "结果SB被割出了一道伤口"
 		}
+
 		case 6: // 6剑
 		{
-			int j3 = i2 / 25;
+			// [0,4)
+			int level = per / 25;
 			if (util.RandomBool(85))
-				return 30 + j3;
+				return 30 + level; // "结果SB被刺入了寸许"
 			else
-				return 26 + j3;
+				return 26 + level;
 		}
 		case 7: // 7杖
-			return l3 = i2 / 16;
+			return per / 16;
 
 		case 9: // 9鞭
-			return i4 = i2 / 16;
+			return per / 16;
 
-		case 2: // '\002'
-		case 3: // '\003'
-		case 4: // '\004'
-		case 5: // '\005'
-		case 8: // '\b'
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 8:
 		default:
 			return 7;
 		}
@@ -1546,61 +1675,77 @@ public class Battle {
 	 * 重新复制玩家的装备表到战斗数据表中，用于换装时处理
 	 */
 	void CopyPlayerEquips() {
-		// 设置战斗数据的hp到栈
-		stack_fighterdate_set(player_id, 2, fighter_data[player_id][2]);
+		final int id = m_player_id;
+		final int[] data = fighter_data[id];
+		final int[] equips = Gmud.sPlayer.equips;
+		// 重栈中的 hp 为 当前战斗数据中的值
+		stack_fighterdate_set(id, 2, data[2]);
 		// 恢复玩家装备到战斗数据中
-		for (int i1 = 0; i1 < 16; i1++)
-			if (Gmud.sPlayer.equips[i1] != fighter_data[player_id][14 + i1]) {
-				fighter_data[player_id][14 + i1] = Gmud.sPlayer.equips[i1];
-				stack_fighterdate_set(player_id, 14 + i1,
-						Gmud.sPlayer.equips[i1]);
+		for (int i = 0; i < 16; i++) {
+			final int equip = equips[i];
+			if (equip != data[14 + i]) {
+				data[14 + i] = equip;
+				stack_fighterdate_set(id, 14 + i, equip);
+				
+				// TODO: 如果是武器更换，立即更新名称
+				if (i == 15) {
+					uibattle.weapon_id[id] = equip;
+				}
 			}
+		}
 	}
 
+	/**
+	 * 战斗中，重新载入玩家当前所选择的技能列表，并计算玩家的整体战斗力水平
+	 */
 	void CopyPlayerSelectSkills() {
-		for (int i1 = 0; i1 < 8; i1++) {
-			if (Gmud.sPlayer.select_skills[i1] == fighter_data[player_id][30 + i1 * 2])
+		final int id = m_player_id;
+		final int[] data = fighter_data[id];
+		final int[] skills = Gmud.sPlayer.select_skills;
+		for (int type = 0; type < 8; type++) {
+			final int skill_id = skills[type];
+			if (skill_id == data[30 + type * 2])
 				continue;
-			fighter_data[player_id][30 + i1 * 2] = Gmud.sPlayer.select_skills[i1];
-			fighter_data[player_id][30 + i1 * 2 + 1] = Gmud.sPlayer
-					.GetSkillLevel(Gmud.sPlayer.select_skills[i1]);
-			stack_fighterdate_set(player_id, 30 + i1 * 2,
-					Gmud.sPlayer.select_skills[i1]);
-			stack_fighterdate_set(player_id, 30 + i1 * 2 + 1,
-					fighter_data[player_id][30 + i1 * 2 + 1]);
-			if (i1 == 1) {
-				int j1 = player_id;
-				int k1;
-				if ((k1 = fighter_data[j1][32]) >= 0 && k1 < 36) {
-					int l1 = Skill.skill_weapon_type[k1];
-					int i2 = Skill.weapon_to_base_skill[l1];
-					fighter_data[j1][48] = Skill.weapon_to_base_skill[l1];
-					fighter_data[j1][49] = Gmud.sPlayer.GetSkillLevel(i2);
+			data[30 + type * 2] = skill_id;
+			final int skill_level = Gmud.sPlayer.GetSkillLevel(skill_id);
+			data[30 + type * 2 + 1] = skill_level;
+			stack_fighterdate_set(id, 30 + type * 2, skill_id);
+			stack_fighterdate_set(id, 30 + type * 2 + 1, skill_level);
+			// 只有兵刃的基本功种类会不同，需要重新取
+			if (type == 1) {
+				// 兵刃技能的基本功是不同的
+				// TODO: 原来是 k1=data[32]; if (k1>=0 && k1<36)
+				if (skill_id >= 0 && skill_id < 54/* 36 */) {
+					int weapon_type = Skill.skill_weapon_type[skill_id];
+					int base_skill = Skill.weapon_to_base_skill[weapon_type];
+					data[48] = base_skill;
+					data[49] = Gmud.sPlayer.GetSkillLevel(base_skill);
 				} else {
-					fighter_data[j1][48] = 255;
-					fighter_data[j1][49] = 0;
+					data[48] = 255;
+					data[49] = 0;
 				}
-				stack_fighterdate_set(player_id, 48, fighter_data[j1][48]);
-				stack_fighterdate_set(player_id, 49, fighter_data[j1][49]);
+				stack_fighterdate_set(id, 48, data[48]);
+				stack_fighterdate_set(id, 49, data[49]);
 			}
-			CalcFighterLevel(player_id);
-			stack_fighterdate_set(player_id, 62, fighter_data[player_id][62]);
+			CalcFighterLevel(id);
+			stack_fighterdate_set(id, 62, data[62]);
 		}
 	}
 
 	void NPCActive() {
-		if (player_id != active_id) {
-			int i1 = CalaAvtiveSpeed(active_id, 4, 4);
+		if (m_player_id != m_active_id) {
+			int i1 = CalaAvtiveSpeed(m_active_id, 4, 4);
 			if (i1 > 0 && i1 < 20) {
 				// "你现在呆若木鸡！"
 				b(1, 99, 1);
 			} else {
-				Magic.Effect(active_id);
-				int k1 = CountMagicEffect(active_id); // 使用绝招的概率为 20
-				boolean flag = util.RandomBool(20);
-				if (k1 > 0 && flag) {// 随机用一个绝招
-					int j2 = a_int_array2d_static[active_id][util.RandomInt(k1)];
-					String s = Magic.UseMagic(j2);
+				Magic.Effect(m_active_id);
+				int magic_size = CountMagicEffect(m_active_id);
+				// 随机用一个绝招, 使用绝招的概率为 20%
+				if (magic_size > 0 && util.RandomBool(20)) {
+					int magic_index = util.RandomInt(magic_size);
+					int magic_id = a_int_array2d_static[m_active_id][magic_index];
+					String s = Magic.UseMagic(magic_id);
 					if (s.length() > 0)
 						PhyAttack(false);
 				} else {
@@ -1649,10 +1794,10 @@ public class Battle {
 	// extern BOOL WriteSave();
 
 	void BattleEnd() {
-		int id = NPC_id;
+		int id = m_NPC_id;
 
 		// 记录缴获的物品（武器+装备）
-		short[] items = NPC_item;
+		short[] items = m_NPC_item;
 		int top = 0;
 
 		for (int i = 0; i < 5; i++)
@@ -1683,7 +1828,7 @@ public class Battle {
 		int money = NPC.NPC_attrib[id][16];
 
 		// 如果不是“切磋”且不是“逃跑”，刷新战斗结果
-		if (is_try == 0 && !bEscape) {
+		if (m_is_try == 0 && !bEscape) {
 			// player Hp < 0
 			if (fighter_data[0][1] <= 0) {
 				Gmud.sPlayer.PlayerDead(); // player dead
@@ -1840,40 +1985,42 @@ public class Battle {
 	}
 
 	void RollBackData() {
-		int i1 = player_id;
-		int j1 = (i1) != 0 ? 0 : 1;
-		for (int k1 = 0; k1 < 16; k1++)
-			if (fighter_data[i1][14 + k1] != Gmud.sPlayer.equips[k1])
-				Gmud.sPlayer.LoseOneItem(fighter_data[i1][14 + k1]);
-		int l1 = NPC_id;
+		int id = m_player_id;
+		int id_rival = id != 0 ? 0 : 1;
+		
+		for (int i = 0; i < 16; i++)
+			if (fighter_data[id][14 + i] != Gmud.sPlayer.equips[i])
+				Gmud.sPlayer.LoseOneItem(fighter_data[id][14 + i]);
+		
+		int npc_id = m_NPC_id;
 		for (int i2 = 0; i2 < 5; i2++) {
-			int j2;
-			if ((j2 = NPC.NPC_item[l1][i2]) == 0)
+			int j2 = NPC.NPC_item[npc_id][i2];
+			if (j2 == 0)
 				continue;
 			if (Items.item_attribs[j2][0] == 2) {
 				// 如果武器不同，是临时的？需要去掉？
 				if (fighter_data[1][29] != j2)
-					NPC.NPC_item[l1][i2] = 0;
+					NPC.NPC_item[npc_id][i2] = 0;
 				continue;
 			}
 			if (Items.item_attribs[j2][0] != 3)
 				continue;
 			int k2 = Items.item_attribs[j2][1];
 			if (fighter_data[1][14 + k2] != j2)
-				NPC.NPC_item[l1][i2] = 0;
+				NPC.NPC_item[npc_id][i2] = 0;
 		}
-		NPC.NPC_attrib[l1][11] = fighter_data[j1][1];
-		NPC.NPC_attrib[l1][12] = fighter_data[j1][2];
+		NPC.NPC_attrib[npc_id][11] = fighter_data[id_rival][1];
+		NPC.NPC_attrib[npc_id][12] = fighter_data[id_rival][2];
 
 		// TODO: FP 与 MP 共用了 [13]/[14]，暂时只能更新一个，取较为常用的 FP
 		// if (fighter_data[j1][6] > 0)
 		// NPC.NPC_attrib[l1][13] = fighter_data[j1][6];
 		// else
-		NPC.NPC_attrib[l1][13] = fighter_data[j1][4];
+		NPC.NPC_attrib[npc_id][13] = fighter_data[id_rival][4];
 
-		Gmud.sPlayer.hp = fighter_data[i1][1];
-		Gmud.sPlayer.hp_max = fighter_data[i1][2];
-		Gmud.sPlayer.fp = fighter_data[i1][4];
-		Gmud.sPlayer.mp = fighter_data[i1][6];
+		Gmud.sPlayer.hp = fighter_data[id][1];
+		Gmud.sPlayer.hp_max = fighter_data[id][2];
+		Gmud.sPlayer.fp = fighter_data[id][4];
+		Gmud.sPlayer.mp = fighter_data[id][6];
 	}
 }

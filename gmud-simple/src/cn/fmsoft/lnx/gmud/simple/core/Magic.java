@@ -53,7 +53,7 @@ public class Magic {
 	static String UseMagic(int magic_id) {
 		// wstring str("");
 		String str = "";
-		int id_active = Battle.sBattle.active_id;
+		int id_active = Battle.sBattle.m_active_id;
 		int id_rival = id_active == 0 ? 1 : 0;
 		int fp = Battle.sBattle.fighter_data[id_active][4];
 		int mp = Battle.sBattle.fighter_data[id_active][6];
@@ -202,7 +202,7 @@ public class Magic {
 				Battle.sBattle.a(util.RandomInt(6) + 8, 0, 0, 0);
 				l9 = (l9 = 0 + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 2, 1);
-				Battle.sBattle.c(1, l9, id_rival, 11);
+				Battle.sBattle.GetDamageDesc(1, l9, id_rival, 11);
 				break;
 			}
 		case 36: //八阵刀影掌
@@ -219,7 +219,7 @@ public class Magic {
 				Battle.sBattle.a(util.RandomInt(6) + 8, 0, 0, 0);
 				i10 = (i10 += Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 2, 1);
-				Battle.sBattle.c(1, i10, id_rival, 11);
+				Battle.sBattle.GetDamageDesc(1, i10, id_rival, 11);
 				break;
 			}
 		case 8: //柳浪闻莺
@@ -234,7 +234,7 @@ public class Magic {
 				Battle.sBattle.a(-1, 0, 0, 0);
 				j10 = (j10 = (j10 = 0 + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(true)) + Battle.sBattle.PhyAttack(false);
 				Battle.sBattle.b(1, 4, 1);
-				Battle.sBattle.c(1, j10, id_rival, 18);
+				Battle.sBattle.GetDamageDesc(1, j10, id_rival, 18);
 				break;
 			}
 		case 7: //落英缤纷
@@ -315,7 +315,7 @@ public class Magic {
 				Battle.sBattle.a(89, 0, 0, -1);
 				k10 += Battle.sBattle.PhyAttack(true);
 				Battle.sBattle.b(1, 21, 1);
-				Battle.sBattle.c(1, k10, id_rival, 29);
+				Battle.sBattle.GetDamageDesc(1, k10, id_rival, 29);
 				break;
 			}
 		case 28: //迎风一刀斩
@@ -329,7 +329,7 @@ public class Magic {
 				Battle.sBattle.b(1, 22, 1);
 				Battle.sBattle.a(-1, 70, 15, -1);
 				int l10 = Battle.sBattle.PhyAttack(true);
-				Battle.sBattle.c(1, l10, id_rival, 29);
+				Battle.sBattle.GetDamageDesc(1, l10, id_rival, 29);
 				break;
 			}
 		case 4: //雪花六出
@@ -350,7 +350,7 @@ public class Magic {
 					Battle.sBattle.a(-1, -1, -1, -1);
 					i11 += Battle.sBattle.PhyAttack(true);
 				}
-				Battle.sBattle.c(6, i11, id_rival, 38);
+				Battle.sBattle.GetDamageDesc(6, i11, id_rival, 38);
 				break;
 			}
 		case 5: //神倒鬼跌
@@ -604,7 +604,7 @@ public class Magic {
 				Battle.sBattle.a(103, 0, 0, -1);
 				i12 += Battle.sBattle.PhyAttack(true);
 				Battle.sBattle.b(1, 28, 1);
-				Battle.sBattle.c(1, i12, id_rival, 30);
+				Battle.sBattle.GetDamageDesc(1, i12, id_rival, 30);
 				break;
 			}
 		case 11: // '\013'
@@ -638,7 +638,7 @@ public class Magic {
 		else
 			return "你的" + Skill.skill_name[skill_id] + "修为不够";
 	}
-/** 统计可用技能列表到 Battle.a_int_array2d_static，使用[0,10)的栈，存绝招ID，见 {@link #magic_name} */
+/** 收集可用技能列表到 Battle.a_int_array2d_static，使用[0,10)的栈，存绝招ID，见 {@link #magic_name} */
 	static void Effect(int id_active)
 	{
 		int j = 0;
@@ -816,7 +816,7 @@ public class Magic {
 				Battle.sBattle.CostMP(i, Battle.sBattle.fighter_data[i][63]);
 				if (util.RandomBool(i4))
 				{
-					Battle.sBattle.b(85, 7, i10, j);
+					Battle.sBattle.GetMagicHitDesc(85, 7, i10, j);
 				} else
 				{
 					int k12;
@@ -824,7 +824,7 @@ public class Magic {
 						k12 = 90;
 					if (util.RandomBool(k12))
 					{
-						Battle.sBattle.b(85, 7, i10 / 3, i);
+						Battle.sBattle.GetMagicHitDesc(85, 7, i10 / 3, i);
 						Battle.sBattle.d(1, 83, 1);
 					} else
 					{
@@ -846,7 +846,7 @@ public class Magic {
 				Battle.sBattle.b(1, 84, 1);
 				if (util.RandomBool(j4))
 				{
-					Battle.sBattle.b(85, 7, j10, j);
+					Battle.sBattle.GetMagicHitDesc(85, 7, j10, j);
 				} else
 				{
 					int l12;
@@ -854,7 +854,7 @@ public class Magic {
 						l12 = 90;
 					if (util.RandomBool(l12))
 					{
-						Battle.sBattle.b(85, 7, j10 / 4, i);
+						Battle.sBattle.GetMagicHitDesc(85, 7, j10 / 4, i);
 						Battle.sBattle.d(1, 92, 1);
 					} else
 					{
@@ -879,7 +879,7 @@ public class Magic {
 				Battle.sBattle.b(1, 93, 1);
 				if (util.RandomBool(k4))
 				{
-					Battle.sBattle.b(85, 7, k10, j);
+					Battle.sBattle.GetMagicHitDesc(85, 7, k10, j);
 					if (util.RandomBool(10))
 						Battle.sBattle.a(j, 4, -1, -1, 99, -1, 6);
 				} else
@@ -889,7 +889,7 @@ public class Magic {
 						k13 = 90;
 					if (util.RandomBool(k13))
 					{
-						Battle.sBattle.b(85, 7, k10 / 5, i);
+						Battle.sBattle.GetMagicHitDesc(85, 7, k10 / 5, i);
 						Battle.sBattle.d(1, 94, 1);
 					} else
 					{
@@ -912,7 +912,7 @@ public class Magic {
 				Battle.sBattle.b(1, 93, 1);
 				if (util.RandomBool(l4))
 				{
-					Battle.sBattle.b(85, 7, l10, j);
+					Battle.sBattle.GetMagicHitDesc(85, 7, l10, j);
 				} else
 				{
 					int l13;
@@ -920,7 +920,7 @@ public class Magic {
 						l13 = 90;
 					if (util.RandomBool(l13))
 					{
-						Battle.sBattle.b(85, 7, l10 / 4, i);
+						Battle.sBattle.GetMagicHitDesc(85, 7, l10 / 4, i);
 						Battle.sBattle.d(1, 94, 1);
 					} else
 					{
@@ -942,7 +942,7 @@ public class Magic {
 				Battle.sBattle.b(1, 57, 1);
 				if (util.RandomBool(i5))
 				{
-					Battle.sBattle.b(60, 6, i11, j);
+					Battle.sBattle.GetMagicHitDesc(60, 6, i11, j);
 					if (util.RandomBool(10))
 					{
 						Battle.sBattle.c(1, 97, 1);
@@ -966,7 +966,7 @@ public class Magic {
 				Battle.sBattle.CostMP(i, Battle.sBattle.fighter_data[i][63]);
 				Battle.sBattle.b(1, 65, 1);
 				if (util.RandomBool(j5))
-					Battle.sBattle.b(60, 6, j11, j);
+					Battle.sBattle.GetMagicHitDesc(60, 6, j11, j);
 				else
 					Battle.sBattle.d(1, 64, 1);
 				break;
@@ -1013,7 +1013,7 @@ public class Magic {
 				Battle.sBattle.CostMP(i, Battle.sBattle.fighter_data[i][63] * 3);
 				Battle.sBattle.b(1, 65, 1);
 				if (util.RandomBool(l5))
-					Battle.sBattle.b(60, 6, k11, j);
+					Battle.sBattle.GetMagicHitDesc(60, 6, k11, j);
 				else
 					Battle.sBattle.d(1, 64, 1);
 				break;
@@ -1031,7 +1031,7 @@ public class Magic {
 				Battle.sBattle.b(1, 69, 1);
 				if (util.RandomBool(i6))
 				{
-					Battle.sBattle.b(72, 5, l11, j);
+					Battle.sBattle.GetMagicHitDesc(72, 5, l11, j);
 					if (util.RandomBool(20))
 						Battle.sBattle.a(j, 4, -1, -1, 99, -1, 4);
 				} else
@@ -1041,7 +1041,7 @@ public class Magic {
 						j14 = 90;
 					if (util.RandomBool(j14))
 					{
-						Battle.sBattle.b(72, 5, l11 / 5, i);
+						Battle.sBattle.GetMagicHitDesc(72, 5, l11 / 5, i);
 						Battle.sBattle.d(1, 70, 1);
 					} else
 					{
@@ -1063,7 +1063,7 @@ public class Magic {
 				Battle.sBattle.b(1, 71, 1);
 				if (util.RandomBool(j6))
 				{
-					Battle.sBattle.b(72, 5, i12, j);
+					Battle.sBattle.GetMagicHitDesc(72, 5, i12, j);
 				} else
 				{
 					int k14;
@@ -1071,7 +1071,7 @@ public class Magic {
 						k14 = 90;
 					if (util.RandomBool(k14))
 					{
-						Battle.sBattle.b(72, 5, i12 / 5, i);
+						Battle.sBattle.GetMagicHitDesc(72, 5, i12 / 5, i);
 						Battle.sBattle.d(1, 77, 1);
 					} else
 					{
@@ -1112,7 +1112,7 @@ public class Magic {
 			Battle.sBattle.b(1, 79, 1);
 			if (util.RandomBool(l6))
 			{
-				Battle.sBattle.b(72, 5, j12, j);
+				Battle.sBattle.GetMagicHitDesc(72, 5, j12, j);
 				Battle.sBattle.d(1, 80, 1);
 			} else
 			{
@@ -1121,7 +1121,7 @@ public class Magic {
 					l14 = 90;
 				if (util.RandomBool(l14))
 				{
-					Battle.sBattle.b(72, 5, j12 / 5, i);
+					Battle.sBattle.GetMagicHitDesc(72, 5, j12 / 5, i);
 					Battle.sBattle.d(1, 77, 1);
 				} else
 				{

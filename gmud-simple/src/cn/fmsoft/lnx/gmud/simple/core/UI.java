@@ -1279,8 +1279,8 @@ public class UI {
 				if (j1 != 0)
 				{
 					ItemMenu(i2, j2);
-					int j3;
-					k1 = (j3 = Gmud.sPlayer.CopyItemData(-1, m + n)) & 0xff;
+					int j3 = Gmud.sPlayer.CopyItemData(-1, m + n);
+					k1 = j3 & 0xff;
 					j1 = 0;
 					Video.VideoClearRect(0, Gmud.WQX_ORG_WIDTH / 2 - k3, Gmud.WQX_ORG_WIDTH, k3);
 				}

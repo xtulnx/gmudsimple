@@ -870,7 +870,7 @@ public class Player {
 		case 1: // 用药
 			if (Battle.sBattle != null && item_type == 0) {
 				// 疗伤，增加血量最大值hp-max
-				int player_id = Battle.sBattle.player_id;
+				int player_id = Battle.sBattle.m_player_id;
 				int hp_max_tmp = Battle.sBattle.fighter_data[player_id][2];
 				int hp_full_tmp = Battle.sBattle.fighter_data[player_id][3];
 				if (hp_max_tmp >= hp_full_tmp)
