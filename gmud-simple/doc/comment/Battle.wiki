@@ -58,9 +58,19 @@ b_int_array1d_static[256]
 [2] active_id
 [3] 攻击部位，见 GmudData#hit_point_name PhyAttack:[3] = util.RandomInt(16)
 
-[4] 招式类型，取值[0,5) 见 uibattle#PhyAttack （3元组）
+[4] （当前角色出招）招式类型，取值[0,5) 见 uibattle#PhyAttack （3元组）( 0物理攻击/招架 1技能功能 2攻击結果 3?? 4伤害描述) 
 [5] 招式描述ID
 [6] 连续描述的个数，一般是1
+
+[7]
+[8]
+[9]
+
+[10] 对手的結果
+[11]
+[12]
+
+
 
 [32] 角色ID，fighter_data 的数据待更新栈（3元组）
 [33] fighter_data 的索引
@@ -74,12 +84,12 @@ b_int_array1d_static[256]
 ====================================
 
 
-f_int_array1d_static[4]
+f_int_array1d_static[4]（用于指定的自动攻击PhyAttack）
 --------------------
-[0] ? 指定招式动作，仅用于自动/重复 物理攻击(PhyAttack)，如雪花六出等
+[0] ? 指定招式动作，仅用于自动/重复 物理攻击(PhyAttack)，如雪花六出等，见 Skill#a
 [1] ? 指定的攻击加成
 [2]
-[3]武器？
+[3] 武器？
 
 
 

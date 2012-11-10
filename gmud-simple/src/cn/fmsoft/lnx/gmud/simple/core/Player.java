@@ -481,12 +481,13 @@ public class Player {
 	 * @return 法点max
 	 */
 	int GetPlusMPMax() {
-		int i1;
-		if (0 == (i1 = GetSkillLevel(4))) {
+		// "基本法术"
+		int level = GetSkillLevel(4);
+		if (0 == level) {
 			return 0;
 		} else {
 			int j1 = GetSkillLevel(select_skills[6]);
-			return (i1 / 2 + j1) / 2;
+			return (level / 2 + j1) / 2;
 		}
 	}
 

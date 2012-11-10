@@ -305,6 +305,61 @@ public class Map {
 		}
 	}
 
+	static boolean MapPassable(int i) {
+		switch (i) {
+		case 138:
+			if (Gmud.sPlayer.ExistItem(91, 1) < 0)
+				return true;
+			break;
+
+		case 126:
+			if (Gmud.sPlayer.ExistItem(90, 1) < 0)
+				return true;
+			break;
+
+		case 41:
+			if (Gmud.sPlayer.ExistItem(79, 1) < 0)
+				return true;
+			break;
+
+		case 137:
+			if (Gmud.sPlayer.ExistItem(80, 1) < 0)
+				return true;
+			break;
+
+		case 77:
+			if (Gmud.sPlayer.ExistItem(81, 1) < 0)
+				return true;
+			break;
+
+		case 128:
+			if (Gmud.sPlayer.ExistItem(82, 1) < 0)
+				return true;
+			break;
+
+		case 92:
+			if (Gmud.sPlayer.ExistItem(83, 1) < 0)
+				return true;
+			break;
+
+		case 106:
+			if (Gmud.sPlayer.ExistItem(84, 1) < 0)
+				return true;
+			break;
+
+		case 100:
+			if (Gmud.sPlayer.ExistItem(85, 1) < 0)
+				return true;
+			break;
+
+		case 64:
+			if (Gmud.sPlayer.ExistItem(86, 1) < 0)
+				return true;
+			break;
+		}
+		return i >= 158 && i <= 178 && Map.NPC_flag[i] == 0;
+	}
+	
 	public void DirDown()
 	{
 		if (in_room &&  n / 2 > Math.abs(player_x - m))
@@ -433,7 +488,7 @@ public class Map {
 			k1 = map_event_data.data[j1];
 		player_dir = 4;
 		player_walk_status = 1-player_walk_status;
-		if (k1 >= 512 && task.MapPassable(k1 - 512))   //隐藏地图可通行检查
+		if (k1 >= 512 && MapPassable(k1 - 512))   //隐藏地图可通行检查
 		{
 			DrawPlayer();
 			return;

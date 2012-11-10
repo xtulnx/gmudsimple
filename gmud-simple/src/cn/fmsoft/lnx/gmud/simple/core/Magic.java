@@ -1,14 +1,14 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
 public class Magic {
-	static final int magic_cost[] = new int[] {
+	private static final int MAGIC_COST[] = new int[] {
 			200, 75, 75, 80, 180, 160, 100, 175, 160, 80, 
 			165, 20, 30, 50, 80, 20, 30, 100, 80, 20, 
 			30, 60, 90, 80, 150, 100, 190, 180, 100, 150, 
 			150, 120, 160, 70, 110, 180, 200, 180, 160
 		};
 
-	static final String magic_name[] = new String[] {
+	static final String MAGIC_NAME[] = new String[] {
 	/* 0 */"流星飞掷", "雷动九天", "红莲出世", "冰心决", "雪花六出",
 	/* 5 */"神倒鬼跌", "三花", "落英缤纷", "柳浪闻莺", "变熊术",
 	/* 10 */"猛虎啸", "闪光弹", "雷火弹", "掌心雷", "连珠雷",
@@ -18,10 +18,10 @@ public class Magic {
 	/* 30 */"挤字决", "乱环决", "阴阳决", "缠绵决", "连字决",
 	/* 35 */"三环套月", "八阵刀影掌", "飞鹰召唤", "变鹰术" };
 
-	static final String need_wait = "刚用完外功，还是歇歇吧.";
+	private static final String NEED_WAIT = "刚用完外功，还是歇歇吧.";
 
 	// [102]
-	static final int magic_desc[]= new int[]{
+	private static final int MAGIC_DESC[]= new int[]{
 		0,114,162,266,370,460,571,625,719,808,
 		909,1001,1093,1189,1297,1394,1491,1582,1683,1755,
 		1859,1924,2009,2117,2203,2307,2372,2483,2534,2617,
@@ -46,7 +46,7 @@ public class Magic {
 //			return str;
 			return "";
 		}
-		return Res.readtext(3,magic_desc[id],magic_desc[1+id]);
+		return Res.readtext(3,MAGIC_DESC[id],MAGIC_DESC[1+id]);
 	};
 	
 	/** 使用绝招，返回描述文本 */
@@ -59,10 +59,10 @@ public class Magic {
 		int mp = Battle.sBattle.fighter_data[id_active][6];
 		Battle.sBattle.b_int_array1d_static[13] = magic_id;
 		if (magic_id >= 11 && magic_id <= 22) {
-			if (mp < magic_cost[magic_id]) {
+			if (mp < MAGIC_COST[magic_id]) {
 				return "你的法力不足";
 			}
-		} else if (fp < magic_cost[magic_id]) {
+		} else if (fp < MAGIC_COST[magic_id]) {
 			return "你的内力不足";
 		}
 		switch (magic_id) {
@@ -98,7 +98,7 @@ public class Magic {
 			boolean flag1 = Battle.sBattle.a(id_active, 0, k2, -1, -1, 1, 10)
 					&& Battle.sBattle.a(id_active, 1, l2, -1, -1, -1, 10);
 			if (!flag1)
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 0, 1);
 				break;
 			}
@@ -112,7 +112,7 @@ public class Magic {
 				int i4 = 20 + (l3 - 90) / 5;
 				int j4 = 10 + (l3 - 90) / 10;
 				if (!(flag2 = (flag2 = Battle.sBattle.a(id_active, 2, i4, -1, -1, 5, 8)) && Battle.sBattle.a(id_active, 3, j4, -1, -1, -1, 8)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 4, 1);
 				break;
 			}
@@ -126,7 +126,7 @@ public class Magic {
 				l5 = 14 + util.RandomInt((k4 - 120) / 4);
 				boolean flag3;
 				if (!(flag3 = Battle.sBattle.a(id_active, 0, l5, -1, -1, -1, 10)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 13, 1);
 				break;
 			}
@@ -138,7 +138,7 @@ public class Magic {
 				int i6 = 21 + util.RandomInt((l4 - 90) / 3);
 				boolean flag4;
 				if (!(flag4 = Battle.sBattle.a(id_active, 1, i6, -1, -1, -1, 10)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 12, 1);
 				break;
 			}
@@ -186,7 +186,7 @@ public class Magic {
 				int l8 = 40 + (i8 - 90) / 3;
 				boolean flag7;
 				if (!(flag7 = Battle.sBattle.a(id_active, 6, l8, -1, -1, 44, 6)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 43, 1);
 				break;
 			}
@@ -380,7 +380,7 @@ public class Magic {
 					l18 = 10;
 				boolean flag8;
 				if (!(flag8 = Battle.sBattle.a(id_active, 6, l18, -1, -1, 56, 8)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 55, 1);
 				break;
 			}
@@ -411,7 +411,7 @@ public class Magic {
 					return NeedMoreLevel(45);
 				int i19 = Calc1(id_active, 3, 45);
 				if (!Battle.sBattle.a(id_rival, 7, util.RandomInt(i19), -1, 96, -1, 12))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 95, 1);
 				break;
 			}
@@ -427,7 +427,7 @@ public class Magic {
 				}
 				boolean flag10;
 				if (!(flag10 = Battle.sBattle.a(id_active, 2, 20, -1, -1, 53, 12)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 52, 1);
 				break;
 			}
@@ -587,7 +587,7 @@ public class Magic {
 					return NeedMoreLevel(30);
 				boolean flag11 = false;
 				if (!(flag11 = (flag11 = Battle.sBattle.a(id_active, 0, 10, -1, -1, 27, 10)) || Battle.sBattle.a(id_active, 3, 12 + util.RandomInt(3), -1, -1, -1, 10)))
-					return need_wait;
+					return NEED_WAIT;
 				Battle.sBattle.b(1, 26, 1);
 				break;
 			}
@@ -623,9 +623,9 @@ public class Magic {
 			return UseMPMagic(id_active, id_rival, magic_id);  //use magic
 		}
 		if (magic_id >= 11 && magic_id <= 22)   //cost FP / MP
-			Battle.sBattle.CostMP(id_active, magic_cost[magic_id]);
+			Battle.sBattle.CostMP(id_active, MAGIC_COST[magic_id]);
 		else
-			Battle.sBattle.CostFP(id_active, magic_cost[magic_id]);
+			Battle.sBattle.CostFP(id_active, MAGIC_COST[magic_id]);
 		str = "";
 		return str;
 	}
@@ -638,7 +638,7 @@ public class Magic {
 		else
 			return "你的" + Skill.skill_name[skill_id] + "修为不够";
 	}
-/** 收集可用技能列表到 Battle.a_int_array2d_static，使用[0,10)的栈，存绝招ID，见 {@link #magic_name} */
+/** 收集可用技能列表到 Battle.a_int_array2d_static，使用[0,10)的栈，存绝招ID，见 {@link #MAGIC_NAME} */
 	static void Effect(int id_active)
 	{
 		int j = 0;
@@ -1131,9 +1131,9 @@ public class Magic {
 			break;
 		}
 		if (l >= 11 && l <= 22)
-			Battle.sBattle.CostMP(i, magic_cost[l]);
+			Battle.sBattle.CostMP(i, MAGIC_COST[l]);
 		else
-			Battle.sBattle.CostFP(i, magic_cost[l]);
+			Battle.sBattle.CostFP(i, MAGIC_COST[l]);
 //		wstring str = "";
 		String str = "";
 		return str;

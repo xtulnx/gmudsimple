@@ -435,7 +435,7 @@ public class uibattle {
 					str_desc = util.ReplaceStr(str_desc, "SW", Items.item_names[weapon_id[id_active]]);
 				}
 				if (k2 != -1)
-					str_desc = util.ReplaceStr(str_desc, "~", Magic.magic_name[k2]);
+					str_desc = util.ReplaceStr(str_desc, "~", Magic.MAGIC_NAME[k2]);
 				break;
 			}
 		case 2: //hit result
@@ -531,7 +531,7 @@ public class uibattle {
 		{
 			if (j3 > 38)
 				return;
-			Video.VideoDrawStringSingleLine(Magic.magic_name[j3], j1 + 18, i2 + 1 + i3 * (k1 + 1));
+			Video.VideoDrawStringSingleLine(Magic.MAGIC_NAME[j3], j1 + 18, i2 + 1 + i3 * (k1 + 1));
 			if (i3 == i1)
 				UI.DrawCursor(j1 + (j2 - 8) / 2, i2 + i3 * (k1 + 1) + (k1 - 9) / 2);
 		}
