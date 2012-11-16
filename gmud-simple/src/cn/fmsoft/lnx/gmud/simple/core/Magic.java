@@ -38,20 +38,15 @@ public class Magic {
 //	extern bool RandomBool(int);
 //	extern int util.RandomInt(int);
 
-	static String GetMagicDesc(int id)
-	{
-		if(id < 0 || id > 100)
-		{
-//			wstring str("");
-//			return str;
+	static String GetMagicDesc(int id) {
+		if (id < 0 || id > 100) {
 			return "";
 		}
-		return Res.readtext(3,MAGIC_DESC[id],MAGIC_DESC[1+id]);
+		return Res.readtext(3, MAGIC_DESC[id], MAGIC_DESC[1 + id]);
 	};
 	
 	/** 使用绝招，返回描述文本 */
 	static String UseMagic(int magic_id) {
-		// wstring str("");
 		String str = "";
 		int id_active = Battle.sBattle.m_active_id;
 		int id_rival = id_active == 0 ? 1 : 0;
@@ -68,17 +63,15 @@ public class Magic {
 		switch (magic_id) {
 		case 23: // 化掌为刀
 			{
-				boolean flag = false;
 				int k2 = 0;
 				int l2 = 0;
-				int i3 = Calc2(id_active, 0, 12, 1);
-				if (i3 > 0)
+				if (Calc2(id_active, 0, 12, 1) > 0)
 				{
 					int j3 = Calc2(id_active, 0, 12, 105);
-					if ((j3) < 0)
+					if (j3 < 0)
 						return NeedMoreLevel(12);
 					int k1 = Calc2(id_active, 3, 14, 105);
-					if ((k1) < 0)
+					if (k1 < 0)
 						return NeedMoreLevel(14);
 					j3 = Calc1(id_active, 0, 12);
 					k2 = 5 + (j3 - 90) / 10;
@@ -179,8 +172,8 @@ public class Magic {
 			}
 		case 3: //冰心决
 			{
-				int i8;
-				if ((i8 = Calc2(id_active, 3, 36, 90)) < 0)
+				int i8 = Calc2(id_active, 3, 36, 90);
+				if (i8 < 0)
 					return NeedMoreLevel(36);
 				i8 = Calc1(id_active, 3, 36);
 				int l8 = 40 + (i8 - 90) / 3;

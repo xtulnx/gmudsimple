@@ -2,20 +2,16 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 public class Items {
 
-	static final String GetItemDesc(int id)
-	{
-		if (id < 0 || id > 91)
-		{
-			String aa="";
-			return aa;
+	static final String GetItemDesc(int id) {
+		if (id < 0 || id > 91) {
+			return "";
 		}
-		if(id == 77)
-		{
-			String aa="这是一件你自制的兵器,靠近手柄处写了一行小字:";
-			aa += item_names[77];
-			return aa;
+		if (id == 77) {
+			String desc = "这是一件你自制的兵器,靠近手柄处写了一行小字:";
+			desc += item_names[77];
+			return desc;
 		}
-		return Res.readtext(0, item_desc[id], item_desc[1+id]);
+		return Res.readtext(0, item_desc[id], item_desc[1 + id]);
 	}
 
 	// [93]
@@ -50,6 +46,7 @@ public class Items {
 	
 	// [92][7]
 	/**
+	 * 原始数量是 8字节 数组<br/>
 	 * type，，effect1，，，，cost
 	 * 
 	 * @see Items#ITEM_TYPE_FOOD
