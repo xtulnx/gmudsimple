@@ -34,11 +34,10 @@ public class GmudData {
 			"平安镇", "商家堡", "玉女峰", "五指山", "冰火岛", "武当山", "大雪山", "黑森林", "灵心观", "铸剑谷", 
 			"桃花源"
 			};
-	// [11]
-	static final int fly_dest_map[] = new int[] {   // map id
-			0, 23, 44, 59, 31, 64, 54, 79, 73, 87, 
-			89
-			};
+
+	/** (size:11) 主地图（可以飞的地图）的ID，见 {@link #map_name} */
+	static final int fly_dest_map[] = new int[] { // map id
+	0, 23, 44, 59, 31, 64, 54, 79, 73, 87, 89 };
 
 	// [19]
 	static final int flyable_map[] = new int[]{

@@ -171,7 +171,7 @@ public class GmudMain extends Thread {
 		NPC.InitData();
 		Battle.sBattle = null;
 		map.LoadMap(0);
-		map.stack_pointer = 0;
+		// map.m_stack_pointer = 0;
 		map.LoadPlayer(player.image_id);
 
 		// enter map
@@ -257,7 +257,7 @@ public class GmudMain extends Thread {
 		NPC.InitData();
 		Battle.sBattle = null;
 		map.LoadMap(0);
-		map.stack_pointer = 0;
+		// map.m_stack_pointer = 0;
 		map.LoadPlayer(player.image_id);
 
 		// enter map
@@ -291,7 +291,7 @@ public class GmudMain extends Thread {
 			if ((Input.inputstatus & Input.kKeyUp) != 0) // press up
 			{
 				Input.ClearKeyStatus();
-				if (map.player_dir == 0) {
+				if (map.GetCurOrientation() == Map.CharOrientation.UP) {
 					map.DirUp();
 				} else {
 					map.SetPlayerLocation(-1, 0);
@@ -302,7 +302,7 @@ public class GmudMain extends Thread {
 			} else if ((Input.inputstatus & Input.kKeyDown) != 0) // press down
 			{
 				Input.ClearKeyStatus();
-				if (map.player_dir == 1) {
+				if (map.GetCurOrientation() == Map.CharOrientation.DOWN) {
 					map.DirDown();
 				} else {
 					map.SetPlayerLocation(-1, 1);

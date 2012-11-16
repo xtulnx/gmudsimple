@@ -311,8 +311,9 @@ public class UI {
 	static void Fly() {
 		// 检查当前地图是否可飞
 		int can_fly = -1;
+		final int cur_map_id = Gmud.sMap.GetCurMapID();
 		for (int i = 0; i < 19; i++)
-			if (GmudData.flyable_map[i] == Gmud.sMap.map_id)
+			if (GmudData.flyable_map[i] == cur_map_id)
 				can_fly = i;
 		if (can_fly < 0)
 			return;
@@ -365,7 +366,7 @@ public class UI {
 					int index = sel + top;
 					int map_id = GmudData.fly_dest_map[index]; // read map
 					Gmud.sMap.LoadMap(map_id);
-					Gmud.sMap.stack_pointer = 0;
+					// Gmud.sMap.m_stack_pointer = 0;
 					Gmud.sMap.SetPlayerLocation(0, 4);
 					Gmud.sMap.DrawMap(0);
 					Input.ClearKeyStatus();

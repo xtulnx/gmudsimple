@@ -2,7 +2,7 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 public class MapInfo {
 	
-	// 64
+	/** (size:64) */
 	static final int Map_in_room[] =  new int[]{
 			1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 
 			12, 13, 14, 15, 17, 20, 24, 25, 26, 27, 

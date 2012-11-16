@@ -857,6 +857,30 @@ public class task {
 		return;
 	}
 
+	/** 完成老婆婆任务 */
+	static void OldWomanFinish(int task_id, int tip, int hp_cost) {
+		if (temp_tasks_data[23] == task_id && temp_tasks_data[24] != 0) {
+			if (Gmud.sPlayer.hp < 10 + hp_cost) {
+				UI.ShowDialog(136);
+			} else {
+				for (int i = 0; i < 4; i++) {
+					String str = read_UI_text(tip + i);
+					UI.DrawTalk(str);
+					Video.VideoUpdate();
+					Gmud.GmudDelay(900);
+				}
+
+				UI.ShowDialog(135);
+				Gmud.sPlayer.exp += 20;
+				Gmud.sPlayer.potential += 10;
+				Gmud.sPlayer.money += 50;
+				Gmud.sPlayer.hp -= hp_cost;
+				UI.DrawDialog(task.old_woman_award);
+			}
+			temp_tasks_data[24] = 0;
+		}
+	}
+
 	/** 平一指任务 */
 	static void KillPeople() {
 		if (check_award() >= 0) {
