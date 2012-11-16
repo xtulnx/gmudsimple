@@ -5,7 +5,7 @@ import cn.fmsoft.lnx.gmud.simple.core.NPC.NPCSKILLINFO;
 
 public class task {
 	
-	// 40
+	/** (size:40) */
 	static final int temp_tasks_data[] = new int[40];
 
 	static final String yes_no = "\n([输入]确认 [跳出]放弃)\n";

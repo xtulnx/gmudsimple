@@ -70,7 +70,7 @@ b_int_array1d_static[256]
 [11]
 [12]
 
-
+[13] Usemagic:magic_id
 
 [32] 角色ID，fighter_data 的数据待更新栈（3元组）
 [33] fighter_data 的索引
