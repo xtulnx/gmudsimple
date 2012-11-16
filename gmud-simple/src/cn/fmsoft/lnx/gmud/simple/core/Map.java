@@ -323,9 +323,9 @@ public class Map {
 		} else if (dir == CharOrientation.DOWN) {
 			bm = m_player_image[1];
 		} else if (dir == CharOrientation.LEFT) {
-			bm = m_map_image[2 + m_player_walk_status];
+			bm = m_player_image[2 + m_player_walk_status];
 		} else if (dir == CharOrientation.RIGHT) {
-			bm = m_map_image[4 + m_player_walk_status];
+			bm = m_player_image[4 + m_player_walk_status];
 		} else {
 			return;
 		}
