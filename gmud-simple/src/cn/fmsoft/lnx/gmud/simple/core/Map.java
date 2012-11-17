@@ -756,8 +756,8 @@ public class Map {
 				String str = "活得太没意思了\n真想找根绳子上吊自杀！\n";
 				UI.DialogBx(str, 10, 16);
 			} else {
-				String str = "如果您选择上吊自杀，那么角色存档记录将被删除！\n请务必考虑清楚！" + task.yes_no;
-				int last_key = UI.DialogBx(str, 10, 16);
+				String str = "如果您选择上吊自杀\n您的资料就永远删除了\n请务必考虑清楚！！" + task.yes_no;
+				int last_key = UI.DialogBx(str, 8, 4);
 				while (last_key != Input.kKeyEnt && last_key != Input.kKeyExit) {
 					last_key = Input.inputstatus;
 					Gmud.GmudDelay(100);

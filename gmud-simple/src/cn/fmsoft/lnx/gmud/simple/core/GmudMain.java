@@ -24,15 +24,12 @@ public class GmudMain extends Thread {
 
 	static int sStaus = STATE_INVALID;
 
-	private Context mContext;
-
 	static private GmudMain sInstance;
 	
 	static private String sInputString;
 
 	public GmudMain(Context context) {
 		super("GmudMain-thread");
-		mContext = context;
 		sInstance = this;
 		sStaus = STATE_INVALID;
 	}
@@ -94,16 +91,19 @@ public class GmudMain extends Thread {
 		Context context = Gmud.sActivity;
 		AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
-		alert.setTitle("Gmud");
-		alert.setMessage("Please Enter new NAME: ");
+		alert.setTitle("姓名：");
+		// alert.setMessage("");
 
 		// Set an EditText view to get user input
 		final EditText input = new EditText(context);
+		input.setHint("[无名]");
 		alert.setView(input);
 
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				String name = input.getText().toString();
+				if (name.length() == 0)
+					name = "[无名]";
 				SetName(name);
 			}
 		});
@@ -135,6 +135,13 @@ public class GmudMain extends Thread {
 	}
 
 	/**
+	 * 清除所有缓存
+	 */
+	static synchronized void CleanAllCache() {
+
+	}
+
+	/**
 	 * 重新开始游戏，创建一个新的人物 
 	 */
 	static synchronized void NewGame() {
@@ -143,17 +150,15 @@ public class GmudMain extends Thread {
 			return;
 		}
 
-		Player player = Player.getInstance();
-
-		NewGame ng = new NewGame();
+		final Player player = Player.getInstance();
+		final NewGame ng = new NewGame();
 		ng.ShowStory();
-		int id = ng.SelectChar();
+		final int id = ng.SelectChar();
 		player.sex = (id > 1) ? 1 : 0;
 		player.image_id = id;
 
 		// ng.EnterName(hwnd);
 		player.player_name = WaitForNewName(0);
-		
 		ng.AllocPoint(player);
 	}
 	
@@ -164,7 +169,7 @@ public class GmudMain extends Thread {
 		
 		Input.ClearKeyStatus();
 		
-		GmudMain.NewGame();
+		NewGame();
 
 		// initialize & load
 		task.reset();

@@ -892,45 +892,40 @@ public class UI {
 			Video.VideoDrawStringSingleLine(as[k1]/*.c_str()*/, 8, 17 + k1 * 12);
 	}
 
-	static void DrawPlayerDesc()
-	{
-		//*/
-//		wchar_t number[5];
-//		wstring as[5];
+	static void DrawPlayerDesc() {
 		String as[] = new String[5];
-		int i1;
-		if ((i1 = Gmud.sPlayer.sex) < 0 || i1 > 1)
-			i1 = 0;
 		as[0] = "[";
 		as[0] += GmudData.class_name[Gmud.sPlayer.class_id];
 		as[0] += "]";
 		as[0] += Gmud.sPlayer.player_name;
 
+		int sex = Gmud.sPlayer.sex;
+		if (sex < 0 || sex > 1)
+			sex = 0;
+
 		as[1] = "你是一位";
-//		as[1] += _itow(14 + Gmud.sPlayer.GetAge(), number, 10);
 		as[1] += 14 + Gmud.sPlayer.GetAge();
 		as[1] += "岁的";
-		as[1] += i1 != 0 ? "女性" : "男性";
+		as[1] += Gmud.sPlayer.sex != 0 ? "女性" : "男性";
 
-		int j1;
-		if ((j1 = Gmud.sPlayer.GetFaceLevel()) < 0)
-			as[2] = "你看起来一脸稚气";
-		else
-		{
+		int facelevel = Gmud.sPlayer.GetFaceLevel();
+		if (facelevel < 0)
+			as[2] = "你一脸稚气";
+		else {
 			as[2] = "你长得";
-			as[2] += GmudData.face_level_name[j1][i1];
+			as[2] += GmudData.face_level_name[facelevel][sex];
 			as[2] += ",";
-			as[2] += GmudData.face_level_name[j1 + 1][i1];
+			as[2] += GmudData.face_level_name[facelevel + 1][sex];
 		}
+
 		as[3] = "武艺看起来";
 		as[3] += GmudData.level_name[Gmud.sPlayer.GetPlayerLevel() / 5];
 
 		as[4] = "出手似乎";
 		as[4] += GmudData.attack_level_name[Gmud.sPlayer.GetAttackLevel()];
 
-		for (int l1 = 0; l1 < 5; l1++)
-			Video.VideoDrawStringSingleLine(as[l1]/*.c_str()*/, 8, 17 + l1 * 12);
-		//*/
+		for (int i = 0; i < 5; i++)
+			Video.VideoDrawStringSingleLine(as[i], 8, 17 + i * 12);
 	}
 
 	static void DrawPlayerAttrib()
@@ -1015,38 +1010,28 @@ public class UI {
 		}
 	}
 
-	static int DrawDeleteItem()
-	{
-		int i1 = 26;
-		int j1 = 16 + i1;
-		int k1 = i1 + 6;
-		int l1 = j1 + k1 + 10;
-		int i2 = 5 + i1 + 16;
-		String s1 = "确认删除吗？";
-		int j2 = 13 * 5;
-		int k2 = 13;
-		Video.VideoClearRect(l1, i2, j2, k2);
-		Video.VideoDrawStringSingleLine(s1/*.c_str()*/, l1, i2);
-		Input.ClearKeyStatus();
+	private static int DrawDeleteItem() {
+		int ret = 0;
+
+		final int x = 16 + 26 + 26 + 6 + 10;
+		final int y = 5 + 26 + 16;
+		final int w = 13 * 4;
+		final int h = 13;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		Video.VideoDrawStringSingleLine("删除吗？", x, y);
 		Video.VideoUpdate();
+		Input.ClearKeyStatus();
 		Gmud.GmudDelay(100);
-		while (true)
-		{
+		while (Input.Running && Input.inputstatus == 0) {
 			Input.ProcessMsg();
-			if((Input.inputstatus & Input.kKeyEnt)!=0)
-			{
-				Gmud.GmudDelay(80);
-				return 1;
-			}
-			if ((Input.inputstatus & Input.kKeyExit)!=0)
-			{
-				Gmud.GmudDelay(80);
-				return 0;
-			}
-			Input.ClearKeyStatus();
 			Gmud.GmudDelay(80);
 		}
-//		return 0;
+		if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			ret = 1;
+		}
+		Input.ClearKeyStatus();
+		return ret;
 	}
 
 	static void DrawList(String as[], int i1, int j1, int k1, int l1, int i2, int j2)

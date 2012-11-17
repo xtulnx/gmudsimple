@@ -24,12 +24,14 @@ public class Video {
 	
 	static final int LARGE_FONT_SIZE = 16;
 	static final int SMALL_FONT_SIZE = 12;
+	static final int MINI_FONT_SIZE = 8;
 	
 	static int largeFnt = LARGE_FONT_SIZE;
 	static int smallFnt = SMALL_FONT_SIZE;
+	static int miniFnt = MINI_FONT_SIZE;
 	static int largeOff = largeFnt;
 	static int smallOff = smallFnt;
-	
+	static int miniOff = miniFnt;
 
 	static boolean VideoExited = true;
 
@@ -145,8 +147,10 @@ public class Video {
 			// calculate font size
 			largeFnt = LARGE_FONT_SIZE * sScale;
 			smallFnt = SMALL_FONT_SIZE * sScale;
+			miniFnt = MINI_FONT_SIZE * sScale;
 			largeOff = largeFnt - sScale;
 			smallOff = smallFnt - sScale;
+			miniOff = miniFnt - sScale;
 
 			if (!VideoExited) {
 			}
@@ -350,6 +354,10 @@ public class Video {
 		case 2:
 			greenBrush.setTextSize(smallFnt);
 			lpmem.drawText(str, x*sScale, y*sScale+smallOff, greenBrush);
+			break;
+		case 3:
+			blackBrush.setTextSize(miniFnt);
+			lpmem.drawText(str, x*sScale, y*sScale+miniFnt, blackBrush);
 			break;
 		default:
 			blackBrush.setTextSize(smallFnt);
