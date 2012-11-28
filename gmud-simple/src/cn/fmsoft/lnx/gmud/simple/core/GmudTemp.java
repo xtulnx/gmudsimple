@@ -4,7 +4,10 @@ public class GmudTemp {
 	static private int a = 0;
 	static Object timer_thread_handle;
 
-	/** (size:32,2) */
+	/**
+	 * (size:32,2) [0]索引{@link Player#skills}or {@link Player#item_package},
+	 * [1]0或1
+	 */
 	static int temp_array_32_2[][] = new int[32][2];
 	static int temp_array_20_2[][] = new int[20][2];
 
