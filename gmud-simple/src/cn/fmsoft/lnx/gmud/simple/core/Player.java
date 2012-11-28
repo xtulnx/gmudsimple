@@ -623,59 +623,42 @@ public class Player {
 		return i2;
 	}
 
-	// 学习速度
+	/** 学习速度 */
 	int GetStudySpeed() {
-		int i1;
-		if ((i1 = (i1 = GetSavvy()) / 2) <= 0) // 后天悟性 / 2
-			i1 = 1;
-		if (i1 > 60)
-			i1 = 60;
-		return i1;
+		// 后天悟性 / 2
+		int speed = GetSavvy() / 2;
+		if (speed <= 0)
+			speed = 1;
+		if (speed > 60)
+			speed = 60;
+		return speed;
 	}
 
-	// 练功速度
-	int GetPracticeSpeed(int id) {
-		int j1 = skills[id][0];
-		int k1 = 0;
-		int l1;
-		switch (l1 = Skill.skill_weapon_type[j1]) {
-		case 0:
-			k1 = GetSkillLevel(1);
-			break;
-
-		case 1:
-			k1 = GetSkillLevel(3);
-			break;
-
-		case 6:
-			k1 = GetSkillLevel(2);
-			break;
-
-		case 7:
-			k1 = GetSkillLevel(5);
-			break;
-
-		case 9:
-			k1 = GetSkillLevel(6);
-			break;
+	/** 练功速度 */
+	int GetPracticeSpeed(int index) {
+		final int skill_id = skills[index][0];
+		final int skill_level;
+		if (skill_id == select_skills[2]) {
+			// 轻功
+			skill_level = GetSkillLevel(7);
+		} else {
+			final int weapon_type = Skill.skill_weapon_type[skill_id];
+			if (weapon_type == 0) {
+				skill_level = GetSkillLevel(1);
+			} else {
+				int base_skill = Skill.weapon_to_base_skill[weapon_type];
+				skill_level = GetSkillLevel(base_skill);
+			}
 		}
-		if (j1 == select_skills[2])
-			k1 = GetSkillLevel(7);
-		int i2 = GetSkillLevel(0);
-		int j2;
-		int k2;
-		if ((j2 = select_skills[3]) == 255)
-			k2 = 0;
-		else
-			k2 = GetSkillLevel(j2);
-		int l2;
-		int i3;
-		if ((i3 = (l2 = i2 / 2 + k2) / 5 + k1 / 5) <= 0) // 基本内功/10 + 门派内功/5 +
-															// 对应基本招式 / 5
-			i3 = 1;
-		if (i3 > 60)
-			i3 = 60;
-		return i3;
+
+		// 基本内功/10 + 门派内功/5 + 对应基本招式 / 5
+		int speed = (GetSkillLevel(0) / 2 + GetSkillLevel(select_skills[3]))
+				/ 5 + skill_level / 5;
+		if (speed <= 0)
+			speed = 1;
+		if (speed > 60)
+			speed = 60;
+		return speed;
 	}
 
 	/**
@@ -1062,14 +1045,15 @@ public class Player {
 	}
 
 	int CopyItemList() {
-		int i1 = 0;
-		for (int j1 = 0; j1 < 32; j1++)
-			if (item_package[j1][0] != 0 && item_package[j1][1] == 0) {
-				GmudTemp.temp_array_32_2[i1][0] = item_package[j1][0];
-				GmudTemp.temp_array_32_2[i1++][1] = item_package[j1][2];
+		int top = 0;
+		for (int i = 0; i < 32; i++) {
+			if (item_package[i][0] != 0 && item_package[i][1] == 0) {
+				GmudTemp.temp_array_32_2[top][0] = item_package[i][0];
+				GmudTemp.temp_array_32_2[top][1] = item_package[i][2];
+				top++;
 			}
-
-		return i1;
+		}
+		return top;
 	}
 
 	/**
@@ -1097,24 +1081,25 @@ public class Player {
 	/**
 	 * 添加新技能，如果该技能已经存在，直接返回它的索引序号
 	 * 
-	 * @param id
+	 * @param skill_id
 	 *            技能ID
-	 * @return 0 无效技能 -1 异常 [0,32) 技能序号
+	 * @return -1异常或无效技能 [0,32)技能序号
 	 */
-	int SetNewSkill(int id) {
-		if (id < 0 || id > 53)
-			return 0;
-		for (int j1 = 0; j1 < 32; j1++)
-			if (skills[j1][0] >= 0 && skills[j1][0] <= 53
-					&& skills[j1][0] == id)
-				return j1;
+	int SetNewSkill(int skill_id) {
+		if (skill_id < 0 || skill_id > 53)
+			return -1;
+		
+		for (int i = 0; i < 32; i++)
+			if (skills[i][0] >= 0 && skills[i][0] <= 53
+					&& skills[i][0] == skill_id)
+				return i;
 
-		for (int k1 = 0; k1 < 32; k1++)
-			if (skills[k1][0] > 53) {
-				skills[k1][0] = id;
-				skills[k1][1] = 0;
-				skills[k1][2] = skills[k1][3] = skills[k1][4] = 0;
-				return k1;
+		for (int i = 0; i < 32; i++)
+			if (skills[i][0] > 53) {
+				skills[i][0] = skill_id;
+				skills[i][1] = 0;
+				skills[i][2] = skills[i][3] = skills[i][4] = 0;
+				return i;
 			}
 
 		return -1;
@@ -1139,37 +1124,49 @@ public class Player {
 		select_skills[type] = 255;
 	}
 
-	// 请教
+	/**
+	 *  请教
+	 * @param skill_index 玩家技能表中的索引
+	 * @param maxlevel 最大可学的技能
+	 * @return 0正常 1经验不足 2潜能不足 3钱不足 4等级超过 5升级 
+	 */
 	int StudySkill(int skill_index, int maxlevel) {
-		int k1 = skills[skill_index][0];
-		int l1;
-		if ((l1 = skills[skill_index][1]) >= maxlevel)
+		int skill_id = skills[skill_index][0];
+		int skill_level = skills[skill_index][1];
+		if (skill_level >= maxlevel)
 			return 4;
-		if (exp < l1 * 2 * (l1 * 2))
+		
+		if (exp < skill_level * 2 * (skill_level * 2))
 			return 1;
+		
 		if (skills[skill_index][4] <= 0)
 			SetSkillUpgrate(skill_index);
-		int i2;
-		if ((i2 = skills[skill_index][2]) > skills[skill_index][4]) {
+		
+		int point = skills[skill_index][2];
+		if (point > skills[skill_index][4]) {
 			skills[skill_index][2] = skills[skill_index][4];
 			return 0;
 		}
-		if (i2 == skills[skill_index][4]) {
+		
+		if (point == skills[skill_index][4]) {
 			skills[skill_index][2] = 0;
 			skills[skill_index][4] = 0;
 			skills[skill_index][1] += 1;
 			return 5;
 		}
+		
 		if (potential <= 0)
 			return 2;
-		if (k1 == 9 && money <= 0)
+		
+		if (skill_id == 9 && money <= 0)
 			return 3;
-		if ((i2 += 4) / 10 != skills[skill_index][2] / 10) {
+		
+		if ((point += 4) / 10 != skills[skill_index][2] / 10) {
 			potential -= 1;
-			if (k1 == 9)
+			if (skill_id == 9)
 				money -= 1;
 		}
-		skills[skill_index][2] = i2;
+		skills[skill_index][2] = point;
 		return 0;
 	}
 
@@ -1401,8 +1398,8 @@ public class Player {
 		int k1 = 0;
 		int l1 = 0;
 		for (int i2 = i1; i2 < 32; i2++) {
-			int j2;
-			if ((j2 = item_package[i2][0]) == 0 || j2 > 91)
+			int j2 = item_package[i2][0];
+			if (j2 == 0 || j2 > 91)
 				continue;
 			int k2;
 			if ((k2 = Items.item_attribs[j2][0]) == 5)

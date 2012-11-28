@@ -753,8 +753,8 @@ public class Map {
 			Gmud.GmudDelay(200);
 			Input.ClearKeyStatus();
 			if (Gmud.sPlayer.ExistItem(19, 1) < 0) {
-				String str = "活得太没意思了\n真想找根绳子上吊自杀！\n";
-				UI.DialogBx(str, 10, 16);
+				String str = "活得太没意思了\n真想找根绳子上吊自杀\n\n";
+				UI.DialogBx(str, 8, 4);
 			} else {
 				String str = "如果您选择上吊自杀\n您的资料就永远删除了\n请务必考虑清楚！！" + task.yes_no;
 				int last_key = UI.DialogBx(str, 8, 4);
