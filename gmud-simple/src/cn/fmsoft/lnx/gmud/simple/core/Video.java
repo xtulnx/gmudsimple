@@ -17,6 +17,7 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
+import cn.fmsoft.lnx.gmud.simple.Configure;
 import cn.fmsoft.lnx.gmud.simple.Show;
 import cn.fmsoft.lnx.gmud.simple.R.id;
 
@@ -401,6 +402,8 @@ public class Video {
 			// 锁定Canvas,进行相应的界面处理	
 			Canvas c = sBinderShow.getHolder().lockCanvas(sDirtyRect);
 			if (c != null) {
+				
+				Configure.onDraw(c);
 
 				c.drawBitmap(lpmemimg, left, 0, sPaint);
 

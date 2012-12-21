@@ -68,6 +68,8 @@ public class GmudActivity extends Activity {
 
 		mRequestOritation = getRequestedOrientation();
 		Log.i("lnx", "Orientation = " + mRequestOritation);
+		
+		Configure.init(getBaseContext());
 	}
 
 	@Override
@@ -181,8 +183,8 @@ public class GmudActivity extends Activity {
 
 	private void hide_softkey() {
 		Gmud.setMinScale(!bHideSoftKey);
-		final Control control = (Control) findViewById(R.id.control);
-		control.hide(bHideSoftKey);
+//		final Control control = (Control) findViewById(R.id.control);
+//		control.hide(bHideSoftKey);
 		final View show = findViewById(R.id.show);
 		show.requestLayout();
 	}

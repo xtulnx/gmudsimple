@@ -50,7 +50,7 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback {
 			height = Gmud.WQX_ORG_HEIGHT * Video.sScale;
 		}
 
-		setMeasuredDimension(width, height);
+		setMeasuredDimension(widthSize, heightSize);
 	}
 
 	@Override
@@ -62,9 +62,13 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback {
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
+
+		Configure.reset(width, height);
+		
 		Canvas c = getHolder().lockCanvas();
 		if (c != null) {
 			c.drawColor(Color.BLACK);
+			Configure.onDraw(c);
 			getHolder().unlockCanvasAndPost(c);
 		}
 		Video.VideoUpdate();
