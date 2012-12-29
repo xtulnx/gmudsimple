@@ -8,7 +8,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
+import cn.fmsoft.lnx.gmud.simple.core.Input;
 
 public final class Configure {
 	final static boolean DEBUG = true;
@@ -25,7 +28,7 @@ public final class Configure {
 	public static final int KEY_Fly = 8;
 	public static final int KEY_HELP = 9;
 	public static final int _KEY_MAX_ = 9;
-
+	
 	/** 横屏时左右留白，避免游戏区占满屏导致按钮不可见 */
 	private final static int MARGIN_H_LAND = 80;
 	private final static int MARGIN_V_LAND = 80;
@@ -41,7 +44,7 @@ public final class Configure {
 	/** 视频输出区域 */
 	protected static final Rect sRcVideo = new Rect();
 	/** 各按键区 */
-	protected static final Rect sRcKeys[] = new Rect[_KEY_MAX_];
+	protected static final Rect sRcKeys[] = new Rect[_KEY_MAX_ + 1];
 	/** 按下状态 */
 	private static int sPressMask = 0;
 	/** 剪切区，每次绘制前重新获取 */
@@ -73,6 +76,8 @@ public final class Configure {
 		TITLE_PAINT.setFakeBoldText(true);
 		TITLE_PAINT.setTextSize(DEF_BT_TITLE_SIZE * CUR_DENSITY);
 		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
+
+		sRcKeys[_KEY_MAX_] = sRcVideo;
 	}
 
 	/** 保持比例按整数倍数拉伸铺满 */
@@ -166,21 +171,116 @@ public final class Configure {
 		}
 
 		// 重置缩放比例
+		Gmud.ResetVideoLayout(sRcVideo);
 	}
-	
+
 	/** 检查有无必要重绘 */
 	protected static boolean updateInvalidate() {
 		return false;
 	}
-	
+
 	protected static void Draw(Canvas canvas) {
-		
+
 	}
 
 	public static void onDraw(Canvas canvas) {
 		canvas.getClipBounds(sRcClip);
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			_draw_key(canvas, i);
+		}
+	}
+
+	/** 返回位置所在的所有元件掩码 */
+	protected static int HitTestFlag(int x, int y) {
+		int flag = 0;
+		for (int i = 0, c = _KEY_MAX_ + 1; i < c; i++) {
+			if (sRcKeys[i].contains(x, y)) {
+				flag |= 1 << i;
+			}
+		}
+		return flag;
+	}
+
+	/** 返回位置所在的最顶层元素ID */
+	protected static int HitTestId(int x, int y) {
+		for (int i = _KEY_MAX_; i >= 0; i--) {
+			if (sRcKeys[i].contains(x, y))
+				return i;
+		}
+		return -1;
+	}
+	
+	protected static void onKeyDown(int flag) {
+		sPressMask |= flag;
+		Input.GmudSetKey(sPressMask);
+	}
+
+	protected static void onKeyUp(int flag) {
+		sPressMask &= ~(flag);
+		Input.GmudSetKey(sPressMask);
+	}
+
+	protected static void onKeySet(int flag) {
+		sPressMask = flag;
+		Input.GmudSetKey(sPressMask);
+	}
+
+	protected static final class MySimpleOnGestureListener extends
+			GestureDetector.SimpleOnGestureListener {
+
+		// 用户（轻触触摸屏后）松开，由一个1个MotionEvent ACTION_UP触发
+		public boolean onSingleTapUp(MotionEvent e) {
+			final int x = (int) e.getX();
+			final int y = (int) e.getY();
+
+			final int flag = HitTestFlag(x, y);
+			onKeyUp(flag);
+			
+			return false;
+		}
+
+		// 用户长按触摸屏，由多个MotionEvent ACTION_DOWN触发
+		public void onLongPress(MotionEvent e) {
+		}
+
+		// 用户按下触摸屏，并拖动，由1个MotionEvent ACTION_DOWN, 多个ACTION_MOVE触发
+		public boolean onScroll(MotionEvent e1, MotionEvent e2,
+				float distanceX, float distanceY) {
+			return false;
+		}
+
+		// 用户按下触摸屏、快速移动后松开，由1个MotionEvent ACTION_DOWN, 多个ACTION_MOVE,
+		// 1个ACTION_UP触发
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			return false;
+		}
+
+		// 用户轻触触摸屏，尚未松开或拖动，由一个1个MotionEvent ACTION_DOWN触发
+		// 注意和onDown()的区别，强调的是没有松开或者拖动的状态
+		public void onShowPress(MotionEvent e) {
+			final int x = (int) e.getX();
+			final int y = (int) e.getY();
+
+			final int flag = HitTestFlag(x, y);
+			onKeyDown(flag);
+		}
+
+		// 用户轻触触摸屏，由1个MotionEvent ACTION_DOWN触发Java代码
+		public boolean onDown(MotionEvent e) {
+			return false;
+		}
+
+		public boolean onDoubleTap(MotionEvent e) {
+			return false;
+		}
+
+		public boolean onDoubleTapEvent(MotionEvent e) {
+			return false;
+		}
+
+		public boolean onSingleTapConfirmed(MotionEvent e) {
+			return false;
 		}
 	}
 }

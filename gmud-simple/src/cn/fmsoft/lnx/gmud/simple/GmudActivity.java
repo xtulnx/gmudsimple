@@ -20,19 +20,23 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
-public class GmudActivity extends Activity {
+public class GmudActivity extends Activity implements Gmud.ICallback {
 	// final static int MENU_HOOKGAME = 0;
 	// final static int MENU_EXITAPPLICATION = 1;
 	// final static int MENU_ABOUT = 2;
@@ -40,8 +44,12 @@ public class GmudActivity extends Activity {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
+	private Configure.MySimpleOnGestureListener mGestureListener;
+	private GestureDetector mDetector;
 
 	private static PendingIntent sMainIntent;
+	
+	private Handler mHandler = new Handler();
 
 	protected static PendingIntent getPendingIntent(Context ctx) {
 		if (sMainIntent != null)
@@ -63,24 +71,42 @@ public class GmudActivity extends Activity {
 		sMainIntent = PendingIntent.getActivity(getBaseContext(), 0,
 				new Intent(getIntent()), getIntent().getFlags());
 
-		// new Gmud(this);
-		Gmud.bind(this);
-
 		mRequestOritation = getRequestedOrientation();
 		Log.i("lnx", "Orientation = " + mRequestOritation);
-		
+
 		Configure.init(getBaseContext());
+
+		mGestureListener = new Configure.MySimpleOnGestureListener();
+		mDetector = new GestureDetector(mGestureListener);
+		mDetector.setIsLongpressEnabled(false);
+//		findViewById(R.id.show).setOnTouchListener(new View.OnTouchListener() {
+//
+//			@Override
+//			public boolean onTouch(View v, MotionEvent event) {
+//				return mDetector.onTouchEvent(event);
+//			}
+//		});
+		
+
+		// new Gmud(this);
+		Gmud.SetCallback(this);
+		Gmud.Start();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		
+		Gmud.SetCallback(null);
 
-		Gmud.unbind(this);
-
-		if (!Gmud.Running) {
-			System.exit(0);
+		Gmud.Exit();
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
 		}
+
+		System.exit(0);
+		
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
 	}
@@ -182,9 +208,9 @@ public class GmudActivity extends Activity {
 	}
 
 	private void hide_softkey() {
-		Gmud.setMinScale(!bHideSoftKey);
-//		final Control control = (Control) findViewById(R.id.control);
-//		control.hide(bHideSoftKey);
+		//Gmud.setMinScale(!bHideSoftKey);
+		// final Control control = (Control) findViewById(R.id.control);
+		// control.hide(bHideSoftKey);
 		final View show = findViewById(R.id.show);
 		show.requestLayout();
 	}
@@ -289,5 +315,31 @@ public class GmudActivity extends Activity {
 					public void onClick(DialogInterface dialog, int which) {
 					}
 				}).create().show();
+	}
+
+	@Override
+	public void EnterNewName(final int type) {
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				Context ctx = GmudActivity.this;
+				AlertDialog.Builder alert = new AlertDialog.Builder(ctx);
+
+				alert.setTitle("Gmud");
+				alert.setMessage("Please Enter new NAME: ");
+
+				// Set an EditText view to get user input
+				final EditText input = new EditText(ctx);
+				alert.setView(input);
+
+				alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						String name = input.getText().toString();
+						Gmud.SetNewName(name);
+					}
+				});
+				alert.show();
+			}
+		});
 	}
 }

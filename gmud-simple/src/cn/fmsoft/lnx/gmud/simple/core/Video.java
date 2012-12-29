@@ -17,72 +17,132 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.Paint.Style;
 import android.graphics.Path;
 import android.graphics.Rect;
-import cn.fmsoft.lnx.gmud.simple.Configure;
-import cn.fmsoft.lnx.gmud.simple.Show;
-import cn.fmsoft.lnx.gmud.simple.R.id;
 
-public class Video {
-	
+/**
+ * 输出绘制控制
+ * 
+ * @author nxliao
+ * 
+ */
+class Video {
+
+	/** 默认背景色 */
+	static final int COLOR_BG = 0xff8FAF50;
+
+	/** 缩放进制，用于保证无小数化 */
+	static final int SCALE_RATE = Gmud.WQX_ORG_WIDTH * Gmud.WQX_ORG_HEIGHT;
+
 	static final int LARGE_FONT_SIZE = 16;
 	static final int SMALL_FONT_SIZE = 12;
-	
+
+	private static final Object LOCK = new Object();
+
 	static int largeFnt = LARGE_FONT_SIZE;
 	static int smallFnt = SMALL_FONT_SIZE;
 	static int largeOff = largeFnt;
 	static int smallOff = smallFnt;
-	
 
-	static boolean VideoExited = true;
+	static float sScaleX, sScaleY;
 
 	static Bitmap lpmemimg;
 	static Canvas lpmem;
-	
+
 	static Paint blackBrush, greenBrush;
 	static Paint blackPen;
-	
+
 	static Bitmap pnum;
 
 	static Paint sPaint;
 
-	static Show sBinderShow;
-	
-	static int sWidth, sHeight;
 	static Matrix sMatrix = new Matrix();
-	
+
+	static Gmud.IVideoCallback sCallback;
+
 	public static int sScale = 1;
-	
-	static Rect sDirtyRect = new Rect();
-	
-	public static synchronized boolean HasBound() {
-		return sBinderShow != null;
+
+	/** 输出区域，不一定与[160x80]成比例 */
+	static Rect sDirtyRect;
+	static int sWidth, sHeight;
+
+	public static void SetCallback(Gmud.IVideoCallback callback) {
+		sCallback = callback;
 	}
 
-	public static synchronized void Bind(Show show) {
-		sWidth = show.getWidth();
-		sHeight = show.getHeight();
+	/** 绘制输出 */
+	public static void onDraw(Canvas canvas) {
+		if (lpmemimg != null)
+			canvas.drawBitmap(lpmemimg, null, sDirtyRect, null);
+	}
 
-		if (sBinderShow != show) {
-			sBinderShow = show;
-			GmudMain.Resume();
+	/** 重置输出区域、纵横缩放比例、字体、framebuff */
+	public static void ResetLayout(Rect rect) {
+		if (sDirtyRect.equals(rect)) {
+			return;
+		}
+
+		synchronized (LOCK) {
+			sDirtyRect.set(rect);
+
+			final int w = rect.width();
+			final int h = rect.height();
+			final int scale;
+			if (w * Gmud.WQX_ORG_HEIGHT > h * Gmud.WQX_ORG_WIDTH) {
+				scale = h * Gmud.WQX_ORG_WIDTH;
+			} else {
+				scale = w * Gmud.WQX_ORG_HEIGHT;
+			}
+
+			sWidth = w;
+			sHeight = h;
+			sScaleX = (float) w / Gmud.WQX_ORG_WIDTH;
+			sScaleY = (float) h / Gmud.WQX_ORG_HEIGHT;
+
+			Bitmap bmBack = null;
+			if (lpmemimg != null && !lpmemimg.isRecycled()) {
+				bmBack = lpmemimg;
+				lpmemimg = Bitmap.createScaledBitmap(bmBack, sWidth, sHeight,
+						true);
+			} else {
+				lpmemimg = Bitmap.createBitmap(sWidth, sHeight,
+						Bitmap.Config.ARGB_8888);
+				lpmemimg.eraseColor(COLOR_BG);
+			}
+
+			lpmem.setBitmap(lpmemimg);
+			lpmem.scale(sScaleX, sScaleY);
+			if (bmBack != null) {
+				bmBack.recycle();
+				bmBack = null;
+			}
+			sScaleX = 1;
+			sScaleY = 1;
+			sScale = 1;
+			
+			VideoUpdate();
 		}
 	}
 
-	public static synchronized void UnBind(Show show) {
-		sBinderShow = null;
-	}
-	
-	static boolean VideoInit(int scale) {
-				
+//	public static synchronized void Bind(Show show) {
+//
+//		// if (sBinderShow != show) {
+//		// sBinderShow = show;
+//		// GmudMain.Resume();
+//		// }
+//	}
+//
+//	public static synchronized void UnBind(Show show) {
+//		sBinderShow = null;
+//	}
+
+	static boolean VideoInit() {
+		
+		sDirtyRect = new Rect();
+		
 		sPaint = new Paint();
 		sPaint.setAntiAlias(true);
 
 		lpmem = new Canvas();
-		
-		resetScale(scale);
-		
-		// blackBrush = new SolidBrush(Color(255, 0, 0, 0));
-		// greenBrush = new SolidBrush(Color(255, 143, 175, 80));
-		// blackPen = new Pen(Color(255,0,0,0), 1.0f);
+
 		pnum = Res.loadimage(248);
 
 		blackBrush = new Paint();
@@ -98,61 +158,27 @@ public class Video {
 		blackPen.setColor(0xff000000);
 		blackPen.setStyle(Style.STROKE);
 		blackPen.setStrokeWidth(1.0f);
-		
-//		// 得到系统默认字体属�?
-//		Paint paint = blackBrush;
-//		FontMetrics fm;
-//		paint.setTextSize(largeFnt);
-//		fm = paint.getFontMetrics();
-//		largeOff = (int) (fm.descent - fm.ascent);
-//		paint.setTextSize(smallFnt);
-//		fm = paint.getFontMetrics();
-//		smallOff = (int) (fm.descent - fm.ascent);
-		
-		VideoExited = false;
+
+		// // 得到系统默认字体属�?
+		// Paint paint = blackBrush;
+		// FontMetrics fm;
+		// paint.setTextSize(largeFnt);
+		// fm = paint.getFontMetrics();
+		// largeOff = (int) (fm.descent - fm.ascent);
+		// paint.setTextSize(smallFnt);
+		// fm = paint.getFontMetrics();
+		// smallOff = (int) (fm.descent - fm.ascent);
+
+		// resetScale(scale);
+		ResetLayout(new Rect(0, 0, Gmud.WQX_ORG_WIDTH, Gmud.WQX_ORG_HEIGHT));
+
 		VideoClear();
 		VideoUpdate();
 
 		return true;
 	}
 
-	static synchronized void resetScale(int scale) {
-		if (!VideoExited && scale == sScale) {
-			return; // no change
-		}
 
-		synchronized (lpmem) {
-			sScale = scale;
-			
-			Bitmap backBitmap = lpmemimg;
-
-//			if (lpmemimg != null) {
-//				lpmemimg.recycle();
-//			}
-
-			lpmemimg = Bitmap.createBitmap(Gmud.WQX_ORG_WIDTH * sScale,
-					Gmud.WQX_ORG_HEIGHT * sScale, Bitmap.Config.RGB_565);
-
-			lpmem.setBitmap(lpmemimg);
-			
-			if (backBitmap != null) {
-				Matrix matrix = new Matrix();
-				matrix.setScale(
-						1.0f * lpmemimg.getWidth() / backBitmap.getWidth(),
-						1.0f * lpmemimg.getHeight() / backBitmap.getHeight());
-				lpmem.drawBitmap(backBitmap, matrix, sPaint);
-			}
-
-			// calculate font size
-			largeFnt = LARGE_FONT_SIZE * sScale;
-			smallFnt = SMALL_FONT_SIZE * sScale;
-			largeOff = largeFnt - sScale;
-			smallOff = smallFnt - sScale;
-
-			if (!VideoExited) {
-			}
-		}
-	}
 
 	static void VideoShutdown() {
 		// DeleteObject(pnum);
@@ -170,7 +196,6 @@ public class Video {
 		// ReleaseDC(hw,m_hdc);
 		// VideoExited = 1;
 
-		VideoExited = true;
 		lpmemimg.recycle();
 		lpmemimg = null;
 		lpmem = null;
@@ -181,25 +206,27 @@ public class Video {
 	}
 
 	static void VideoDrawLine(int x1, int y1, int x2, int y2) {
-		if (VideoExited)
-			exit(0);
-		lpmem.drawLine(x1*sScale, y1*sScale, x2*sScale, y2*sScale, blackPen);
+		lpmem.drawLine(x1, y1, x2, y2, blackPen);
 	}
-	
+
 	/**
 	 * 绘制一个箭头
+	 * 
 	 * @param x
 	 * @param y
-	 * @param w 宽度
-	 * @param h 高度，如果小于0，表示向上
-	 * @param type 类型，Bit0:左右方向 Bit1:实心 Bit2:用背景色(只用于实心)
+	 * @param w
+	 *            宽度
+	 * @param h
+	 *            高度，如果小于0，表示向上
+	 * @param type
+	 *            类型，Bit0:左右方向 Bit1:实心 Bit2:用背景色(只用于实心)
 	 */
 	static void VideoDrawArrow(int x, int y, int w, int h, int type) {
 		final Path path = new Path();
-		x *= sScale;
-		y *= sScale;
-		w *= sScale;
-		h *= sScale;
+		x *= sScaleX;
+		y *= sScaleY;
+		w *= sScaleX;
+		h *= sScaleY;
 		path.moveTo(x, y);
 		if ((type & 1) == 0) {
 			path.lineTo(x + w, y);
@@ -224,27 +251,17 @@ public class Video {
 	}
 
 	static void VideoClear() {
-		if (VideoExited)
-			exit(0);
-		/*
-		 * SolidBrush solidBrush(Color(255, 143, 175, 80));
-		 * lpgraphics->FillRectangle(solidBrush.Clone(), Rect(0,0,480,240));
-		 */
-		lpmem.drawARGB(255, 143, 175, 80);
+		lpmemimg.eraseColor(COLOR_BG);
 	}
 
 	static void VideoClearRect(int x, int y, int width, int height) {
-		if (VideoExited)
-			exit(0);
-
-		lpmem.drawRect(x*sScale, y*sScale, (x + width)*sScale, (y + height)*sScale, greenBrush);
+		lpmem.drawRect(x * sScaleX, y * sScaleY, (x + width) * sScaleX,
+				(y + height) * sScaleY, greenBrush);
 	}
 
 	static void VideoDrawRectangle(int x, int y, int width, int height) {
-		if (VideoExited)
-			exit(0);
-
-		lpmem.drawRect(x*sScale, y*sScale, (x + width)*sScale, (y + height)*sScale, blackPen);
+		lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
+				(y + height) * sScale, blackPen);
 	}
 
 	static void VideoFillRectangle(int x, int y, int width, int height) {
@@ -252,44 +269,37 @@ public class Video {
 	}
 
 	static void VideoFillRectangle(int x, int y, int width, int height, int type) {
-		if (VideoExited)
-			exit(0);
 		if (type != 0) {
-			lpmem.drawRect(x*sScale, y*sScale, (x + width)*sScale, (y + height)*sScale, greenBrush);
+			lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
+					(y + height) * sScale, greenBrush);
 		} else {
-			lpmem.drawRect(x*sScale, y*sScale, (x + width)*sScale, (y + height)*sScale, blackBrush);
+			lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
+					(y + height) * sScale, blackBrush);
 		}
 
 	}
 
 	static void VideoDrawArc(int x, int y, int r) {
-		if (VideoExited)
-			exit(0);
-
 		// lpmem->DrawArc(blackPen, x - r, y - r, 2 * r, 2 * r, 0, 360);
-		lpmem.drawCircle(x*sScale, y*sScale, r*sScale, blackPen);
+		lpmem.drawCircle(x * sScale, y * sScale, r * sScale, blackPen);
 	}
 
 	static void VideoFillArc(int x, int y, int r) {
-		if (VideoExited)
-			exit(0);
 		// lpmem->FillEllipse(blackBrush->Clone(), x - r, y - r, 2 * r, 2 * r);
-		lpmem.drawCircle(x*sScale, y*sScale, r*sScale, blackBrush);
+		lpmem.drawCircle(x * sScale, y * sScale, r * sScale, blackBrush);
 	}
 
 	static void VideoDrawImage(/* Image* */Bitmap pI, int x, int y) {
-		if (VideoExited)
-			exit(0);
-
 		// lpmem->DrawImage(pI, x, y);
-//		lpmem.drawBitmap(pI, x*sScale, y*sScale, null);
+		// lpmem.drawBitmap(pI, x*sScale, y*sScale, null);
 
 		sMatrix.setScale(sScale, sScale);
-		sMatrix.postTranslate(x*sScale, y*sScale);
+		sMatrix.postTranslate(x * sScale, y * sScale);
 		lpmem.drawBitmap(pI, sMatrix, sPaint);
 	}
 
-	private static void drawMultiText(String str, int x, int y, int restrictWidth, Paint paint) {
+	private static void drawMultiText(String str, int x, int y,
+			int restrictWidth, Paint paint) {
 
 		FontMetrics fm = paint.getFontMetrics();// 得到系统默认字体属性
 		final int fontHeight = (int) (Math.ceil(fm.descent - fm.ascent) - 2);// 获得字体高度
@@ -301,14 +311,16 @@ public class Video {
 		int k = str.length();
 		for (int i = 1; i < k; i++) {
 			float w = blackBrush.measureText(str, linestart, i);
-			if (w + x >= restrictWidth*sScale) {
-				lpmem.drawText(str.substring(linestart, i-1), x*sScale, y*sScale + fontHeight * line, blackBrush);
-				linestart = i-1;
+			if (w + x >= restrictWidth * sScale) {
+				lpmem.drawText(str.substring(linestart, i - 1), x * sScale, y
+						* sScale + fontHeight * line, blackBrush);
+				linestart = i - 1;
 				line++;
 			}
 		}
 		if (linestart < k) {
-			lpmem.drawText(str.substring(linestart, k), x*sScale, y*sScale + fontHeight * line, blackBrush);
+			lpmem.drawText(str.substring(linestart, k), x * sScale, y * sScale
+					+ fontHeight * line, blackBrush);
 			return;
 		}
 	}
@@ -316,17 +328,16 @@ public class Video {
 	static void VideoDrawString(String str, int x, int y) {
 		VideoDrawString(str, x, y, 0);
 	}
-	static void VideoDrawString(String str, int x, int y, int type) {
-		if (VideoExited)
-			exit(0);
 
+	static void VideoDrawString(String str, int x, int y, int type) {
 		// 大字体y坐标:每行+16 //小字体y坐标:每行+13
 		if (type != 0) {
 			blackBrush.setTextSize(largeFnt);
-			lpmem.drawText(str, x*sScale, y*sScale+largeOff, blackBrush);
+			lpmem.drawText(str, x * sScale, y * sScale + largeOff, blackBrush);
 		} else {
 			blackBrush.setTextSize(smallFnt);
-			drawMultiText(str, x, y+smallOff/sScale, Gmud.WQX_ORG_WIDTH, blackBrush);
+			drawMultiText(str, x, y + smallOff / sScale, Gmud.WQX_ORG_WIDTH,
+					blackBrush);
 		}
 	}
 
@@ -335,35 +346,31 @@ public class Video {
 		VideoDrawStringSingleLine(str, x, y, 0);
 	}
 
-	static void VideoDrawStringSingleLine(final String str, int x, int y, int type) {
-		if (VideoExited)
-			exit(0);
-
-		// PointF origin(x, y); 
-		// 大字体y坐标:每行+16 
+	static void VideoDrawStringSingleLine(final String str, int x, int y,
+			int type) {
+		// PointF origin(x, y);
+		// 大字体y坐标:每行+16
 		// 小字体y坐标:每行+13
 		switch (type) {
 		case 1:
 			// lpmem->DrawString(str, -1, largeFnt, PointF(x, y), blackBrush);
 			blackBrush.setTextSize(largeFnt);
-			lpmem.drawText(str, x*sScale, y*sScale+largeOff, blackBrush);
+			lpmem.drawText(str, x * sScale, y * sScale + largeOff, blackBrush);
 			break;
 		case 2:
 			greenBrush.setTextSize(smallFnt);
-			lpmem.drawText(str, x*sScale, y*sScale+smallOff, greenBrush);
+			lpmem.drawText(str, x * sScale, y * sScale + smallOff, greenBrush);
 			break;
 		default:
 			blackBrush.setTextSize(smallFnt);
-			lpmem.drawText(str, x*sScale, y*sScale+smallOff, blackBrush);
+			lpmem.drawText(str, x * sScale, y * sScale + smallOff, blackBrush);
 		}
 	}
 
 	static void VideoDrawNumberData(String data, int x, int y) {
-		if (VideoExited)
-			exit(0);
-
 		Rect rectSrc = new Rect(0, 0, 4, 5);
-		Rect rectDst = new Rect(x*sScale, y*sScale, (x + 4)*sScale, (y + 5)*sScale);
+		Rect rectDst = new Rect(x * sScale, y * sScale, (x + 4) * sScale,
+				(y + 5) * sScale);
 
 		for (int i1 = 0; i1 < data.length(); i1++) {
 			char c = data.charAt(i1);
@@ -377,54 +384,28 @@ public class Video {
 			}
 			lpmem.drawBitmap(pnum, rectSrc, rectDst, sPaint);
 
-			rectDst.left += 4*sScale;
-			rectDst.right += 4*sScale;
+			rectDst.left += 4 * sScale;
+			rectDst.right += 4 * sScale;
 		}
 	}
 
 	public static void VideoUpdate() {
-		if (VideoExited)
-			return;
-
-		synchronized (lpmem) {
-			
-			if (sBinderShow == null) {
-				return;
-			}
-
-			final int width = lpmemimg.getWidth();
-			final int height = lpmemimg.getHeight();
-			final int left = (sBinderShow.getWidth() - width) / 2;
-			sDirtyRect.set(left, 0, left + width, height);
-
-			// lpwnd->DrawImage(lpmemimg, 0, 0, 480, 240);
-
-			// 锁定Canvas,进行相应的界面处理	
-			Canvas c = sBinderShow.getHolder().lockCanvas(sDirtyRect);
-			if (c != null) {
-				
-				Configure.onDraw(c);
-
-				c.drawBitmap(lpmemimg, left, 0, sPaint);
-
-				// 画完后，unlock
-				sBinderShow.getHolder().unlockCanvasAndPost(c);
-			}
+		if (sCallback != null) {
+			sCallback.VideoPostUpdate();
 		}
 	}
 
 	static ArrayList<String> SplitString(String str, int width) {
-		
+
 		final Paint paint = blackBrush;
 		paint.setTextSize(smallFnt);
-		
+
 		ArrayList<String> sv = new ArrayList<String>();
-		
+
 		int linestart = 0;
 		// RectF r;
 		int k = str.length();
 
-		
 		for (int k1 = 0; k1 < k; k1++) {
 			if (str.charAt(k1) == '\n') {
 				if (k1 != 0) {
@@ -433,30 +414,30 @@ public class Video {
 				}
 				continue;
 			}
-			
-//			if (k1 == k - 1) {
-//				sv.add(str.substring(linestart, k1 + 1));
-//				break;
-//			}
-			
+
+			// if (k1 == k - 1) {
+			// sv.add(str.substring(linestart, k1 + 1));
+			// break;
+			// }
+
 			float w = blackBrush.measureText(str, linestart, k1);
-			if (w >= width*sScale) {
-				sv.add(str.substring(linestart, k1-1));
-				linestart = k1-1;
+			if (w >= width * sScale) {
+				sv.add(str.substring(linestart, k1 - 1));
+				linestart = k1 - 1;
 			}
 
 			// lpmem->MeasureString(str->substr(linestart, length).c_str(),
 			// length, smallFnt, origin, &r);
 			// if (r.GetRight() > width)
-//			{
-//				length = k1 - linestart;
-//				sv.push_back(str->substr(linestart, length));
-//				linestart = k1;
-//			}
+			// {
+			// length = k1 - linestart;
+			// sv.push_back(str->substr(linestart, length));
+			// linestart = k1;
+			// }
 		}
-//		if (linestart < k) {
-			sv.add(str.substring(linestart, k));
-//		}
+		// if (linestart < k) {
+		sv.add(str.substring(linestart, k));
+		// }
 		return sv;
 	}
 }
