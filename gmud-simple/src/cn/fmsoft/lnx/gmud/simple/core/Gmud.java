@@ -9,7 +9,7 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Canvas;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 
 /**
@@ -206,8 +206,8 @@ public class Gmud {
 	}
 
 	public static interface IVideoCallback {
-		/** 通知有更新，由外部调用 {@link Video#onDraw(Canvas)} 完成刷新 */
-		public void VideoPostUpdate();
+		/** 通知有更新，由外部保留副本刷新 */
+		void VideoPostUpdate(Bitmap video);
 	}
 
 	public static void SetVideoCallback(IVideoCallback callback) {
@@ -216,10 +216,6 @@ public class Gmud {
 	
 	public static void ResetVideoLayout(Rect rect) {
 		Video.ResetLayout(rect);
-	}
-	
-	public static void DrawVideo(Canvas canvas) {
-		Video.onDraw(canvas);
 	}
 	
 	public static boolean IsRunning() {

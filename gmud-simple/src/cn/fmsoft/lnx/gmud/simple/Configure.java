@@ -2,17 +2,24 @@ package cn.fmsoft.lnx.gmud.simple;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
+/**
+ * 管理各部件位置区域及显示，响应按键点击
+ * @author nxliao
+ *
+ */
 public final class Configure {
 	final static boolean DEBUG = true;
 	final static String DBG_TAG = Configure.class.getName();
@@ -28,6 +35,9 @@ public final class Configure {
 	public static final int KEY_Fly = 8;
 	public static final int KEY_HELP = 9;
 	public static final int _KEY_MAX_ = 9;
+
+	public static final int _KEY_MASK_CLEAR_ = -1 << _KEY_MAX_;
+	public static final int _KEY_MASK_ = ~_KEY_MASK_CLEAR_;
 	
 	/** 横屏时左右留白，避免游戏区占满屏导致按钮不可见 */
 	private final static int MARGIN_H_LAND = 80;
@@ -45,10 +55,12 @@ public final class Configure {
 	protected static final Rect sRcVideo = new Rect();
 	/** 各按键区 */
 	protected static final Rect sRcKeys[] = new Rect[_KEY_MAX_ + 1];
+	/** 剪切区，每次绘制前重新获取 */
+	private static final Rect sＴmpRcClip = new Rect();
 	/** 按下状态 */
 	private static int sPressMask = 0;
-	/** 剪切区，每次绘制前重新获取 */
-	private static Rect sRcClip;
+	/** 按下或弹起的变化 */
+	private static int sPressDirty= 0;
 	private static Drawable BG_NORMAL;
 	private static Drawable BG_FOCUS;
 	private static Paint TITLE_PAINT;
@@ -66,13 +78,14 @@ public final class Configure {
 		Resources res = ctx.getResources();
 		final DisplayMetrics dm = res.getDisplayMetrics();
 		CUR_DENSITY = dm.density;
+		
 		BG_NORMAL = res.getDrawable(R.drawable.bg_normal);
 		BG_FOCUS = res.getDrawable(R.drawable.bg_focus);
 		TITLE = res.getStringArray(R.array.soft_key);
-		sRcClip = new Rect();
-		TITLE_PAINT = new Paint();
 
+		TITLE_PAINT = new Paint();
 		TITLE_PAINT.setAntiAlias(true);
+		TITLE_PAINT.setFilterBitmap(true);
 		TITLE_PAINT.setFakeBoldText(true);
 		TITLE_PAINT.setTextSize(DEF_BT_TITLE_SIZE * CUR_DENSITY);
 		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
@@ -97,25 +110,27 @@ public final class Configure {
 
 	private static void _draw_key(Canvas canvas, int id) {
 		final Rect rc = sRcKeys[id];
-		if (Rect.intersects(sRcClip, rc)) {
-			final Drawable d;
-			if ((sPressMask & (1 << id)) == 0) {
-				// no press
-				d = BG_NORMAL;
-				TITLE_PAINT.setColor(Color.GREEN);
-			} else {
-				d = BG_FOCUS;
-				TITLE_PAINT.setColor(Color.YELLOW);
-			}
-			d.setBounds(rc);
-			d.draw(canvas);
-
-			String title = TITLE[id];
-			Rect bounds = new Rect();
-			TITLE_PAINT.getTextBounds(title, 0, title.length(), bounds);
-			canvas.drawText(TITLE[id], rc.centerX() - bounds.centerX(),
-					rc.centerY() - bounds.centerY(), TITLE_PAINT);
+		final int flag = (1 << id);
+		final Drawable d;
+		if ((sPressMask & flag) == 0) {
+			// no press
+			d = BG_NORMAL;
+			TITLE_PAINT.setColor(Color.GREEN);
+		} else {
+			d = BG_FOCUS;
+			TITLE_PAINT.setColor(Color.YELLOW);
 		}
+		d.setBounds(rc);
+		d.draw(canvas);
+
+		String title = TITLE[id];
+		Rect bounds = new Rect();
+		TITLE_PAINT.getTextBounds(title, 0, title.length(), bounds);
+		canvas.drawText(TITLE[id], rc.centerX() - bounds.centerX(),
+				rc.centerY() - bounds.centerY(), TITLE_PAINT);
+
+		if ((sPressDirty & flag) != 0)
+			sPressDirty &= ~(flag);
 	}
 
 	/**
@@ -178,17 +193,68 @@ public final class Configure {
 	protected static boolean updateInvalidate() {
 		return false;
 	}
+	
+	protected static void UnionInvalidateRect(Rect bound) {
+		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+			if ((sPressDirty & (1 << i)) != 0)
+				bound.union(sRcKeys[i]);
+		}
+	}
 
 	protected static void Draw(Canvas canvas) {
 
 	}
 
-	public static void onDraw(Canvas canvas) {
-		canvas.getClipBounds(sRcClip);
+	public static void drawKeypad(Canvas canvas) {
+		/* 剪切区 */
+		final Rect clip = sＴmpRcClip;
+		canvas.getClipBounds(clip);
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-			_draw_key(canvas, i);
+			if (Rect.intersects(clip, sRcKeys[i]))
+				_draw_key(canvas, i);
 		}
 	}
+
+	public static void drawVideo(Canvas canvas, Bitmap video) {
+		canvas.drawBitmap(video, null, sRcVideo, TITLE_PAINT);
+	}
+
+	/** 响应单击按钮，如无变化返回false，否则返回true */
+	protected static boolean HitTest(MotionEvent event) {
+		final int action = event.getAction();
+		final int count = event.getPointerCount();
+
+		Log.d("lnx", "action=" + action);
+
+		final int flag;
+		switch ((action & MotionEvent.ACTION_MASK)) {
+		case MotionEvent.ACTION_UP:
+		case MotionEvent.ACTION_CANCEL: {
+			flag = 0;
+		}
+			break;
+
+		default: {
+			int tmp = 0;
+			for (int i = 0, c = count; i < c; i++) {
+				final int x = (int) event.getX(i);
+				final int y = (int) event.getY(i);
+				tmp |= Configure.HitTestFlag(x, y);
+			}
+			flag = tmp;
+		}
+			break;
+		}
+
+		if (flag == sPressMask)
+			return false;
+		sPressDirty = (sPressMask ^ flag);
+		sPressMask = (sPressMask & _KEY_MASK_CLEAR_) | flag;
+		Input.GmudSetKey(sPressMask);
+		return true;
+	}
+	
+	
 
 	/** 返回位置所在的所有元件掩码 */
 	protected static int HitTestFlag(int x, int y) {
@@ -216,7 +282,10 @@ public final class Configure {
 	}
 
 	protected static void onKeyUp(int flag) {
-		sPressMask &= ~(flag);
+		if (flag == 0)
+			sPressMask = 0;
+		else
+			sPressMask &= ~(flag);
 		Input.GmudSetKey(sPressMask);
 	}
 

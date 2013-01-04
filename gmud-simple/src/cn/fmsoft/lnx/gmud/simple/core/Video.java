@@ -68,12 +68,6 @@ class Video {
 		sCallback = callback;
 	}
 
-	/** 绘制输出 */
-	public static void onDraw(Canvas canvas) {
-		if (lpmemimg != null)
-			canvas.drawBitmap(lpmemimg, null, sDirtyRect, null);
-	}
-
 	/** 重置输出区域、纵横缩放比例、字体、framebuff */
 	public static void ResetLayout(Rect rect) {
 		if (sDirtyRect.equals(rect)) {
@@ -391,7 +385,7 @@ class Video {
 
 	public static void VideoUpdate() {
 		if (sCallback != null) {
-			sCallback.VideoPostUpdate();
+			sCallback.VideoPostUpdate(lpmemimg);
 		}
 	}
 

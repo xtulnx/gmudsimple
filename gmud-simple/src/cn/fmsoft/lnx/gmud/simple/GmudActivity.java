@@ -49,6 +49,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 	private static PendingIntent sMainIntent;
 	
+	private Show mShow;
+	
 	private Handler mHandler = new Handler();
 
 	protected static PendingIntent getPendingIntent(Context ctx) {
@@ -76,16 +78,21 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		Configure.init(getBaseContext());
 
+		mShow = (Show) findViewById(R.id.show);
+		
 		mGestureListener = new Configure.MySimpleOnGestureListener();
 		mDetector = new GestureDetector(mGestureListener);
 		mDetector.setIsLongpressEnabled(false);
-//		findViewById(R.id.show).setOnTouchListener(new View.OnTouchListener() {
-//
-//			@Override
-//			public boolean onTouch(View v, MotionEvent event) {
-//				return mDetector.onTouchEvent(event);
-//			}
-//		});
+		mShow.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (Configure.HitTest(event)){
+					((Show)v).KeyPostUpdate();
+				}
+				return true;
+				// return mDetector.onTouchEvent(event);
+			}
+		});
 		
 
 		// new Gmud(this);

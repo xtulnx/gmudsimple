@@ -6,43 +6,104 @@
 package cn.fmsoft.lnx.gmud.simple;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Message;
+import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 
+/**
+ * 展示. 定期刷新！
+ * 
+ * @author nxliao
+ * 
+ */
 public class Show extends SurfaceView implements SurfaceHolder.Callback,
 		Gmud.IVideoCallback {
 
-	private final static int DELAY_AUTO_UPDATE_KEYPAD = 50;
-	
-	private final static int MSG_UPDATE = 0x10000;
-	private final static int MSG_UPDATE_KEYPAD = 0x10001;
-	private final Handler mHandler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_UPDATE:
-				onUpdate();
-				break;
+	private final Object LOCK = new Object();
 
-			default:
-				break;
+	private final static int DELAY_AUTO_UPDATE_KEYPAD = 50;
+
+	private static int mUpdateStatus = -1;
+
+	/** 更新游戏区 */
+	private static final int UPDATE_VIDEO = 1 << 0;
+	/** 更新按键 */
+	private static final int UPDATE_KEYPAD = 1 << 1;
+	/** 停止绘制 */
+	private static final int UPDATE_CANCEL = 1 << 31;
+
+	private Bitmap mBmShadow;
+	private Canvas mCanvas;
+
+	private class MyThread extends Thread {
+		public MyThread() {
+			super("auto-draw");
+		}
+
+		@Override
+		public void run() {
+			while (Show.this.tryDraw()) {
+				try {
+					sleep(DELAY_AUTO_UPDATE_KEYPAD);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-	};
+	}
 
 	public Show(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		SurfaceHolder holder = getHolder();
 		holder.addCallback(this);
-//		setFocusable(false);
-//		setFocusableInTouchMode(false);
+		// setFocusable(false);
+		// setFocusableInTouchMode(false);
+
+	}
+
+	public boolean tryDraw() {
+		synchronized (LOCK) {
+			final int status = mUpdateStatus;
+			if ((status & UPDATE_CANCEL) != 0)
+				return false;
+
+			final boolean update_video = (status & UPDATE_VIDEO) != 0;
+			final boolean update_keypad = (status & UPDATE_KEYPAD) != 0;
+
+			Rect dirty = new Rect();
+			if (update_video) {
+				dirty.set(Configure.sRcVideo);
+			}
+			if (update_keypad) {
+				Configure.UnionInvalidateRect(dirty);
+			}
+
+			final Canvas canvas;
+			final SurfaceHolder holder = getHolder();
+			if (dirty.isEmpty()) {
+				return true;
+			} else {
+				canvas = holder.lockCanvas(dirty);
+			}
+
+			if (canvas != null) {
+				canvas.drawColor(Color.LTGRAY);
+				if (update_keypad)
+					Configure.drawKeypad(canvas);
+				if (update_video) {
+					Configure.drawVideo(canvas, mBmShadow);
+					mUpdateStatus &= ~(UPDATE_VIDEO);
+				}
+			}
+			getHolder().unlockCanvasAndPost(canvas);
+			return true;
+		}
 	}
 
 	@Override
@@ -63,74 +124,65 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 	public void surfaceCreated(SurfaceHolder holder) {
 		// TODO Auto-generated method stub
 		Gmud.SetVideoCallback(this);
+
+		synchronized (LOCK) {
+			mUpdateStatus = UPDATE_KEYPAD | UPDATE_VIDEO;
+		}
+
+		new MyThread().start();
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
-
-		Configure.reset(width, height);
-		Canvas c = getHolder().lockCanvas();
-		if (c != null) {
-			c.drawColor(Color.LTGRAY);
-			Configure.onDraw(c);
-			Gmud.DrawVideo(c);
-			getHolder().unlockCanvasAndPost(c);
+		synchronized (LOCK) {
+			Configure.reset(width, height);
+			mUpdateStatus |= UPDATE_KEYPAD | UPDATE_VIDEO;
 		}
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
 		Gmud.SetVideoCallback(null);
+		synchronized (LOCK) {
+			mUpdateStatus |= UPDATE_CANCEL;
+		}
+		try {
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public void VideoPostUpdate(Bitmap video) {
+		synchronized (LOCK) {
+			if ((mUpdateStatus & UPDATE_CANCEL) != 0)
+				return;
 
-		final int action = event.getAction();
-		final int count = event.getPointerCount();
-
-		if ((action & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
-			Configure.onKeyUp(0);
-			onUpdate();
-			return true;
-		} else {
-			int flag = 0;
-			for (int i = 0, c = count; i < c; i++) {
-				final int x = (int) event.getX(i);
-				final int y = (int) event.getY(i);
-				flag |= Configure.HitTestFlag(x, y);
+			if (mCanvas == null) {
+				mCanvas = new Canvas();
 			}
-			Configure.onKeySet(flag);
-			onUpdate();
-			return true;
-		}
-//		return super.onTouchEvent(event);
-	}
-	
 
-	@Override
-	public void VideoPostUpdate() {
-		// if (mHandler.hasMessages(MSG_UPDATE)) {
-		// Message msg = Message.obtain(mHandler, MSG_UPDATE);
-		// mHandler.sendMessage(msg);
-		// }
-		Canvas c = getHolder().lockCanvas(Configure.sRcVideo);
-		if (c != null) {
-			c.drawColor(Color.LTGRAY);
-			Configure.onDraw(c);
-			Gmud.DrawVideo(c);
-			getHolder().unlockCanvasAndPost(c);
+			if (mBmShadow == null) {
+				mBmShadow = Bitmap.createBitmap(video);
+				mCanvas.setBitmap(mBmShadow);
+			} else if (mBmShadow.getWidth() != video.getWidth()
+					|| mBmShadow.getHeight() != video.getHeight()) {
+				final Bitmap bm = Bitmap.createBitmap(video);
+				mCanvas.setBitmap(bm);
+				mBmShadow.recycle();
+				mBmShadow = bm;
+			}
+
+			mCanvas.drawBitmap(video, 0, 0, null);
+			mUpdateStatus |= UPDATE_VIDEO;
 		}
 	}
 
-	protected void onUpdate() {
-		Canvas c = getHolder().lockCanvas();
-		if (c != null) {
-			Configure.onDraw(c);
-			Gmud.DrawVideo(c);
-			getHolder().unlockCanvasAndPost(c);
+	public void KeyPostUpdate() {
+		synchronized (LOCK) {
+			mUpdateStatus |= UPDATE_KEYPAD;
 		}
 	}
 }
