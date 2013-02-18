@@ -160,6 +160,9 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 			if ((mUpdateStatus & UPDATE_CANCEL) != 0)
 				return;
 
+			if (video == null || video.isRecycled())
+				return;
+
 			if (mCanvas == null) {
 				mCanvas = new Canvas();
 			}

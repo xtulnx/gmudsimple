@@ -74,7 +74,16 @@ class Video {
 			return;
 		}
 
+		Bitmap tmp_lpmemiｍg;
+		Canvas tmp_lpmem;
+
 		synchronized (LOCK) {
+			tmp_lpmemiｍg = lpmemimg;
+			lpmemimg = null;
+
+			tmp_lpmem = lpmem;
+			tmp_lpmem.setBitmap(tmp_lpmemiｍg);
+
 			sDirtyRect.set(rect);
 
 			final int w = rect.width();
@@ -92,18 +101,22 @@ class Video {
 			sScaleY = (float) h / Gmud.WQX_ORG_HEIGHT;
 
 			Bitmap bmBack = null;
-			if (lpmemimg != null && !lpmemimg.isRecycled()) {
-				bmBack = lpmemimg;
-				lpmemimg = Bitmap.createScaledBitmap(bmBack, sWidth, sHeight,
-						true);
+			if (tmp_lpmemiｍg != null && !tmp_lpmemiｍg.isRecycled()) {
+				bmBack = tmp_lpmemiｍg;
+				tmp_lpmemiｍg = Bitmap.createScaledBitmap(bmBack, sWidth,
+						sHeight, true);
 			} else {
-				lpmemimg = Bitmap.createBitmap(sWidth, sHeight,
+				tmp_lpmemiｍg = Bitmap.createBitmap(sWidth, sHeight,
 						Bitmap.Config.ARGB_8888);
-				lpmemimg.eraseColor(COLOR_BG);
+				tmp_lpmemiｍg.eraseColor(COLOR_BG);
 			}
 
+			Matrix m = new Matrix();
+			m.setScale(sScaleX, sScaleY);
+
+			lpmemimg = tmp_lpmemiｍg;
 			lpmem.setBitmap(lpmemimg);
-			lpmem.scale(sScaleX, sScaleY);
+			lpmem.setMatrix(m);
 			if (bmBack != null) {
 				bmBack.recycle();
 				bmBack = null;
@@ -111,27 +124,27 @@ class Video {
 			sScaleX = 1;
 			sScaleY = 1;
 			sScale = 1;
-			
+
 			VideoUpdate();
 		}
 	}
 
-//	public static synchronized void Bind(Show show) {
-//
-//		// if (sBinderShow != show) {
-//		// sBinderShow = show;
-//		// GmudMain.Resume();
-//		// }
-//	}
-//
-//	public static synchronized void UnBind(Show show) {
-//		sBinderShow = null;
-//	}
+	// public static synchronized void Bind(Show show) {
+	//
+	// // if (sBinderShow != show) {
+	// // sBinderShow = show;
+	// // GmudMain.Resume();
+	// // }
+	// }
+	//
+	// public static synchronized void UnBind(Show show) {
+	// sBinderShow = null;
+	// }
 
 	static boolean VideoInit() {
-		
+
 		sDirtyRect = new Rect();
-		
+
 		sPaint = new Paint();
 		sPaint.setAntiAlias(true);
 
@@ -172,8 +185,6 @@ class Video {
 		return true;
 	}
 
-
-
 	static void VideoShutdown() {
 		// DeleteObject(pnum);
 		// DeleteObject(largeFnt);
@@ -189,10 +200,11 @@ class Video {
 		// GdiplusShutdown(m_pGdiToken);
 		// ReleaseDC(hw,m_hdc);
 		// VideoExited = 1;
-
-		lpmemimg.recycle();
-		lpmemimg = null;
-		lpmem = null;
+		synchronized (LOCK) {
+			lpmemimg.recycle();
+			lpmemimg = null;
+			lpmem = null;
+		}
 	}
 
 	static void exit(int code) {
@@ -245,7 +257,9 @@ class Video {
 	}
 
 	static void VideoClear() {
-		lpmemimg.eraseColor(COLOR_BG);
+		synchronized (LOCK) {
+			lpmemimg.eraseColor(COLOR_BG);
+		}
 	}
 
 	static void VideoClearRect(int x, int y, int width, int height) {

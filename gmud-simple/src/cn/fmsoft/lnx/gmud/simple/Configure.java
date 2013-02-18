@@ -17,8 +17,9 @@ import cn.fmsoft.lnx.gmud.simple.core.Input;
 
 /**
  * 管理各部件位置区域及显示，响应按键点击
+ * 
  * @author nxliao
- *
+ * 
  */
 public final class Configure {
 	final static boolean DEBUG = true;
@@ -38,7 +39,7 @@ public final class Configure {
 
 	public static final int _KEY_MASK_CLEAR_ = -1 << _KEY_MAX_;
 	public static final int _KEY_MASK_ = ~_KEY_MASK_CLEAR_;
-	
+
 	/** 横屏时左右留白，避免游戏区占满屏导致按钮不可见 */
 	private final static int MARGIN_H_LAND = 80;
 	private final static int MARGIN_V_LAND = 80;
@@ -49,6 +50,8 @@ public final class Configure {
 	private final static int DEF_BT_HEIGHT = 32;
 	private final static int DEF_BT_COLUMN_PORT = 3;
 	private final static int DEF_BT_ROW_PORT = 4;
+	private final static int DEF_BT_COLUMN_LAND = 2;
+	private final static int DEF_BT_ROW_LAND = 5;
 	private final static int DEF_BT_TITLE_SIZE = 10;
 
 	/** 视频输出区域 */
@@ -60,7 +63,7 @@ public final class Configure {
 	/** 按下状态 */
 	private static int sPressMask = 0;
 	/** 按下或弹起的变化 */
-	private static int sPressDirty= 0;
+	private static int sPressDirty = 0;
 	private static Drawable BG_NORMAL;
 	private static Drawable BG_FOCUS;
 	private static Paint TITLE_PAINT;
@@ -70,15 +73,15 @@ public final class Configure {
 	static final int[][] sSoftKeyPort = new int[][] { { 0, 0 }, { 2, 0 },
 			{ 1, 3 }, { 0, 3 }, { 1, 2 }, { 2, 3 }, { 0, 1 }, { 2, 1 },
 			{ 1, 1 } };
-	static final int[][] sSoftKeyLand = new int[][] { { 0, 1 }, { 0, 0 },
-			{ 4, 1 }, { 3, 1 }, { 4, 0 }, { 5, 1 }, { 3, 0 }, { 5, 0 },
-			{ 1, 0 } };
+	static final int[][] sSoftKeyLand = new int[][] { { 0, 0 }, { 1, 0 },
+			{ 1, 4 }, { 1, 2 }, { 1, 1 }, { 1, 3 }, { 0, 2 }, { 0, 3 },
+			{ 0, 1 } };
 
 	protected static void init(Context ctx) {
 		Resources res = ctx.getResources();
 		final DisplayMetrics dm = res.getDisplayMetrics();
 		CUR_DENSITY = dm.density;
-		
+
 		BG_NORMAL = res.getDrawable(R.drawable.bg_normal);
 		BG_FOCUS = res.getDrawable(R.drawable.bg_focus);
 		TITLE = res.getStringArray(R.array.soft_key);
@@ -90,6 +93,9 @@ public final class Configure {
 		TITLE_PAINT.setTextSize(DEF_BT_TITLE_SIZE * CUR_DENSITY);
 		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
 
+		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+			sRcKeys[i] = new Rect();
+		}
 		sRcKeys[_KEY_MAX_] = sRcVideo;
 	}
 
@@ -140,7 +146,28 @@ public final class Configure {
 	 * @param h
 	 */
 	private static void _reset_default_land(int w, int h) {
+		// 计算最小整数倍
+		final int scale = _get_video_fill_scale(w - MARGIN_H_PORT * 2, h
+				- MARGIN_V_PORT);
+		final int vw = Gmud.WQX_ORG_WIDTH * scale;
+		final int vh = Gmud.WQX_ORG_HEIGHT * scale;
 
+		final int bw = (int) (CUR_DENSITY * DEF_BT_WIDTH);
+		final int bh = (int) (CUR_DENSITY * DEF_BT_HEIGHT);
+
+		int bph = (w - vw) / DEF_BT_COLUMN_LAND - bw;
+		if (bph > 0) {
+			bph = 0;
+		}
+		final int bpv = (h - bh * DEF_BT_ROW_LAND) / (DEF_BT_ROW_LAND + 1);
+
+		sRcVideo.set((w - vw) / 2, (h - vh) / 2, (vw + w) / 2, (h + vh) / 2);
+		final int top = 0 + bpv;
+		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+			final int x = sSoftKeyLand[i][0] == 0 ? bph : (w - bw - bph);
+			final int y = top + (bh + bpv) * sSoftKeyLand[i][1];
+			sRcKeys[i] = new Rect(x, y, x + bw, y + bh);
+		}
 	}
 
 	/**
@@ -193,7 +220,7 @@ public final class Configure {
 	protected static boolean updateInvalidate() {
 		return false;
 	}
-	
+
 	protected static void UnionInvalidateRect(Rect bound) {
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			if ((sPressDirty & (1 << i)) != 0)
@@ -253,8 +280,6 @@ public final class Configure {
 		Input.GmudSetKey(sPressMask);
 		return true;
 	}
-	
-	
 
 	/** 返回位置所在的所有元件掩码 */
 	protected static int HitTestFlag(int x, int y) {
@@ -275,7 +300,7 @@ public final class Configure {
 		}
 		return -1;
 	}
-	
+
 	protected static void onKeyDown(int flag) {
 		sPressMask |= flag;
 		Input.GmudSetKey(sPressMask);
@@ -304,7 +329,7 @@ public final class Configure {
 
 			final int flag = HitTestFlag(x, y);
 			onKeyUp(flag);
-			
+
 			return false;
 		}
 
