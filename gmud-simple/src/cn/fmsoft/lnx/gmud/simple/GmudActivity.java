@@ -44,14 +44,15 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
-	private Configure.MySimpleOnGestureListener mGestureListener;
+	private Configure.Design mDesign;
 	private GestureDetector mDetector;
 
 	private static PendingIntent sMainIntent;
-	
+
 	private Show mShow;
-	
+
 	private Handler mHandler = new Handler();
+	protected boolean mDesignIng;
 
 	protected static PendingIntent getPendingIntent(Context ctx) {
 		if (sMainIntent != null)
@@ -79,21 +80,23 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		Configure.init(getBaseContext());
 
 		mShow = (Show) findViewById(R.id.show);
-		
-		mGestureListener = new Configure.MySimpleOnGestureListener();
-		mDetector = new GestureDetector(mGestureListener);
-		mDetector.setIsLongpressEnabled(false);
+
+		mDesign = new Configure.Design(mShow);
+		mDetector = new GestureDetector(mDesign);
+		mDetector.setIsLongpressEnabled(true);
 		mShow.setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (Configure.HitTest(event)){
-					((Show)v).KeyPostUpdate();
+				if (mDesignIng) {
+					return mDetector.onTouchEvent(event);
+				} else {
+					if (Configure.HitTest(event)) {
+						((Show) v).KeyPostUpdate();
+					}
+					return true;
 				}
-				return true;
-				// return mDetector.onTouchEvent(event);
 			}
 		});
-		
 
 		// new Gmud(this);
 		Gmud.SetCallback(this);
@@ -103,7 +106,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		
+
 		Gmud.SetCallback(null);
 
 		Gmud.Exit();
@@ -113,7 +116,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		}
 
 		System.exit(0);
-		
+
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
 	}
@@ -182,6 +185,11 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		// case R.id.item_hook:
 		// break;
+		case R.id.item_design: {
+			item.setChecked(!mDesignIng);
+			tryDesign(item.isChecked());
+		}
+			break;
 
 		case R.id.item_setting:
 			Intent intent = new Intent(getBaseContext(), SettingActivity.class);
@@ -215,7 +223,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	}
 
 	private void hide_softkey() {
-		//Gmud.setMinScale(!bHideSoftKey);
+		// Gmud.setMinScale(!bHideSoftKey);
 		// final Control control = (Control) findViewById(R.id.control);
 		// control.hide(bHideSoftKey);
 		final View show = findViewById(R.id.show);
@@ -339,14 +347,25 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				final EditText input = new EditText(ctx);
 				alert.setView(input);
 
-				alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int whichButton) {
-						String name = input.getText().toString();
-						Gmud.SetNewName(name);
-					}
-				});
+				alert.setPositiveButton("Ok",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								String name = input.getText().toString();
+								Gmud.SetNewName(name);
+							}
+						});
 				alert.show();
 			}
 		});
+	}
+
+	private void tryDesign(boolean bEnabled) {
+		mDesignIng = bEnabled;
+		if (bEnabled) {
+			mShow.StartDesign(mDesign);
+		} else {
+			mShow.EndDesign();
+		}
 	}
 }

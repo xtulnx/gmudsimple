@@ -34,25 +34,33 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 	private static final int UPDATE_VIDEO = 1 << 0;
 	/** 更新按键 */
 	private static final int UPDATE_KEYPAD = 1 << 1;
+	/** 更新全部 */
+	private static final int UPDATE_ALL = 1 << 2;
 	/** 停止绘制 */
 	private static final int UPDATE_CANCEL = 1 << 31;
 
 	private Bitmap mBmShadow;
 	private Canvas mCanvas;
 
+	private Configure.Design mDesign;
+
 	private class MyThread extends Thread {
+		private int mDrawTickCount;
+
 		public MyThread() {
 			super("auto-draw");
 		}
 
 		@Override
 		public void run() {
-			while (Show.this.tryDraw()) {
+			mDrawTickCount = 0;
+			while (Show.this.tryDraw(mDrawTickCount)) {
 				try {
 					sleep(DELAY_AUTO_UPDATE_KEYPAD);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				mDrawTickCount++;
 			}
 		}
 	}
@@ -67,41 +75,60 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 
 	}
 
-	public boolean tryDraw() {
+	public boolean tryDraw(int drawTick) {
 		synchronized (LOCK) {
 			final int status = mUpdateStatus;
 			if ((status & UPDATE_CANCEL) != 0)
 				return false;
 
-			final boolean update_video = (status & UPDATE_VIDEO) != 0;
-			final boolean update_keypad = (status & UPDATE_KEYPAD) != 0;
+			final boolean update_video;
+			final boolean update_keypad;
 
-			Rect dirty = new Rect();
-			if (update_video) {
-				dirty.set(Configure.sRcVideo);
-			}
-			if (update_keypad) {
-				Configure.UnionInvalidateRect(dirty);
-			}
+			final Rect dirty = new Rect();
 
 			final Canvas canvas;
 			final SurfaceHolder holder = getHolder();
-			if (dirty.isEmpty()) {
-				return true;
+
+			if ((status & UPDATE_ALL) != 0) {
+				update_video = true;
+				update_keypad = true;
+				canvas = holder.lockCanvas();
+				mUpdateStatus &= ~(UPDATE_ALL);
 			} else {
-				canvas = holder.lockCanvas(dirty);
+				if (mDesign != null) {
+					mDesign.UnionInvalidateRect(dirty);
+				}
+
+				update_video = (status & UPDATE_VIDEO) != 0;
+				update_keypad = (status & UPDATE_KEYPAD) != 0;
+				if (update_video) {
+					dirty.set(Configure.sRcVideo);
+				}
+				if (update_keypad) {
+					Configure.UnionInvalidateRect(dirty);
+				}
+				if (dirty.isEmpty()) {
+					return true;
+				} else {
+					canvas = holder.lockCanvas(dirty);
+				}
 			}
 
 			if (canvas != null) {
 				canvas.drawColor(Color.LTGRAY);
-				if (update_keypad)
-					Configure.drawKeypad(canvas);
-				if (update_video) {
-					Configure.drawVideo(canvas, mBmShadow);
-					mUpdateStatus &= ~(UPDATE_VIDEO);
+
+				if (mDesign != null) {
+					mDesign.Draw(canvas, mBmShadow, drawTick);
+				} else {
+					if (update_keypad)
+						Configure.drawKeypad(canvas);
+					if (update_video) {
+						Configure.drawVideo(canvas, mBmShadow);
+						mUpdateStatus &= ~(UPDATE_VIDEO);
+					}
 				}
 			}
-			getHolder().unlockCanvasAndPost(canvas);
+			holder.unlockCanvasAndPost(canvas);
 			return true;
 		}
 	}
@@ -136,7 +163,7 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
 		synchronized (LOCK) {
-			Configure.reset(width, height);
+			Configure.reset(width > height, width, height);
 			mUpdateStatus |= UPDATE_KEYPAD | UPDATE_VIDEO;
 		}
 	}
@@ -187,5 +214,22 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 		synchronized (LOCK) {
 			mUpdateStatus |= UPDATE_KEYPAD;
 		}
+	}
+
+	protected void StartDesign(Configure.Design design) {
+		Gmud.Pause();
+		synchronized (LOCK) {
+			mDesign = design;
+			mUpdateStatus |= UPDATE_ALL;
+			Configure.startDesign(design);
+		}
+	}
+
+	protected void EndDesign() {
+		synchronized (LOCK) {
+			mDesign = null;
+			mUpdateStatus |= UPDATE_ALL;
+		}
+		Gmud.Resume();
 	}
 }
