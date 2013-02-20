@@ -60,6 +60,7 @@ public final class Configure {
 	private static ConfigInfo sDefConfigLand, sDefConfigPort;
 	private static ConfigInfo sCurConfigInfo;
 	private static int sWidth, sHeight;
+	private static Rect sBound = new Rect();
 	/** 背景色 */
 	private static int sBackground;
 
@@ -167,6 +168,7 @@ public final class Configure {
 		applyConfig(info == null ? defInfo : info);
 		sWidth = w;
 		sHeight = h;
+		sBound.set(0, 0, w, h);
 
 		// 重置缩放比例
 		Gmud.ResetVideoLayout(sRcVideo);
@@ -409,18 +411,18 @@ public final class Configure {
 
 		protected void UnionInvalidateRect(Rect bound) {
 			if (mRedraw) {
-				bound.union(0, 0, sWidth, sHeight);
+				bound.union(sBound);
 				mRedraw = false;
 			} else if (mHitId >= 0 && mDirty) {
 				final Rect rc = mRcTarget;
 				bound.union(rc);
 
 				// 检查边界吸附
-				if (!checkAdsorbH(rc.left, FLAG_ADSORB_LEFT)) {
-					checkAdsorbH(rc.right - sWidth, FLAG_ADSORB_RIGHT);
+				if (!checkAdsorbH(rc.left - sBound.left, FLAG_ADSORB_LEFT)) {
+					checkAdsorbH(rc.right - sBound.right, FLAG_ADSORB_RIGHT);
 				}
-				if (!checkAdsorbV(rc.top, FLAG_ADSORB_TOP)) {
-					checkAdsorbV(rc.bottom - sHeight, FLAG_ADSORB_BOTTOM);
+				if (!checkAdsorbV(rc.top - sBound.top, FLAG_ADSORB_TOP)) {
+					checkAdsorbV(rc.bottom - sBound.bottom, FLAG_ADSORB_BOTTOM);
 				}
 				rc.offset((int) mCurX, (int) mCurY);
 
@@ -494,12 +496,19 @@ public final class Configure {
 					}
 					if (nw > MW || nh > MH) {
 						if (nw * MH > nh * MW) {
+							nh = nh * MW / nw;
+							nw = MW;
+						} else {
 							nw = nw * MH / nh;
 							nh = MH;
 						}
 					}
 				}
 				resetRectSize(sRcVideo, nw, nh);
+				if (!Rect.intersects(sBound, sRcVideo)) {
+					// 如果不可见，则需要调整回来
+					sRcVideo.offsetTo(sBound.left, sBound.top);
+				}
 				mRedraw = true;
 			}
 		}
