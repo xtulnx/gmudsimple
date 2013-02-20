@@ -8,7 +8,6 @@ package cn.fmsoft.lnx.gmud.simple;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
@@ -93,7 +92,6 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 				update_video = true;
 				update_keypad = true;
 				canvas = holder.lockCanvas();
-				mUpdateStatus &= ~(UPDATE_ALL);
 			} else {
 				if (mDesign != null) {
 					mDesign.UnionInvalidateRect(dirty);
@@ -115,18 +113,12 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 			}
 
 			if (canvas != null) {
-				canvas.drawColor(Color.LTGRAY);
-
 				if (mDesign != null) {
 					mDesign.Draw(canvas, mBmShadow, drawTick);
 				} else {
-					if (update_keypad)
-						Configure.drawKeypad(canvas);
-					if (update_video) {
-						Configure.drawVideo(canvas, mBmShadow);
-						mUpdateStatus &= ~(UPDATE_VIDEO);
-					}
+					Configure.Draw(canvas, mBmShadow, drawTick);
 				}
+				mUpdateStatus &= ~(UPDATE_VIDEO | UPDATE_KEYPAD | UPDATE_ALL);
 			}
 			holder.unlockCanvasAndPost(canvas);
 			return true;

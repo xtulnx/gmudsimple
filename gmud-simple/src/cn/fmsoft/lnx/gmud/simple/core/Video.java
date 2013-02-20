@@ -82,7 +82,7 @@ class Video {
 			lpmemimg = null;
 
 			tmp_lpmem = lpmem;
-			tmp_lpmem.setBitmap(tmp_lpmemiｍg);
+//			tmp_lpmem.setBitmap(tmp_lpmemiｍg);
 
 			sDirtyRect.set(rect);
 
