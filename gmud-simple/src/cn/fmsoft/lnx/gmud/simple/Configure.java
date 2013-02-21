@@ -3,6 +3,7 @@ package cn.fmsoft.lnx.gmud.simple;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -421,6 +422,7 @@ public final class Configure {
 		private final int FLAG_ADSORB_TOP = 1 << 1;
 		private final int FLAG_ADSORB_RIGHT = 1 << 2;
 		private final int FLAG_ADSORB_BOTTOM = 1 << 3;
+		private Dialog mDialog;
 
 		public Design(Show show) {
 			mShow = show;
@@ -555,8 +557,9 @@ public final class Configure {
 		private void _tryScale(int id) {
 			if (id < 0) {
 				// 空白区
-				new ColorPickerDialog(mShow.getContext(), this, sBackground)
-						.show();
+				mDialog = new ColorPickerDialog(mShow.getContext(), this,
+						sBackground);
+				mDialog.show();
 			} else if (id < _KEY_MAX_) {
 				// 按钮
 				final int BW = (int) (CUR_DENSITY * ConfigInfo.DEF_BT_WIDTH);
@@ -708,6 +711,10 @@ public final class Configure {
 
 		private void clear() {
 			mHitId = -1;
+			if (mDialog != null) {
+				mDialog.cancel();
+				mDialog = null;
+			}
 		}
 
 		public void apply() {

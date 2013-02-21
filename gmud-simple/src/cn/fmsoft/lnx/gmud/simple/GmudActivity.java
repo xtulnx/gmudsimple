@@ -305,6 +305,10 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 			} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 			}
+			
+			if (mDesignIng) {
+				applyDesign(false);
+			}
 		}
 
 		// if (this.getResources().getConfiguration().orientation ==
