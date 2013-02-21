@@ -275,6 +275,7 @@ public final class Configure {
 		final Rect clip = sＴmpRcClip;
 		canvas.getClipBounds(clip);
 		final Rect rcKeys[] = sRcKeys;
+		TITLE_PAINT.setTextSize(sRcKeys[0].height() * 0.6f);
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			final Rect rc = rcKeys[i];
 			if (Rect.intersects(clip, rc))
