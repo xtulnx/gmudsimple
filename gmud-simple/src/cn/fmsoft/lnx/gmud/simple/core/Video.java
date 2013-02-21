@@ -27,7 +27,7 @@ import android.graphics.Rect;
 class Video {
 
 	/** 默认背景色 */
-	static final int COLOR_BG = 0xff8FAF50;
+	static final int COLOR_BG = 0xff94b252;
 
 	/** 缩放进制，用于保证无小数化 */
 	static final int SCALE_RATE = Gmud.WQX_ORG_WIDTH * Gmud.WQX_ORG_HEIGHT;
@@ -158,7 +158,7 @@ class Video {
 		blackBrush.setStyle(Style.FILL);
 		greenBrush = new Paint();
 		greenBrush.setAntiAlias(true);
-		greenBrush.setARGB(255, 143, 175, 80);
+		greenBrush.setColor(COLOR_BG);//setARGB(255, 143, 175, 80);
 		greenBrush.setStyle(Style.FILL);
 		blackPen = new Paint();
 		blackPen.setAntiAlias(true);

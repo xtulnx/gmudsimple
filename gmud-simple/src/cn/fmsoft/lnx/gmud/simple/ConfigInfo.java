@@ -11,7 +11,7 @@ import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 /** 布局配置 */
 class ConfigInfo {
 	/** 默认：背景色 */
-	public final static int DEF_BACKGROUND_COLOR = Color.LTGRAY;
+	public final static int DEF_BACKGROUND_COLOR = 0xffb6c2c2;
 
 	/** 横屏时左右留白，避免游戏区占满屏导致按钮不可见 */
 	final static int MARGIN_H_LAND = 80;

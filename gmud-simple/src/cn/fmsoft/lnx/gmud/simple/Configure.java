@@ -59,6 +59,8 @@ public final class Configure {
 	private static int sPressDirty = 0;
 	private static Drawable BG_NORMAL;
 	private static Drawable BG_FOCUS;
+	private static Drawable VIDEO_COVER;
+	private static Rect sRcVideoCoverPadding = new Rect();
 	private static Paint TITLE_PAINT;
 	private static String TITLE[];
 	public static float CUR_DENSITY = 1.0f;
@@ -83,7 +85,10 @@ public final class Configure {
 
 		BG_NORMAL = res.getDrawable(R.drawable.bg_normal);
 		BG_FOCUS = res.getDrawable(R.drawable.bg_focus);
+		VIDEO_COVER = res.getDrawable(R.drawable.nc1020);
 		TITLE = res.getStringArray(R.array.soft_key);
+		if (VIDEO_COVER != null)
+			VIDEO_COVER.getPadding(sRcVideoCoverPadding);
 
 		TITLE_PAINT = new Paint();
 		TITLE_PAINT.setAntiAlias(true);
@@ -277,8 +282,21 @@ public final class Configure {
 		}
 	}
 
+	private static Rect _addVideoCoverPadding(Rect rc) {
+		Rect bound = new Rect(rc);
+		bound.left -= sRcVideoCoverPadding.left;
+		bound.top -= sRcVideoCoverPadding.top;
+		bound.right += sRcVideoCoverPadding.right;
+		bound.bottom += sRcVideoCoverPadding.bottom;
+		return bound;
+	}
+
 	/** 绘制游戏区 */
 	private static void drawVideo(Canvas canvas, Bitmap video) {
+		if (VIDEO_COVER != null) {
+			VIDEO_COVER.setBounds(_addVideoCoverPadding(sRcVideo));
+			VIDEO_COVER.draw(canvas);
+		}
 		canvas.drawBitmap(video, null, sRcVideo, TITLE_PAINT);
 	}
 
@@ -514,7 +532,11 @@ public final class Configure {
 				mRedraw = false;
 			} else if (mHitId >= 0 && mDirty) {
 				final Rect rc = mRcTarget;
-				bound.union(rc);
+
+				if (mHitId < _KEY_MAX_)
+					bound.union(rc);
+				else
+					bound.union(_addVideoCoverPadding(rc));
 
 				// 检查边界吸附
 				if (!checkAdsorbH(rc.left - sBound.left, FLAG_ADSORB_LEFT)) {
@@ -525,7 +547,11 @@ public final class Configure {
 				}
 				rc.offset((int) mCurX, (int) mCurY);
 
-				bound.union(rc);
+				if (mHitId < _KEY_MAX_)
+					bound.union(rc);
+				else
+					bound.union(_addVideoCoverPadding(rc));
+
 				mCurX = 0;
 				mCurY = 0;
 				mDirty = false;
