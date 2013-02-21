@@ -1,5 +1,9 @@
 package cn.fmsoft.lnx.gmud.simple;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.graphics.Color;
 import android.graphics.Rect;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
@@ -136,6 +140,9 @@ class ConfigInfo {
 		mWidth = w;
 		mHeight = h;
 		mBackgroundColor = DEF_BACKGROUND_COLOR;
+		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+			mRcKeys[i] = new Rect();
+		}
 	}
 
 	protected ConfigInfo(ConfigInfo info) {
@@ -149,5 +156,45 @@ class ConfigInfo {
 		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
 			mRcKeys[i] = new Rect(info.mRcKeys[i]);
 		}
+	}
+
+	protected static void flattenToJSON(ConfigInfo info, JSONObject joRoot)
+			throws JSONException {
+		joRoot.put("w", info.mWidth);
+		joRoot.put("h", info.mHeight);
+		joRoot.put("bg", info.mBackgroundColor);
+
+		JSONArray joKeys = new JSONArray();
+		final Rect[] rects = info.mRcKeys;
+		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+			final Rect rc = rects[i];
+			JSONArray jo = new JSONArray();
+			jo.put(rc.left);
+			jo.put(rc.top);
+			jo.put(rc.right);
+			jo.put(rc.bottom);
+			joKeys.put(jo);
+		}
+		joRoot.put("keys", joKeys);
+	}
+
+	protected static ConfigInfo unflattenFromJSON(JSONObject joRoot,
+			ConfigInfo defInfo) throws JSONException {
+		ConfigInfo info = new ConfigInfo(defInfo);
+
+		info.mWidth = joRoot.getInt("w");
+		info.mHeight = joRoot.getInt("h");
+		info.mBackgroundColor = joRoot.getInt("bg");
+
+		JSONArray keys = joRoot.getJSONArray("keys");
+		if (keys != null && keys.length() == Configure._KEY_MAX_ + 1) {
+			final Rect[] rects = info.mRcKeys;
+			for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+				JSONArray jo = keys.getJSONArray(i);
+				rects[i].set(jo.getInt(0), jo.getInt(1), jo.getInt(2),
+						jo.getInt(3));
+			}
+		}
+		return info;
 	}
 }

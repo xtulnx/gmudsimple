@@ -1,6 +1,11 @@
 package cn.fmsoft.lnx.gmud.simple;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -63,9 +68,14 @@ public final class Configure {
 	private static Rect sBound = new Rect();
 	/** 背景色 */
 	private static int sBackground;
+	private static boolean sIsLandscape;
+
+	private static Context sContext;
 
 	/** 初始化 */
 	protected static void init(Context ctx) {
+		sContext = ctx;
+
 		Resources res = ctx.getResources();
 		final DisplayMetrics dm = res.getDisplayMetrics();
 		CUR_DENSITY = dm.density;
@@ -112,6 +122,10 @@ public final class Configure {
 			sPressDirty &= ~(flag);
 	}
 
+	private static String getConfigName(boolean isLandscape) {
+		return isLandscape ? "land" : "port";
+	}
+
 	/**
 	 * 加载自定义配置
 	 * 
@@ -123,8 +137,42 @@ public final class Configure {
 	 */
 	private static ConfigInfo tryLoadConfig(boolean isLandscape,
 			ConfigInfo defInfo) {
-		ConfigInfo info = new ConfigInfo(defInfo);
-		return info;
+		SharedPreferences sp = sContext.getSharedPreferences("design",
+				Context.MODE_PRIVATE);
+		String design = sp.getString(getConfigName(isLandscape), null);
+		if (design != null) {
+			try {
+				JSONObject joRoot = new JSONObject(design);
+				return ConfigInfo.unflattenFromJSON(joRoot, defInfo);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return new ConfigInfo(defInfo);
+	}
+
+	/**
+	 * 储存自定义配置
+	 * 
+	 * @param isLandscape
+	 * @param info
+	 * @return
+	 */
+	private static boolean trySaveConfig(boolean isLandscape, ConfigInfo info) {
+		SharedPreferences sp = sContext.getSharedPreferences("design",
+				Context.MODE_PRIVATE);
+		Editor editor = sp.edit();
+		JSONObject joRoot = new JSONObject();
+		try {
+			ConfigInfo.flattenToJSON(info, joRoot);
+			editor.putString(getConfigName(isLandscape), joRoot.toString());
+			return editor.commit();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	/**
@@ -140,6 +188,36 @@ public final class Configure {
 		sBackground = info.mBackgroundColor;
 	}
 
+	/** 将当前使用的配置，转存到 ConfigInfo 结构中 */
+	private static void dumpConfig(ConfigInfo info) {
+		for (int i = 0, c = _KEY_MAX_ + 1; i < c; i++) {
+			info.mRcKeys[i].set(sRcKeys[i]);
+		}
+		info.mBackgroundColor = sBackground;
+	}
+
+	/**
+	 * 构造默认配置
+	 * 
+	 * @param isLandscape
+	 * @param w
+	 * @param h
+	 * @return
+	 */
+	private static ConfigInfo generateDefault(boolean isLandscape, int w, int h) {
+		ConfigInfo defInfo = isLandscape ? sDefConfigLand : sDefConfigPort;
+		if (defInfo == null || !defInfo.match(w, h)) {
+			if (isLandscape) {
+				defInfo = ConfigInfo.generateDefaultLand(w, h);
+				sDefConfigLand = defInfo;
+			} else {
+				defInfo = ConfigInfo.generateDefaultPort(w, h);
+				sDefConfigPort = defInfo;
+			}
+		}
+		return defInfo;
+	}
+
 	/**
 	 * 根据总区域大小重置各区域
 	 * 
@@ -151,21 +229,13 @@ public final class Configure {
 	 *            高
 	 */
 	protected static void reset(boolean isLandscape, int w, int h) {
-		ConfigInfo defInfo = isLandscape ? sDefConfigLand : sDefConfigPort;
-		if (defInfo == null || !defInfo.match(w, h)) {
-			if (isLandscape) {
-				defInfo = ConfigInfo.generateDefaultLand(w, h);
-				sDefConfigLand = defInfo;
-			} else {
-				defInfo = ConfigInfo.generateDefaultPort(w, h);
-				sDefConfigPort = defInfo;
-			}
-		}
+		ConfigInfo defInfo = generateDefault(isLandscape, w, h);
 
 		// try load ...
 		final ConfigInfo info = tryLoadConfig(isLandscape, defInfo);
 
 		applyConfig(info == null ? defInfo : info);
+		sIsLandscape = isLandscape;
 		sWidth = w;
 		sHeight = h;
 		sBound.set(0, 0, w, h);
@@ -294,16 +364,39 @@ public final class Configure {
 		design.SetConfigInfo(info);
 	}
 
+	protected static void applyDesign(Design design) {
+		final ConfigInfo info = sCurConfigInfo;
+		dumpConfig(info);
+		if (DEBUG) {
+			Log.d(DBG_TAG, " apply design, save configure");
+		}
+		trySaveConfig(sIsLandscape, info);
+	}
+
+	protected static void cancelDesign(Design design) {
+		final ConfigInfo info = design.GetConfigInfo();
+		applyConfig(info);
+	}
+
+	protected static void resetDesign() {
+		final ConfigInfo info = generateDefault(sIsLandscape, sWidth, sHeight);
+		applyConfig(info);
+	}
+
 	/**
-	 * 自定义界面
+	 * 自定义界面，直接修改了 Configure 的变量
 	 * 
 	 * @author nxliao
 	 * @version 0.1.20130219.1454
 	 */
 	public static class Design extends GestureDetector.SimpleOnGestureListener
 			implements OnColorChangedListener {
-		private float mLastX;
-		private float mLastY;
+
+		public static final int DESIGN_START = 0;
+		public static final int DESIGN_APPLY = 1;
+		public static final int DESIGN_CANCEL = 2;
+		public static final int DESIGN_RESET = 3;
+
 		private float mCurX;
 		private float mCurY;
 		private Show mShow;
@@ -335,6 +428,10 @@ public final class Configure {
 
 		public void SetConfigInfo(ConfigInfo info) {
 			mConfigInfo = info;
+		}
+
+		public ConfigInfo GetConfigInfo() {
+			return mConfigInfo;
 		}
 
 		protected boolean updateInvalidate() {
@@ -565,11 +662,9 @@ public final class Configure {
 
 		// 用户轻触触摸屏，由1个MotionEvent ACTION_DOWN触发Java代码
 		public boolean onDown(MotionEvent e) {
-			mLastX = e.getX();
-			mLastY = e.getY();
 			mCurX = 0;
 			mCurY = 0;
-			mHitId = _hitTestId((int) mLastX, (int) mLastY);
+			mHitId = _hitTestId((int) e.getX(), (int) e.getY());
 			if (DEBUG)
 				Log.d(DBG_TAG, "onDown at=" + mHitId);
 			if (mHitId >= 0) {
@@ -609,6 +704,25 @@ public final class Configure {
 		public void colorChanged(int color) {
 			sBackground = color;
 			mRedraw = true;
+		}
+
+		private void clear() {
+			mHitId = -1;
+		}
+
+		public void apply() {
+			applyDesign(this);
+			clear();
+		}
+
+		public void cancel() {
+			cancelDesign(this);
+			clear();
+		}
+
+		public void reset() {
+			resetDesign();
+			clear();
 		}
 	}
 }

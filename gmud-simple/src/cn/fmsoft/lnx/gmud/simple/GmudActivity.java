@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import cn.fmsoft.lnx.gmud.simple.Configure.Design;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
@@ -44,7 +45,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
-	private Configure.Design mDesign;
+	private Design mDesign;
 	private GestureDetector mDetector;
 
 	private static PendingIntent sMainIntent;
@@ -81,7 +82,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		mShow = (Show) findViewById(R.id.show);
 
-		mDesign = new Configure.Design(mShow);
+		mDesign = new Design(mShow);
 		mDetector = new GestureDetector(mDesign);
 		mDetector.setIsLongpressEnabled(true);
 		mShow.setOnTouchListener(new View.OnTouchListener() {
@@ -186,8 +187,21 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		// case R.id.item_hook:
 		// break;
 		case R.id.item_design: {
-			item.setChecked(!mDesignIng);
-			tryDesign(item.isChecked());
+			tryDesign();
+		}
+			break;
+
+		case R.id.item_design_apply: {
+			applyDesign(true);
+		}
+			break;
+		case R.id.item_design_cancel: {
+			applyDesign(false);
+		}
+			break;
+		case R.id.item_design_reset: {
+			if (mDesignIng)
+				mShow.ResetDesign();
 		}
 			break;
 
@@ -222,6 +236,13 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.setGroupVisible(R.id.group_main, !mDesignIng);
+		menu.setGroupVisible(R.id.group_design, mDesignIng);
+		return true;
+	}
+
 	private void hide_softkey() {
 		// Gmud.setMinScale(!bHideSoftKey);
 		// final Control control = (Control) findViewById(R.id.control);
@@ -249,6 +270,15 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (mDesignIng) {
+			applyDesign(false);
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	@Override
@@ -360,12 +390,17 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		});
 	}
 
-	private void tryDesign(boolean bEnabled) {
-		mDesignIng = bEnabled;
-		if (bEnabled) {
+	private void tryDesign() {
+		if (!mDesignIng) {
+			mDesignIng = true;
 			mShow.StartDesign(mDesign);
-		} else {
-			mShow.EndDesign();
+		}
+	}
+
+	private void applyDesign(boolean isApply) {
+		if (mDesignIng) {
+			mDesignIng = false;
+			mShow.ApplyDesign(isApply);
 		}
 	}
 }

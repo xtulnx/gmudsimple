@@ -217,11 +217,23 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 		}
 	}
 
-	protected void EndDesign() {
+	protected void ApplyDesign(boolean isApply) {
 		synchronized (LOCK) {
+			if (isApply) {
+				mDesign.apply();
+			} else {
+				mDesign.cancel();
+			}
 			mDesign = null;
 			mUpdateStatus |= UPDATE_ALL;
 		}
 		Gmud.Resume();
+	}
+
+	protected void ResetDesign() {
+		synchronized (LOCK) {
+			mDesign.reset();
+			mUpdateStatus |= UPDATE_ALL;
+		}
 	}
 }
