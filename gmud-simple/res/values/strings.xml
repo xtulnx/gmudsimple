@@ -55,5 +55,8 @@
     <string name="tip_restore_overwrite">还原备份数据将覆盖当前存档。是否继续？</string>
     <string name="tip_restore_success">还原成功，准备重启游戏……</string>
     <string name="tip_restore_failed">还原失败，请检查备份文件是否正确！</string>
+    <string name="key_custom_config">key_custom_config</string>
+    <string name="title_custom_config">自定义界面</string>
+    <string name="summary_custom_config">定义界面元素风格、大小、位置。</string>
 
 </resources>

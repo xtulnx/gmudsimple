@@ -10,36 +10,45 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 import android.view.KeyEvent;
 
+/**
+ * 这是一个提供静态方法的类.
+ */
 public class Input {
-
-	static final int kKeyExit = 1;
-	static final int kKeyEnt = 2;
-	static final int kKeyDown = 4;
-	static final int kKeyLeft = 8;
-	static final int kKeyUp = 16;
-	static final int kKeyRight = 32;
-	static final int kKeyPgUp = 64;
-	static final int kKeyPgDn = 128;
-	static final int kKeyFly = 256;
+	public static final int kKeyExit = 1 << 0;
+	public static final int kKeyEnt = 1 << 1;
+	public static final int kKeyDown = 1 << 2;
+	public static final int kKeyLeft = 1 << 3;
+	public static final int kKeyUp = 1 << 4;
+	public static final int kKeyRight = 1 << 5;
+	public static final int kKeyPgUp = 1 << 6;
+	public static final int kKeyPgDn = 1 << 7;
+	public static final int kKeyFly = 1 << 8;
 
 	public static boolean Running = false;
-	
+
 	static int inputstatus = 0;
 	static int lastkey = 0;
 	static int SetKeyFlag = -1;
-	static byte kbkeys[] = new byte[9];
-	static byte setKeytp[] = new byte[9];
-	static int scancode = 0;
+
+	/** 键盘扫描码 */
+	private static final byte KEY_CODE_KB[] = new byte[9];
+	// static byte setKeytp[] = new byte[9];
+
+	/** 按键状态，可用于获取当前某个键是否按下 */
+	private static int sScanCode = 0;
+
+	/** 按键消息值，使用一次后自动清零 */
+	private static int sKey = 0;
 
 	/**
 	 * 初始化输入
 	 */
-	static void InitInput() {
+	protected static void InitInput() {
 		Running = true;
 		GmudDefaultKey();
 		ClearKeyStatus();
 	}
-	
+
 	static void ProcessMsg() {
 		// MSG msg;
 		// Running = GetMessage(&msg, NULL, 0, 0);
@@ -52,7 +61,7 @@ public class Input {
 		// }
 		return;
 	}
-	
+
 	static synchronized void Stop() {
 		Running = false;
 	}
@@ -61,34 +70,63 @@ public class Input {
 		inputstatus = 0;
 	}
 
-	static void GmudDefaultKey() {
-		kbkeys[0] = KeyEvent.KEYCODE_W;
-		kbkeys[1] = KeyEvent.KEYCODE_S;
-		kbkeys[2] = KeyEvent.KEYCODE_DPAD_LEFT;
-		kbkeys[3] = KeyEvent.KEYCODE_DPAD_RIGHT;
-		kbkeys[4] = KeyEvent.KEYCODE_A; // Delete 左连
-		kbkeys[5] = KeyEvent.KEYCODE_D; // PGDN 右连
-		kbkeys[6] = KeyEvent.KEYCODE_E; // enter 输入
-		kbkeys[7] = KeyEvent.KEYCODE_Q; // alt跳出
-		kbkeys[8] = KeyEvent.KEYCODE_F; // End 轻功
+	/** 配置默认的键盘映射 */
+	private static void GmudDefaultKey() {
+		KEY_CODE_KB[0] = KeyEvent.KEYCODE_W;
+		KEY_CODE_KB[1] = KeyEvent.KEYCODE_S;
+		KEY_CODE_KB[2] = KeyEvent.KEYCODE_DPAD_LEFT;
+		KEY_CODE_KB[3] = KeyEvent.KEYCODE_DPAD_RIGHT;
+		KEY_CODE_KB[4] = KeyEvent.KEYCODE_A; // Delete 左连
+		KEY_CODE_KB[5] = KeyEvent.KEYCODE_D; // PGDN 右连
+		KEY_CODE_KB[6] = KeyEvent.KEYCODE_E; // enter 输入
+		KEY_CODE_KB[7] = KeyEvent.KEYCODE_Q; // alt跳出
+		KEY_CODE_KB[8] = KeyEvent.KEYCODE_F; // End 轻功
 	}
-	
+
+	/**
+	 * 是否有新的按键消息
+	 * 
+	 * @return
+	 */
+	protected static synchronized boolean hasKey() {
+		return sKey != 0;
+	}
+
+	/**
+	 * 获取新的按键消息，同时会清除此消息记录。
+	 * 
+	 * @return
+	 */
+	protected static synchronized int PopKey() {
+		int key = sKey;
+		sKey = 0;
+		return key;
+	}
+
+	/**
+	 * 获取按键状态，用来判断按键是否按下
+	 * 
+	 * @return
+	 */
+	protected static synchronized int getScanCode() {
+		return sScanCode;
+	}
+
 	static public synchronized void GmudSetKey(int mask) {
 		inputstatus = mask;
-		scancode = mask;
+		sScanCode = mask;
 	}
 
 	static synchronized void GmudProcessKey(int key) {
 		int id = 0;
 		while (id < 9) {
-			if (key == kbkeys[id])
+			if (key == KEY_CODE_KB[id])
 				break;
 			id++;
 		}
 		boolean changed = (key != lastkey);
 		lastkey = key;
-		if (changed) 
-		{
+		if (changed) {
 			switch (id) {
 			case 0:
 				inputstatus = kKeyUp;
@@ -103,10 +141,10 @@ public class Input {
 				inputstatus = kKeyRight;
 				return;
 			case 4:
-				inputstatus = kKeyPgUp|kKeyLeft;
+				inputstatus = kKeyPgUp | kKeyLeft;
 				return;
 			case 5:
-				inputstatus = kKeyPgDn|kKeyRight;
+				inputstatus = kKeyPgDn | kKeyRight;
 				return;
 			case 6:
 				inputstatus = kKeyEnt;
@@ -122,28 +160,27 @@ public class Input {
 	}
 
 	public static boolean onKey(int keyCode, KeyEvent event) {
-		
+
 		if (!Running) {
 			return false;
 		}
-		
+
 		if (event.getAction() == KeyEvent.ACTION_DOWN) {
-//			if (keyCode==KeyEvent.KEYCODE_Q) {
-//				Gmud.sPlayer.potential += 1000;
-//			} else if (keyCode==KeyEvent.KEYCODE_W) {
-//				Gmud.sPlayer.exp+=2000;
-//			}
-			
+			// if (keyCode==KeyEvent.KEYCODE_Q) {
+			// Gmud.sPlayer.potential += 1000;
+			// } else if (keyCode==KeyEvent.KEYCODE_W) {
+			// Gmud.sPlayer.exp+=2000;
+			// }
+
 			GmudProcessKey(keyCode);
-			if ((inputstatus & (kKeyDown|kKeyUp|kKeyLeft|kKeyRight))!=0) {
-//				lastkey = 0;
-//				inputstatus = 0;
+			if ((inputstatus & (kKeyDown | kKeyUp | kKeyLeft | kKeyRight)) != 0) {
+				// lastkey = 0;
+				// inputstatus = 0;
 			}
 		} else if (event.getAction() == KeyEvent.ACTION_UP) {
 			lastkey = 0;
 		}
 		return false;
 	}
-	
 
 }

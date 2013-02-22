@@ -7,12 +7,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple.core;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.EditText;
 
 public class GmudMain extends Thread {
 
@@ -24,125 +19,60 @@ public class GmudMain extends Thread {
 
 	static int sStaus = STATE_INVALID;
 
-	static private GmudMain sInstance;
-	
-	static private String sInputString;
+	private Context mContext;
 
 	public GmudMain(Context context) {
 		super("GmudMain-thread");
-		sInstance = this;
+		mContext = context;
 		sStaus = STATE_INVALID;
 	}
 
 	@Override
 	public void run() {
 		sStaus = STATE_UNINITALIZE;
-		Gmud.prepare();
 
-		// 等待UI方面准备好
-		synchronized (sInstance) {
-			sStaus = STATE_WAIT_UI;
-			while (!Video.HasBound()) {
-				try {
-					sInstance.wait();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+		try {
 
-		// 启动游戏主线程
-		if (Video.HasBound()) {
+			Gmud.prepare(mContext);
+
+			// 等待UI方面准备好
+			// waiting... for Video call resume!
+			Gmud.GmudDelay(1);
+
+			// 启动游戏主线程
 			sStaus = STATE_RUNNING;
 
 			Input.InitInput();
 			Input.ProcessMsg();
 			Video.VideoUpdate();
 
+			// 开启自动回血线程
+			new Thread("Timer") {
+				@Override
+				public void run() {
+					while (Input.Running) {
+						if (Gmud.IsRunning()) {
+							GmudTemp.TimerFunc();
+							try {
+								sleep(5000);
+							} catch (InterruptedException e) {
+							}
+						}
+					}
+				}
+			}.start();
+
 			gamemain();
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
+
 		sStaus = STATE_INVALID;
 	}
 
-	static void Resume() {
-		if (sInstance != null) {
-			synchronized (sInstance) {
-				try {
-					sInstance.notifyAll();
-				} catch (IllegalMonitorStateException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	synchronized void SetName(String name) {
-		if ((sStaus & STATE_WAIT_NEW_NAME) != 0) {
-			sInputString = name;
-			sStaus &= ~(STATE_WAIT_NEW_NAME);
-			Resume();
-		}
-	}
-
-	void EnterNewName(int type) {
-		Context context = Gmud.sActivity;
-		AlertDialog.Builder alert = new AlertDialog.Builder(context);
-
-		alert.setTitle("姓名：");
-		// alert.setMessage("");
-
-		// Set an EditText view to get user input
-		final EditText input = new EditText(context);
-		input.setHint("[无名]");
-		alert.setView(input);
-
-		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				String name = input.getText().toString();
-				if (name.length() == 0)
-					name = "[无名]";
-				SetName(name);
-			}
-		});
-		alert.show();
-	}
-	
-	static String WaitForNewName(final int type) {
-		sStaus |= STATE_WAIT_NEW_NAME;
-
-		new Handler(Looper.getMainLooper()).post(new Runnable() {
-			@Override
-			public void run() {
-				sInstance.EnterNewName(type);
-			}
-		});
-
-		synchronized (sInstance) {
-			while ((sStaus & STATE_WAIT_NEW_NAME) != 0) {
-				try {
-					sInstance.wait();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return sInputString;
-	}
-
 	/**
-	 * 清除所有缓存
-	 */
-	static synchronized void CleanAllCache() {
-
-	}
-
-	/**
-	 * 重新开始游戏，创建一个新的人物 
+	 * 重新开始游戏，创建一个新的人物
 	 */
 	static synchronized void NewGame() {
 
@@ -158,18 +88,19 @@ public class GmudMain extends Thread {
 		player.image_id = id;
 
 		// ng.EnterName(hwnd);
-		player.player_name = WaitForNewName(0);
+		player.player_name = Gmud.WaitForNewName(0);
+
 		ng.AllocPoint(player);
 	}
-	
+
 	static synchronized void Restart() {
 		final Map map = Map.getInstance();
 		final Player player = Player.getInstance();
 		player.reset();
-		
+
 		Input.ClearKeyStatus();
-		
-		NewGame();
+
+		GmudMain.NewGame();
 
 		// initialize & load
 		task.reset();
@@ -192,7 +123,7 @@ public class GmudMain extends Thread {
 		boolean flag = false;
 		int attack = player.lasting_tasks[7];
 		String s1 = GmudData.weapon_first_name[attack - 1]; // first word
-		if (player.lasting_tasks[8] / 256 > 0) { 
+		if (player.lasting_tasks[8] / 256 > 0) {
 			// 自身属性: 天渊 → 合灵
 			i1 = player.lasting_tasks[8] / 256 - 1;
 			j1 = player.lasting_tasks[8] & 255;
@@ -213,7 +144,7 @@ public class GmudMain extends Thread {
 				Items.item_attribs[77][3] = 20 - j1 * 5; // +命中
 			else if (i1 == 0)
 				Items.item_attribs[77][4] = 20 - j1 * 5; // +回避
-		if (player.lasting_tasks[8] >= 24 && !flag) // +附属属性  该属性暂时无用 
+		if (player.lasting_tasks[8] >= 24 && !flag) // +附属属性 该属性暂时无用
 			Items.item_attribs[77][5] = player.lasting_tasks[8] - 10;
 		else
 			Items.item_attribs[77][5] = 20 - j1 * 5;
@@ -232,7 +163,7 @@ public class GmudMain extends Thread {
 		if (1 == player.lasting_tasks[4]) // new 自制武器
 		{
 			// enter name
-			player.weapon_name = WaitForNewName(1);
+			player.weapon_name = Gmud.WaitForNewName(1);
 
 			// 属性
 			int k1 = 0;
@@ -240,7 +171,7 @@ public class GmudMain extends Thread {
 				k1 = (util.RandomInt(6) + 1) * 256 + util.RandomInt(4);
 			else if (util.RandomInt(100) < player.bliss) // rand < q.A
 				k1 = 24 + util.RandomInt(13);
-			
+
 			player.lasting_tasks[4] = 0;
 			player.lasting_tasks[7] = util.RandomInt(52) + 1; // attack
 			player.lasting_tasks[8] = k1;
@@ -270,26 +201,11 @@ public class GmudMain extends Thread {
 		map.SetPlayerLocation(0, 4);
 		map.DrawMap(0);
 		Video.VideoUpdate();
-		
-		// GmudTemp.timer_thread_handle = CreateThread(0, 0, StartTimer, 0, 0, 0);
+
+		// GmudTemp.timer_thread_handle = CreateThread(0, 0, StartTimer, 0, 0,
+		// 0);
 
 		Input.ClearKeyStatus();
-
-		// 开启自动回血线程
-		new Thread("Timer") {
-			@Override
-			public void run() {
-				while (Input.Running) {
-					GmudTemp.TimerFunc();
-					try {
-						sleep(5000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		}.start();
 
 		while (Input.Running) {
 			Input.ProcessMsg();
@@ -339,19 +255,17 @@ public class GmudMain extends Thread {
 				}
 				Video.VideoUpdate();
 				Gmud.GmudDelay(50);
-			} else if ((Input.scancode & Input.kKeyLeft) != 0) // press left
+			} else if ((Input.getScanCode() & Input.kKeyLeft) != 0) // press left
 			{
 				Input.ClearKeyStatus();
 				map.DirLeft(4);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-			} else if ((Input.scancode & Input.kKeyRight) != 0) // press
+			} else if ((Input.getScanCode() & Input.kKeyRight) != 0) // press
 																	// right
 			{
 				Input.ClearKeyStatus();
 				map.DirRight(4);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
 			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) // press enter
 			{
 				Input.ClearKeyStatus();
