@@ -120,7 +120,12 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 				}
 				mUpdateStatus &= ~(UPDATE_VIDEO | UPDATE_KEYPAD | UPDATE_ALL);
 			}
-			holder.unlockCanvasAndPost(canvas);
+
+			try {
+				holder.unlockCanvasAndPost(canvas);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
 			return true;
 		}
 	}

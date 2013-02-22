@@ -192,6 +192,9 @@ public final class Configure {
 			sRcKeys[i].set(info.mRcKeys[i]);
 		}
 		sBackground = info.mBackgroundColor;
+
+		// 重置缩放比例
+		Gmud.ResetVideoLayout(sRcVideo);
 	}
 
 	/** 将当前使用的配置，转存到 ConfigInfo 结构中 */
@@ -245,9 +248,6 @@ public final class Configure {
 		sWidth = w;
 		sHeight = h;
 		sBound.set(0, 0, w, h);
-
-		// 重置缩放比例
-		Gmud.ResetVideoLayout(sRcVideo);
 	}
 
 	/** 检查有无必要重绘 */
@@ -391,6 +391,7 @@ public final class Configure {
 			Log.d(DBG_TAG, " apply design, save configure");
 		}
 		trySaveConfig(sIsLandscape, info);
+		applyConfig(info);
 	}
 
 	protected static void cancelDesign(Design design) {
