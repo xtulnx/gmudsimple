@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
@@ -28,41 +29,31 @@ class Video {
 
 	/** 默认背景色 */
 	static final int COLOR_BG = 0xff94b252;
-
-	/** 缩放进制，用于保证无小数化 */
-	static final int SCALE_RATE = Gmud.WQX_ORG_WIDTH * Gmud.WQX_ORG_HEIGHT;
+	static final int COLOR_FG = Color.BLACK;
 
 	static final int LARGE_FONT_SIZE = 16;
 	static final int SMALL_FONT_SIZE = 12;
 
 	private static final Object LOCK = new Object();
 
-	static int largeFnt = LARGE_FONT_SIZE;
-	static int smallFnt = SMALL_FONT_SIZE;
-	static int largeOff = largeFnt;
-	static int smallOff = smallFnt;
+	private static int largeFnt = LARGE_FONT_SIZE;
+	private static int smallFnt = SMALL_FONT_SIZE;
 
-	static float sScaleX, sScaleY;
+	private static Bitmap lpmemimg;
+	private static Canvas lpmem;
 
-	static Bitmap lpmemimg;
-	static Canvas lpmem;
+	private static Paint fgBrush, bgBrush;
+	private static Paint fgPen;
 
-	static Paint blackBrush, greenBrush;
-	static Paint blackPen;
+	private static Bitmap pnum;
 
-	static Bitmap pnum;
+	private static Paint sPaint;
 
-	static Paint sPaint;
-
-	static Matrix sMatrix = new Matrix();
-
-	static Gmud.IVideoCallback sCallback;
-
-	public static int sScale = 1;
+	private static Gmud.IVideoCallback sCallback;
 
 	/** 输出区域，不一定与[160x80]成比例 */
-	static Rect sDirtyRect;
-	static int sWidth, sHeight;
+	private static Rect sDirtyRect;
+	private static int sWidth, sHeight;
 
 	public static void SetCallback(Gmud.IVideoCallback callback) {
 		sCallback = callback;
@@ -75,30 +66,16 @@ class Video {
 		}
 
 		Bitmap tmp_lpmemiｍg;
-		Canvas tmp_lpmem;
-
 		synchronized (LOCK) {
 			tmp_lpmemiｍg = lpmemimg;
 			lpmemimg = null;
-
-			tmp_lpmem = lpmem;
-//			tmp_lpmem.setBitmap(tmp_lpmemiｍg);
 
 			sDirtyRect.set(rect);
 
 			final int w = rect.width();
 			final int h = rect.height();
-			final int scale;
-			if (w * Gmud.WQX_ORG_HEIGHT > h * Gmud.WQX_ORG_WIDTH) {
-				scale = h * Gmud.WQX_ORG_WIDTH;
-			} else {
-				scale = w * Gmud.WQX_ORG_HEIGHT;
-			}
-
 			sWidth = w;
 			sHeight = h;
-			sScaleX = (float) w / Gmud.WQX_ORG_WIDTH;
-			sScaleY = (float) h / Gmud.WQX_ORG_HEIGHT;
 
 			Bitmap bmBack = null;
 			if (tmp_lpmemiｍg != null && !tmp_lpmemiｍg.isRecycled()) {
@@ -110,73 +87,47 @@ class Video {
 						Bitmap.Config.ARGB_8888);
 				tmp_lpmemiｍg.eraseColor(COLOR_BG);
 			}
-
-			Matrix m = new Matrix();
-			m.setScale(sScaleX, sScaleY);
-
 			lpmemimg = tmp_lpmemiｍg;
 			lpmem.setBitmap(lpmemimg);
+
+			Matrix m = new Matrix();
+			m.setScale((float) w / Gmud.WQX_ORG_WIDTH, (float) h
+					/ Gmud.WQX_ORG_HEIGHT);
 			lpmem.setMatrix(m);
 			if (bmBack != null) {
 				bmBack.recycle();
 				bmBack = null;
 			}
-			sScaleX = 1;
-			sScaleY = 1;
-			sScale = 1;
 
 			VideoUpdate();
 		}
 	}
 
-	// public static synchronized void Bind(Show show) {
-	//
-	// // if (sBinderShow != show) {
-	// // sBinderShow = show;
-	// // GmudMain.Resume();
-	// // }
-	// }
-	//
-	// public static synchronized void UnBind(Show show) {
-	// sBinderShow = null;
-	// }
-
 	static boolean VideoInit() {
-
 		sDirtyRect = new Rect();
 
 		sPaint = new Paint();
-		sPaint.setAntiAlias(true);
+		sPaint.setAntiAlias(false);
 
 		lpmem = new Canvas();
 
 		pnum = Res.loadimage(248);
 
-		blackBrush = new Paint();
-		blackBrush.setAntiAlias(true);
-		blackBrush.setARGB(255, 0, 0, 0);
-		blackBrush.setStyle(Style.FILL);
-		greenBrush = new Paint();
-		greenBrush.setAntiAlias(true);
-		greenBrush.setColor(COLOR_BG);//setARGB(255, 143, 175, 80);
-		greenBrush.setStyle(Style.FILL);
-		blackPen = new Paint();
-		blackPen.setAntiAlias(true);
-		blackPen.setColor(0xff000000);
-		blackPen.setStyle(Style.STROKE);
-		blackPen.setStrokeWidth(1.0f);
+		fgBrush = new Paint();
+		fgBrush.setAntiAlias(true);
+		fgBrush.setColor(COLOR_FG);
+		fgBrush.setStyle(Style.FILL);
+		bgBrush = new Paint();
+		bgBrush.setAntiAlias(true);
+		bgBrush.setColor(COLOR_BG);
+		bgBrush.setStyle(Style.FILL);
+		fgPen = new Paint();
+		fgPen.setAntiAlias(true);
+		fgPen.setColor(COLOR_FG);
+		fgPen.setStyle(Style.STROKE);
+		fgPen.setStrokeWidth(1.0f);
 
-		// // 得到系统默认字体属�?
-		// Paint paint = blackBrush;
-		// FontMetrics fm;
-		// paint.setTextSize(largeFnt);
-		// fm = paint.getFontMetrics();
-		// largeOff = (int) (fm.descent - fm.ascent);
-		// paint.setTextSize(smallFnt);
-		// fm = paint.getFontMetrics();
-		// smallOff = (int) (fm.descent - fm.ascent);
-
-		// resetScale(scale);
+		// 初始为一倍大小的游戏区
 		ResetLayout(new Rect(0, 0, Gmud.WQX_ORG_WIDTH, Gmud.WQX_ORG_HEIGHT));
 
 		VideoClear();
@@ -211,8 +162,79 @@ class Video {
 		throw new RuntimeException("Video exit(" + code + ").");
 	}
 
+	private static FontMetrics sFontMetrics = new FontMetrics();
+
+	private static void _setTextSize(Paint paint, boolean isLarge) {
+		paint.setTextSize(isLarge ? largeFnt : smallFnt);
+		paint.getFontMetrics(sFontMetrics);
+	}
+
+	/**
+	 * 绘制文本，绘制前需要调用 {@link #_setTextSize(Paint, boolean)} 设置字号
+	 * 
+	 * @param text
+	 *            文本
+	 * @param x
+	 *            横坐标[0,160)
+	 * @param y
+	 *            纵坐标[0,80)
+	 * @param paint
+	 *            画笔
+	 */
+	private static void _drawText(String text, int x, int y, Paint paint) {
+		lpmem.drawText(text, x, y - sFontMetrics.ascent, paint);
+	}
+
+	private static void _drawMultiText(String str, int x, int y,
+			int restrictWidth, boolean isLarge, Paint paint) {
+		_setTextSize(paint, isLarge);
+		int line = 0;
+		int linestart = 0;
+		int lineH = isLarge ? largeFnt : smallFnt;
+		int k = str.length();
+		for (int i = 1; i < k; i++) {
+			float w = paint.measureText(str, linestart, i);
+			if (w + x >= restrictWidth) {
+				_drawText(str.substring(linestart, i - 1), x, y, paint);
+				y += lineH;
+				linestart = i - 1;
+				line++;
+			}
+		}
+		if (linestart < k) {
+			_drawText(str.substring(linestart, k), x, y, paint);
+			return;
+		}
+	}
+
+	private static void _drawRect(int x, int y, int w, int h, Paint paint) {
+		lpmem.drawRect(x, y, (x + w), (y + h), paint);
+	}
+
+	private static void _drawPath(Path path, Paint paint) {
+		lpmem.drawPath(path, paint);
+	}
+
+	private static void _drawCircle(int x, int y, int r, Paint paint) {
+		lpmem.drawCircle(x, y, r, paint);
+	}
+
+	private static void _drawLine(int x1, int y1, int x2, int y2, Paint paint) {
+		lpmem.drawLine(x1, y1, x2, y2, paint);
+	}
+
+	private static void _drawBitmap(Bitmap bitmap, int left, int top,
+			Paint paint) {
+		lpmem.drawBitmap(bitmap, left, top, paint);
+	}
+
+	private static void _drawBitmap(Bitmap bitmap, Rect src, Rect dst,
+			Paint paint) {
+		lpmem.drawBitmap(bitmap, src, dst, paint);
+	}
+
 	static void VideoDrawLine(int x1, int y1, int x2, int y2) {
-		lpmem.drawLine(x1, y1, x2, y2, blackPen);
+		_drawLine(x1, y1, x2, y2, fgPen);
 	}
 
 	/**
@@ -229,10 +251,6 @@ class Video {
 	 */
 	static void VideoDrawArrow(int x, int y, int w, int h, int type) {
 		final Path path = new Path();
-		x *= sScaleX;
-		y *= sScaleY;
-		w *= sScaleX;
-		h *= sScaleY;
 		path.moveTo(x, y);
 		if ((type & 1) == 0) {
 			path.lineTo(x + w, y);
@@ -245,14 +263,10 @@ class Video {
 
 		if ((type & 2) == 0) {
 			// clear
-			lpmem.drawPath(path, greenBrush);
-			lpmem.drawPath(path, blackPen);
+			_drawPath(path, bgBrush);
+			_drawPath(path, fgPen);
 		} else {
-			if ((type & 4) == 0) {
-				lpmem.drawPath(path, blackBrush);
-			} else {
-				lpmem.drawPath(path, greenBrush);
-			}
+			_drawPath(path, ((type & 4) == 0) ? fgBrush : bgBrush);
 		}
 	}
 
@@ -263,13 +277,11 @@ class Video {
 	}
 
 	static void VideoClearRect(int x, int y, int width, int height) {
-		lpmem.drawRect(x * sScaleX, y * sScaleY, (x + width) * sScaleX,
-				(y + height) * sScaleY, greenBrush);
+		_drawRect(x, y, width, height, bgBrush);
 	}
 
 	static void VideoDrawRectangle(int x, int y, int width, int height) {
-		lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
-				(y + height) * sScale, blackPen);
+		_drawRect(x, y, width, height, fgPen);
 	}
 
 	static void VideoFillRectangle(int x, int y, int width, int height) {
@@ -277,60 +289,23 @@ class Video {
 	}
 
 	static void VideoFillRectangle(int x, int y, int width, int height, int type) {
-		if (type != 0) {
-			lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
-					(y + height) * sScale, greenBrush);
-		} else {
-			lpmem.drawRect(x * sScale, y * sScale, (x + width) * sScale,
-					(y + height) * sScale, blackBrush);
-		}
-
+		_drawRect(x, y, width, height, (type != 0) ? bgBrush : fgBrush);
 	}
 
 	static void VideoDrawArc(int x, int y, int r) {
-		// lpmem->DrawArc(blackPen, x - r, y - r, 2 * r, 2 * r, 0, 360);
-		lpmem.drawCircle(x * sScale, y * sScale, r * sScale, blackPen);
+		_drawCircle(x, y, r, fgPen);
 	}
 
 	static void VideoFillArc(int x, int y, int r) {
-		// lpmem->FillEllipse(blackBrush->Clone(), x - r, y - r, 2 * r, 2 * r);
-		lpmem.drawCircle(x * sScale, y * sScale, r * sScale, blackBrush);
+		_drawCircle(x, y, r, fgBrush);
 	}
 
 	static void VideoDrawImage(/* Image* */Bitmap pI, int x, int y) {
-		// lpmem->DrawImage(pI, x, y);
-		// lpmem.drawBitmap(pI, x*sScale, y*sScale, null);
-
-		sMatrix.setScale(sScale, sScale);
-		sMatrix.postTranslate(x * sScale, y * sScale);
-		lpmem.drawBitmap(pI, sMatrix, sPaint);
-	}
-
-	private static void drawMultiText(String str, int x, int y,
-			int restrictWidth, Paint paint) {
-
-		FontMetrics fm = paint.getFontMetrics();// 得到系统默认字体属性
-		final int fontHeight = (int) (Math.ceil(fm.descent - fm.ascent) - 2);// 获得字体高度
-
-		// paint.getTextWidths(str, widths);
-
-		int line = 0;
-		int linestart = 0;
-		int k = str.length();
-		for (int i = 1; i < k; i++) {
-			float w = blackBrush.measureText(str, linestart, i);
-			if (w + x >= restrictWidth * sScale) {
-				lpmem.drawText(str.substring(linestart, i - 1), x * sScale, y
-						* sScale + fontHeight * line, blackBrush);
-				linestart = i - 1;
-				line++;
-			}
-		}
-		if (linestart < k) {
-			lpmem.drawText(str.substring(linestart, k), x * sScale, y * sScale
-					+ fontHeight * line, blackBrush);
-			return;
-		}
+		// private static Matrix sMatrix = new Matrix();
+		// sMatrix.setScale(sScale, sScale);
+		// sMatrix.postTranslate(x , y );
+		// lpmem.drawBitmap(pI, sMatrix, sPaint);
+		_drawBitmap(pI, x, y, sPaint);
 	}
 
 	static void VideoDrawString(String str, int x, int y) {
@@ -340,12 +315,10 @@ class Video {
 	static void VideoDrawString(String str, int x, int y, int type) {
 		// 大字体y坐标:每行+16 //小字体y坐标:每行+13
 		if (type != 0) {
-			blackBrush.setTextSize(largeFnt);
-			lpmem.drawText(str, x * sScale, y * sScale + largeOff, blackBrush);
+			_setTextSize(fgBrush, true);
+			_drawText(str, x, y, fgBrush);
 		} else {
-			blackBrush.setTextSize(smallFnt);
-			drawMultiText(str, x, y + smallOff / sScale, Gmud.WQX_ORG_WIDTH,
-					blackBrush);
+			_drawMultiText(str, x, y, Gmud.WQX_ORG_WIDTH, false, fgBrush);
 		}
 	}
 
@@ -362,38 +335,31 @@ class Video {
 		switch (type) {
 		case 1:
 			// lpmem->DrawString(str, -1, largeFnt, PointF(x, y), blackBrush);
-			blackBrush.setTextSize(largeFnt);
-			lpmem.drawText(str, x * sScale, y * sScale + largeOff, blackBrush);
+			_setTextSize(fgBrush, true);
+			_drawText(str, x, y, fgBrush);
 			break;
 		case 2:
-			greenBrush.setTextSize(smallFnt);
-			lpmem.drawText(str, x * sScale, y * sScale + smallOff, greenBrush);
+			_setTextSize(bgBrush, false);
+			_drawText(str, x, y, bgBrush);
 			break;
 		default:
-			blackBrush.setTextSize(smallFnt);
-			lpmem.drawText(str, x * sScale, y * sScale + smallOff, blackBrush);
+			_setTextSize(fgBrush, false);
+			_drawText(str, x, y, fgBrush);
 		}
 	}
 
 	static void VideoDrawNumberData(String data, int x, int y) {
-		Rect rectSrc = new Rect(0, 0, 4, 5);
-		Rect rectDst = new Rect(x * sScale, y * sScale, (x + 4) * sScale,
-				(y + 5) * sScale);
-
-		for (int i1 = 0; i1 < data.length(); i1++) {
-			char c = data.charAt(i1);
-
-			if ('0' <= c && c <= '9') {
-				rectSrc.left = 4 * (c - '0');
-				rectSrc.right = 4 * (c - '0') + 4;
-			} else {
-				rectSrc.left = 4 * 10;
-				rectSrc.right = 4 * 10 + 4;
-			}
-			lpmem.drawBitmap(pnum, rectSrc, rectDst, sPaint);
-
-			rectDst.left += 4 * sScale;
-			rectDst.right += 4 * sScale;
+		final int W = 4;
+		final int H = 5;
+		Rect rectSrc = new Rect(0, 0, W, H);
+		Rect rectDst = new Rect(x, y, (x + W), (y + H));
+		for (int i = 0; i < data.length(); i++) {
+			char c = data.charAt(i);
+			int num = ('0' <= c && c <= '9') ? (c - '0') : 10;
+			rectSrc.left = W * num;
+			rectSrc.right = W * num + W;
+			_drawBitmap(pnum, rectSrc, rectDst, sPaint);
+			rectDst.offset(W, 0);
 		}
 	}
 
@@ -404,47 +370,30 @@ class Video {
 	}
 
 	static ArrayList<String> SplitString(String str, int width) {
-
-		final Paint paint = blackBrush;
-		paint.setTextSize(smallFnt);
-
-		ArrayList<String> sv = new ArrayList<String>();
+		final ArrayList<String> sv = new ArrayList<String>();
 
 		int linestart = 0;
-		// RectF r;
-		int k = str.length();
+		int len = str.length();
 
-		for (int k1 = 0; k1 < k; k1++) {
-			if (str.charAt(k1) == '\n') {
-				if (k1 != 0) {
-					sv.add(str.substring(linestart, k1));
-					linestart = k1 + 1;
+		final Paint p = fgBrush;
+		_setTextSize(p, false);
+		for (int i = 0; i < len; i++) {
+			if (str.charAt(i) == '\n') {
+				if (i != 0) {
+					sv.add(str.substring(linestart, i));
+					linestart = i + 1;
 				}
 				continue;
 			}
 
-			// if (k1 == k - 1) {
-			// sv.add(str.substring(linestart, k1 + 1));
-			// break;
-			// }
-
-			float w = blackBrush.measureText(str, linestart, k1);
-			if (w >= width * sScale) {
-				sv.add(str.substring(linestart, k1 - 1));
-				linestart = k1 - 1;
+			float w = p.measureText(str, linestart, i);
+			if (w >= width) {
+				sv.add(str.substring(linestart, i - 1));
+				linestart = i - 1;
 			}
-
-			// lpmem->MeasureString(str->substr(linestart, length).c_str(),
-			// length, smallFnt, origin, &r);
-			// if (r.GetRight() > width)
-			// {
-			// length = k1 - linestart;
-			// sv.push_back(str->substr(linestart, length));
-			// linestart = k1;
-			// }
 		}
 		// if (linestart < k) {
-		sv.add(str.substring(linestart, k));
+		sv.add(str.substring(linestart, len));
 		// }
 		return sv;
 	}
