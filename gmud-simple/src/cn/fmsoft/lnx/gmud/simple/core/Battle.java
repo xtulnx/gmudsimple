@@ -1304,7 +1304,7 @@ class Battle {
 				// 如果是武器或者装备
 				if (Items.item_attribs[item_id][0] == 2
 						|| Items.item_attribs[item_id][0] == 3) {
-					avoid = util.unsigned2char(Items.item_attribs[item_id][4]);
+					avoid += util.unsigned2char(Items.item_attribs[item_id][4]);
 				}
 			}
 		}
@@ -1327,7 +1327,7 @@ class Battle {
 			int item_id = fighter_data[id][14 + i];
 			if (item_id > 0 && item_id < 92
 					&& Items.item_attribs[item_id][0] == 3) {
-				defense = util.unsigned2char(Items.item_attribs[item_id][2]);
+				defense += util.unsigned2char(Items.item_attribs[item_id][2]);
 			}
 		}
 		return defense;
@@ -1374,7 +1374,7 @@ class Battle {
 			int equip_id = data[14 + i];
 			if (equip_id > 0 && equip_id < 92
 					&& Items.item_attribs[equip_id][0] == 2) {
-				attack = util.unsigned2char(Items.item_attribs[equip_id][2]);
+				attack += util.unsigned2char(Items.item_attribs[equip_id][2]);
 			}
 		}
 

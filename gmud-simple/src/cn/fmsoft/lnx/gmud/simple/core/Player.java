@@ -592,13 +592,14 @@ public class Player {
 
 	// 出手等级
 	int GetAttackLevel() {
-		int i1 = GetForce();
-		int j1;
-		if ((j1 = GetWeaponID()) != 0)
-			i1 += Items.item_attribs[j1][2];
-		if ((i1 = (i1 += fp_plus) / 20) > 5)
-			i1 = 5;
-		return i1;
+		int attack = GetForce();
+		int weaponId = GetWeaponID();
+		if (weaponId != 0)
+			attack += Items.item_attribs[weaponId][2];
+		attack += fp_plus;
+		if (attack > 5 * 20)
+			return 5;
+		return attack / 20;
 	}
 
 	// 打坐速度
@@ -1418,7 +1419,7 @@ public class Player {
 	 * @param i1
 	 * @param type
 	 *            物品类型 {@link Items#item_attribs}
-	 * @return
+	 * @return (第一个物品的索引<<8)|(物品个数)
 	 */
 	int CopyItemData(int i1, final int type) {
 		GmudTemp.Clear32Data();

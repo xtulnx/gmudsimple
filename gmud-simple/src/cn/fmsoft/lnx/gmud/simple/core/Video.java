@@ -331,10 +331,20 @@ class Video {
 	}
 
 	// static void VideoDrawString(const wchar_t*, int, int, int type = 0);
+	/** 绘制单行文本，小号字 */
 	static void VideoDrawStringSingleLine(final String str, int x, int y) {
 		VideoDrawStringSingleLine(str, x, y, 0);
 	}
 
+	/**
+	 * 绘制单行文本
+	 * 
+	 * @param str
+	 * @param x
+	 * @param y
+	 * @param type
+	 *            1:大号前景色 2:小号背景色 3:极小前景色 0:小号前景色
+	 */
 	static void VideoDrawStringSingleLine(final String str, int x, int y,
 			int type) {
 		// PointF origin(x, y);
