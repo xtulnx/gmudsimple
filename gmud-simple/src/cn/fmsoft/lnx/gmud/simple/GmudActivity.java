@@ -33,6 +33,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.Toast;
 import cn.fmsoft.lnx.gmud.simple.Configure.Design;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
@@ -188,6 +189,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		// break;
 		case R.id.item_design: {
 			tryDesign();
+			Toast.makeText(getBaseContext(), "可通过双击目标设计更多内容", Toast.LENGTH_LONG)
+					.show();
 		}
 			break;
 
