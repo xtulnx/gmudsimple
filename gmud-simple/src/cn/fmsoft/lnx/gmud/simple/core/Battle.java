@@ -122,7 +122,7 @@ class Battle {
 		fighter_stack[m_stack_top + 2 + 32] = val;
 		m_stack_top += 3;
 	}
-	
+
 	/***
 	 * 获取攻击后的对手受伤程度的描述ID
 	 * 
@@ -1070,7 +1070,7 @@ class Battle {
 		// 输出 受伤情况
 		e(stack[10], stack[11], stack[12]);
 		Video.VideoUpdate();
-		
+
 		for (int j3 = 0; j3 < 8; j3++) {
 			for (int l3 = 0; l3 < 2; l3++) {
 				m_active_id = l3;
@@ -1113,12 +1113,12 @@ class Battle {
 
 		m_stack_top = 0;
 
-		// 
+		//
 		a(0, 0, 0, -1);
-		
+
 		uibattle.weapon_id[0] = fighter_data[0][29];
 		uibattle.weapon_id[1] = fighter_data[1][29];
-		
+
 		// 轮回攻方
 		m_active_id = m_active_id == 0 ? 1 : 0;
 	}
@@ -1423,7 +1423,7 @@ class Battle {
 		int[] data = fighter_data[id];
 		int j1 = Gmud.sPlayer.GetSkillLevel(0);
 		if (Gmud.sPlayer.select_skills[3] == 255 || j1 == 0)
-			return "你必须选择你要用的内功心法.";
+			return Res.STR_NO_INNER_KONGFU_STRING;
 
 		// hp >= hp-max
 		if (data[1] >= data[2]) {
@@ -1531,7 +1531,7 @@ class Battle {
 			d(0, 247, 1); // "但是被SB及时地避开。"
 			return;
 		}
-		
+
 		// 更新 hp
 		int hp = stackB_find(id_rival, 1);
 		if (hp < 0)
@@ -1547,18 +1547,23 @@ class Battle {
 		final int hp_full = fighter_data[id_rival][3];
 		int level = hp / (hp_full / desc_max);
 		level = util.between(level, 0, desc_max - 1);
-		
+
 		// 技能攻击
 		d(1, desc_start + level, 1);
 	}
 
-	/** 
+	/**
 	 * 产生 对手被击中（受伤） 及 伤后状态的描述。
+	 * 
 	 * @see #GetHitDesc(int, int, int, int)
-	 * @param weapon_type  武器类别 0拳头 1刀 6剑 7杖 9鞭
-	 * @param damage 伤害值
-	 * @param id_rival 角色ID，一般是对手的ID
-	 * @param skill_id 技能ID
+	 * @param weapon_type
+	 *            武器类别 0拳头 1刀 6剑 7杖 9鞭
+	 * @param damage
+	 *            伤害值
+	 * @param id_rival
+	 *            角色ID，一般是对手的ID
+	 * @param skill_id
+	 *            技能ID
 	 */
 	void GetDamageDesc(int weapon_type, int damage, int id_rival, int skill_id) {
 		if (damage <= 0) {
@@ -1580,7 +1585,7 @@ class Battle {
 		} else {
 			level += 37; // "看起来充满活力，一点也不累"
 		}
-		d(2,  level * 256 + desc, 1);
+		d(2, level * 256 + desc, 1);
 	}
 
 	/**
@@ -1686,7 +1691,7 @@ class Battle {
 			if (equip != data[14 + i]) {
 				data[14 + i] = equip;
 				stack_fighterdate_set(id, 14 + i, equip);
-				
+
 				// TODO: 如果是武器更换，立即更新名称
 				if (i == 15) {
 					uibattle.weapon_id[id] = equip;
@@ -1987,11 +1992,11 @@ class Battle {
 	void RollBackData() {
 		int id = m_player_id;
 		int id_rival = id != 0 ? 0 : 1;
-		
+
 		for (int i = 0; i < 16; i++)
 			if (fighter_data[id][14 + i] != Gmud.sPlayer.equips[i])
 				Gmud.sPlayer.LoseOneItem(fighter_data[id][14 + i]);
-		
+
 		int npc_id = m_NPC_id;
 		for (int i2 = 0; i2 < 5; i2++) {
 			int j2 = NPC.NPC_item[npc_id][i2];

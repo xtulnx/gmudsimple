@@ -35,6 +35,9 @@ class Video {
 	static final int SMALL_FONT_SIZE = 12;
 	static final int MINI_FONT_SIZE = 8;
 
+	/** 小字号下的行高 */
+	static final int SMALL_LINE_H = SMALL_FONT_SIZE + 1;
+
 	static boolean VideoExited = true;
 
 	private static final Object LOCK = new Object();

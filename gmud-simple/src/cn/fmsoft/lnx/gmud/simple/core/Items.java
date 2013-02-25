@@ -11,7 +11,7 @@ public class Items {
 			desc += item_names[77];
 			return desc;
 		}
-		return Res.readtext(0, item_desc[id], item_desc[1 + id]);
+		return Res.readtext(Res.TYPE_ITEMDESC, item_desc[id], item_desc[1 + id]);
 	}
 
 	// [93]

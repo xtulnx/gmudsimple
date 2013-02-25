@@ -16,6 +16,11 @@ public class Res {
 	static final String STR_YOU_STRING = "你";
 	static final String STR_NO_INNER_KONGFU_STRING = "你必须选择你要用的内功心法.";
 	static final String STR_FP_PLUS_LIMIT_STRING = "你目前的加力上限为%d";
+
+	/** 物品描述 */
+	static final int TYPE_ITEMDESC = 0;
+	/** 对话 */
+	static final int TYPE_DIALOG = 5;
 	
 	static final String sText[] = new String[] {
 		"0.txt",
@@ -45,6 +50,15 @@ public class Res {
 		"MapElem.dat",
 		"MapEvent.dat",
 		"NPCSkill.dat",
+	};
+	
+	static final String RECOVERY_DESC[] = new String[] { 
+		STR_NO_INNER_KONGFU_STRING,
+		"你并没有受伤.",
+		"你运功良久,一抖衣袖,长叹一声站起身来.",
+		"你已经受伤过重,只怕一运真气就会有生命危险.",
+		"你的真气不够,还不能用来疗伤.",
+		"你摧动真气,脸上一阵红一阵白,哇的一声吐出一口淤血,脸色看起来好多了."
 	};
 	
 //	private static Context mContext;

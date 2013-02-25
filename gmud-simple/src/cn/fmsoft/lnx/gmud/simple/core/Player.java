@@ -1299,7 +1299,7 @@ public class Player {
 	String Breathing() {
 		int i1 = GetSkillLevel(0);
 		if (255 == select_skills[3] || i1 == 0) {
-			return "你必须选择你要用的内功心法.";
+			return Res.STR_NO_INNER_KONGFU_STRING;
 		}
 		if (hp >= hp_max) {
 			hp = hp_max;
@@ -1322,7 +1322,7 @@ public class Player {
 	String Recovery() {
 		int j1 = GetSkillLevel(0);
 		if (select_skills[3] == 255 || j1 == 0) {
-			return "你必须选择你要用的内功心法.";
+			return Res.STR_NO_INNER_KONGFU_STRING;
 		}
 		if (hp_full == hp_max) {
 			return "你并没有受伤.";
@@ -1396,10 +1396,10 @@ public class Player {
 			return 1;
 
 		if (mp >= mp_level * 2) {
-			int l1 = (base_level / 2 + skill_level) * 10;
+			int max = (base_level / 2 + skill_level) * 10;
 			if (class_id == 8)
-				l1 += exp / 1000;
-			if (mp_level < l1) {
+				max += exp / 1000;
+			if (mp_level < max) {
 				mp = 0;
 				mp_level += 1;
 				return 0;
