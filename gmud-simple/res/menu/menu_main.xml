@@ -9,17 +9,17 @@
 
         <item
             android:id="@+id/item_exit"
-            android:title="Exit Game">
+            android:title="@string/menu_exit">
         </item>
         
         <item
             android:id="@+id/item_design"
-            android:title="Design" >
+            android:title="@string/menu_design" >
         </item>
 
         <item
             android:id="@+id/item_setting"
-            android:title="Setting">
+            android:title="@string/menu_setting">
 <!--             <menu> -->
 <!--                 <item -->
 <!--                     android:id="@+id/item_hidekey" -->
@@ -43,13 +43,13 @@
         </item>
         <item
             android:id="@+id/item_about"
-            android:title="About">
+            android:title="@string/menu_about">
         </item>
     </group>
     <group android:id="@+id/group_design">
-        <item android:id="@+id/item_design_apply" android:title="Apply"></item>
-        <item android:id="@+id/item_design_cancel" android:title="Cancel"></item>
-        <item android:id="@+id/item_design_reset" android:title="Reset"></item>
+        <item android:id="@+id/item_design_apply" android:title="@string/menu_apply"></item>
+        <item android:id="@+id/item_design_cancel" android:title="@string/menu_cancel"></item>
+        <item android:id="@+id/item_design_reset" android:title="@string/menu_reset"></item>
     </group>
 
 </menu>

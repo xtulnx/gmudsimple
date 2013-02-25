@@ -91,7 +91,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				if (mDesignIng) {
 					return mDetector.onTouchEvent(event);
 				} else {
-					if (Configure.HitTest(event)) {
+					if (!bHideSoftKey && Configure.HitTest(event)) {
 						((Show) v).KeyPostUpdate();
 					}
 					return true;
@@ -219,6 +219,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 						public void onClick(DialogInterface dialog, int which) {
 						}
 					}).create();
+			dialog.setCancelable(true);
+			dialog.setCanceledOnTouchOutside(true);
 			dialog.show();
 			break;
 
@@ -244,11 +246,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	}
 
 	private void hide_softkey() {
-		// Gmud.setMinScale(!bHideSoftKey);
-		// final Control control = (Control) findViewById(R.id.control);
-		// control.hide(bHideSoftKey);
-		final View show = findViewById(R.id.show);
-		show.requestLayout();
+		mShow.hideSoftKey(bHideSoftKey);
 	}
 
 	private void lock_screen() {

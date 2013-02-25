@@ -13,16 +13,6 @@
         \n目前功能尚未完成，请关注市场正式发布。
         \n为方便测试或满足娱乐精神，人物存档是明文的，以后若出联机正式版本会将存档编码以保障公平性。
         \n
-        \n  == 热线帮助  ==
-        \n暂时没有做界面了，就将帮助放这了吧。
-        \n\n菜单：
-        \nExit Game: 彻底退出游戏（普通情况用Back回到桌面时只要有插了电源或没有待机，游戏就一直在跑）；
-        \nHide SoftKey: 隐藏虚拟键，横屏下游戏界面可以铺满屏幕
-        \nLock Screen：锁定横竖屏旋转
-        \nAbout：关于（此界面）
-        \n\n操作：
-        \n1，触屏模式下点击虚拟按键用于控制：LL和RR表示自动左右行走；
-        \n2，实体键映射为——(q=Quit, e=Enter, a=LL, w=Up, s=Down, d=RR, F=Fly, LEFT=Left, RIGHT=Right)；
         \n\n致谢：
         \n感谢 新军兄。
         \n感谢 文曲星 为我们创造的经典，其官网： http://www.ggv.com.cn
@@ -58,5 +48,12 @@
     <string name="key_custom_config">key_custom_config</string>
     <string name="title_custom_config">自定义界面</string>
     <string name="summary_custom_config">定义界面元素风格、大小、位置。</string>
+    <string name="menu_exit">退出</string>
+    <string name="menu_design">设计</string>
+    <string name="menu_setting">设置</string>
+    <string name="menu_about">关于</string>
+    <string name="menu_apply">应用</string>
+    <string name="menu_cancel">取消</string>
+    <string name="menu_reset">恢复默认</string>
 
 </resources>

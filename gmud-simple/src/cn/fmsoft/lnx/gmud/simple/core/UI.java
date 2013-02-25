@@ -661,36 +661,33 @@ public class UI {
 		}
 
 		int menu_id = 0;
-		DrawViewPlayer(0);
-		Video.VideoUpdate();
 		Input.ClearKeyStatus();
-		Gmud.GmudDelay(100);
+		boolean update = true;
 		while (Input.Running) {
 			Input.ProcessMsg();
-			Video.VideoUpdate();
 			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
 				if (menu_id > 0)
 					menu_id--;
 				else
 					menu_id = 3;
-				DrawViewPlayer(menu_id);
-				Video.VideoUpdate();
+				update = true;
 			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
 				if (menu_id < 3)
 					menu_id++;
 				else
 					menu_id = 0;
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+				Gmud.GmudDelay(100);
+				break;
+			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+				Gmud.GmudDelay(100);
+				break;
+			}
+			if (update) {
+				update = false;
 				DrawViewPlayer(menu_id);
 				Video.VideoUpdate();
-			} else {
-				if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-					Gmud.GmudDelay(100);
-					break;
-				}
-				if ((Input.inputstatus & Input.kKeyExit) != 0) {
-					Gmud.GmudDelay(100);
-					break;
-				}
 			}
 			Input.ClearKeyStatus();
 			Gmud.GmudDelay(80);

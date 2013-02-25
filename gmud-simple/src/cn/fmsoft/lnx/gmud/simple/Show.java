@@ -66,12 +66,7 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 
 	public Show(Context context, AttributeSet attrs) {
 		super(context, attrs);
-
-		SurfaceHolder holder = getHolder();
-		holder.addCallback(this);
-		// setFocusable(false);
-		// setFocusableInTouchMode(false);
-
+		getHolder().addCallback(this);
 	}
 
 	public boolean tryDraw(int drawTick) {
@@ -238,6 +233,13 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 	protected void ResetDesign() {
 		synchronized (LOCK) {
 			mDesign.reset();
+			mUpdateStatus |= UPDATE_ALL;
+		}
+	}
+
+	protected void hideSoftKey(boolean hideSoftKey) {
+		Configure.hidekeypad(hideSoftKey);
+		synchronized (LOCK) {
 			mUpdateStatus |= UPDATE_ALL;
 		}
 	}

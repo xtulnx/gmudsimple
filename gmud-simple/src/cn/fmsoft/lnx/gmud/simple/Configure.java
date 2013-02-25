@@ -65,6 +65,8 @@ public final class Configure {
 	private static String TITLE[];
 	public static float CUR_DENSITY = 1.0f;
 
+	private static boolean sShowKeypad = true;
+
 	private static ConfigInfo sDefConfigLand, sDefConfigPort;
 	private static ConfigInfo sCurConfigInfo;
 	private static int sWidth, sHeight;
@@ -265,8 +267,13 @@ public final class Configure {
 
 	protected static void Draw(Canvas canvas, Bitmap video, int tick) {
 		drawBackground(canvas);
-		drawKeypad(canvas);
+		if (sShowKeypad)
+			drawKeypad(canvas);
 		drawVideo(canvas, video);
+	}
+
+	protected static void hidekeypad(boolean hide) {
+		sShowKeypad = !hide;
 	}
 
 	/** 绘制软键 */
