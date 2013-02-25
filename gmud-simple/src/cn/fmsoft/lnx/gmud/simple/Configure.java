@@ -305,7 +305,8 @@ public final class Configure {
 			VIDEO_COVER.setBounds(_addVideoCoverPadding(sRcVideo));
 			VIDEO_COVER.draw(canvas);
 		}
-		canvas.drawBitmap(video, null, sRcVideo, TITLE_PAINT);
+		if (video != null && !video.isRecycled())
+			canvas.drawBitmap(video, null, sRcVideo, TITLE_PAINT);
 	}
 
 	private static void drawBackground(Canvas canvas) {

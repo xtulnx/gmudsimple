@@ -64,6 +64,7 @@ class Video {
 
 	public static void SetCallback(Gmud.IVideoCallback callback) {
 		sCallback = callback;
+		VideoUpdate();
 	}
 
 	/** 重置输出区域、纵横缩放比例、字体、framebuff */
