@@ -20,15 +20,20 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.EditText;
+import cn.fmsoft.lnx.gmud.simple.Configure.Design;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
@@ -36,7 +41,7 @@ import com.umeng.analytics.MobclickAgent;
 import com.umeng.fb.NotificationType;
 import com.umeng.fb.UMFeedbackService;
 
-public class GmudActivity extends Activity {
+public class GmudActivity extends Activity implements Gmud.ICallback {
 	// final static int MENU_HOOKGAME = 0;
 	// final static int MENU_EXITAPPLICATION = 1;
 	// final static int MENU_ABOUT = 2;
@@ -44,8 +49,15 @@ public class GmudActivity extends Activity {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
+	private Design mDesign;
+	private GestureDetector mDetector;
 
 	private static PendingIntent sMainIntent;
+
+	private Show mShow;
+
+	private Handler mHandler = new Handler();
+	protected boolean mDesignIng;
 
 	protected static PendingIntent getPendingIntent(Context ctx) {
 		if (sMainIntent != null)
@@ -68,11 +80,33 @@ public class GmudActivity extends Activity {
 		sMainIntent = PendingIntent.getActivity(getBaseContext(), 0,
 				new Intent(getIntent()), getIntent().getFlags());
 
-		// new Gmud(this);
-		Gmud.bind(this);
-
 		mRequestOritation = getRequestedOrientation();
 		Log.i("lnx", "Orientation = " + mRequestOritation);
+
+		Configure.init(getBaseContext());
+
+		mShow = (Show) findViewById(R.id.show);
+
+		mDesign = new Design(mShow);
+		mDetector = new GestureDetector(mDesign);
+		mDetector.setIsLongpressEnabled(true);
+		mShow.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				if (mDesignIng) {
+					return mDetector.onTouchEvent(event);
+				} else {
+					if (!bHideSoftKey && Configure.HitTest(event)) {
+						((Show) v).KeyPostUpdate();
+					}
+					return true;
+				}
+			}
+		});
+
+		// new Gmud(this);
+		Gmud.SetCallback(this);
+		Gmud.Start();
 	}
 
 	/**
@@ -89,11 +123,16 @@ public class GmudActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		Gmud.unbind(this);
+		Gmud.SetCallback(null);
 
-		if (!Gmud.Running) {
-			System.exit(0);
+		Gmud.Exit();
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
 		}
+
+		System.exit(0);
+
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
 	}
@@ -163,6 +202,24 @@ public class GmudActivity extends Activity {
 		// break;
 		// case R.id.item_hook:
 		// break;
+		case R.id.item_design: {
+			tryDesign();
+		}
+			break;
+
+		case R.id.item_design_apply: {
+			applyDesign(true);
+		}
+			break;
+		case R.id.item_design_cancel: {
+			applyDesign(false);
+		}
+			break;
+		case R.id.item_design_reset: {
+			if (mDesignIng)
+				mShow.ResetDesign();
+		}
+			break;
 
 		case R.id.item_setting:
 			Intent intent = new Intent(getBaseContext(), SettingActivity.class);
@@ -178,6 +235,8 @@ public class GmudActivity extends Activity {
 						public void onClick(DialogInterface dialog, int which) {
 						}
 					}).create();
+			dialog.setCancelable(true);
+			dialog.setCanceledOnTouchOutside(true);
 			dialog.show();
 			break;
 
@@ -199,12 +258,15 @@ public class GmudActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.setGroupVisible(R.id.group_main, !mDesignIng);
+		menu.setGroupVisible(R.id.group_design, mDesignIng);
+		return true;
+	}
+
 	private void hide_softkey() {
-		Gmud.setMinScale(!bHideSoftKey);
-		final Control control = (Control) findViewById(R.id.control);
-		control.hide(bHideSoftKey);
-		final View show = findViewById(R.id.show);
-		show.requestLayout();
+		mShow.hideSoftKey(bHideSoftKey);
 	}
 
 	private void lock_screen() {
@@ -226,6 +288,15 @@ public class GmudActivity extends Activity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (mDesignIng) {
+			applyDesign(false);
+		} else {
+			super.onBackPressed();
+		}
 	}
 
 	@Override
@@ -251,6 +322,10 @@ public class GmudActivity extends Activity {
 				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 			} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 				mRequestOritation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+			}
+
+			if (mDesignIng) {
+				applyDesign(false);
 			}
 		}
 
@@ -307,5 +382,65 @@ public class GmudActivity extends Activity {
 					public void onClick(DialogInterface dialog, int which) {
 					}
 				}).create().show();
+	}
+
+	@Override
+	public void EnterNewName(final int type) {
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				Context ctx = GmudActivity.this;
+				AlertDialog.Builder alert = new AlertDialog.Builder(ctx);
+
+				alert.setTitle("名字：");
+				// alert.setMessage("");
+
+				// Set an EditText view to get user input
+				final EditText input = new EditText(ctx);
+				input.setHint("[无名]");
+				input.setSingleLine(true);
+				input.setOnKeyListener(new View.OnKeyListener() {
+					@Override
+					public boolean onKey(View v, int keyCode, KeyEvent event) {
+						if (keyCode == KeyEvent.KEYCODE_ENTER
+								&& event.getAction() == KeyEvent.ACTION_UP) {
+							setNewName(input.getText().toString());
+						}
+						return false;
+					}
+				});
+				alert.setView(input);
+
+				alert.setPositiveButton("Ok",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog,
+									int whichButton) {
+								setNewName(input.getText().toString());
+							}
+						});
+				alert.show();
+			}
+		});
+	}
+
+	private void setNewName(String name) {
+		if (name.length() == 0)
+			name = "[无名]";
+		Gmud.SetNewName(name);
+
+	}
+
+	private void tryDesign() {
+		if (!mDesignIng) {
+			mDesignIng = true;
+			mShow.StartDesign(mDesign);
+		}
+	}
+
+	private void applyDesign(boolean isApply) {
+		if (mDesignIng) {
+			mDesignIng = false;
+			mShow.ApplyDesign(isApply);
+		}
 	}
 }

@@ -2,18 +2,24 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <group
-        android:id="@+id/grout_main"
+        android:id="@+id/group_main"
         android:checkableBehavior="single" >
 
         <!-- <item android:id="@+id/item_hook" android:title="Hook"></item> -->
 
         <item
             android:id="@+id/item_exit"
-            android:title="Exit Game">
+            android:title="@string/menu_exit">
         </item>
+        
+        <item
+            android:id="@+id/item_design"
+            android:title="@string/menu_design" >
+        </item>
+
         <item
             android:id="@+id/item_setting"
-            android:title="Setting">
+            android:title="@string/menu_setting">
 <!--             <menu> -->
 <!--                 <item -->
 <!--                     android:id="@+id/item_hidekey" -->
@@ -37,8 +43,14 @@
         </item>
         <item
             android:id="@+id/item_about"
-            android:title="About"></item>
+            android:title="@string/menu_about">
+        </item>
         <item android:id="@+id/item_feedback" android:title="Feedback"></item>
+    </group>
+    <group android:id="@+id/group_design">
+        <item android:id="@+id/item_design_apply" android:title="@string/menu_apply"></item>
+        <item android:id="@+id/item_design_cancel" android:title="@string/menu_cancel"></item>
+        <item android:id="@+id/item_design_reset" android:title="@string/menu_reset"></item>
     </group>
 
 </menu>

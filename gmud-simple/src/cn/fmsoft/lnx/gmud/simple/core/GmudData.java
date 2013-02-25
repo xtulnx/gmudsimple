@@ -29,15 +29,15 @@ public class GmudData {
 	static final String class_name[] = new String[] {
 			"普通百姓", "八卦门", "花间派", "红莲教", "尹贺谷", "太极门", "雪山剑派", "兽王派", "茅山派"
 			};
-	static final String map_name[] = new String[] {   //map name
+	/** (size:11) */
+	static final String map_name[] = new String[] {
 			"平安镇", "商家堡", "玉女峰", "五指山", "冰火岛", "武当山", "大雪山", "黑森林", "灵心观", "铸剑谷", 
 			"桃花源"
 			};
-	// [11]
-	static final int fly_dest_map[] = new int[] {   // map id
-			0, 23, 44, 59, 31, 64, 54, 79, 73, 87, 
-			89
-			};
+
+	/** (size:11) 主地图（可以飞的地图）的ID，见 {@link #map_name} */
+	static final int fly_dest_map[] = new int[] { // map id
+	0, 23, 44, 59, 31, 64, 54, 79, 73, 87, 89 };
 
 	// [19]
 	static final int flyable_map[] = new int[]{
@@ -148,37 +148,48 @@ public class GmudData {
 				"蔓陀", "鹤定", "绿野", "灵泉", "天芝", "玉露", "蟠桃"
 			};
 		
-		static final int kill_task_temp_table[] = new int[147];
+	static final int kill_task_temp_table[] = new int[147];
 
-		// [147]
-		static final int kill_task_table[] = new int[] {  //平一指任务Seed
-				2, 0, 1, 5, 1, 255, 12, 4, 0, 255, 
-				3, 0, 0, 255, 255, 2, 0, 12, 14, 1, 
-				0, 4, 5, 4, 1, 255, 1, 0, 0, 1, 
-				255, 0, 2, 2, 0, 255, 0, 4, 10, 7, 
-				3, 2, 16, 17, 18, 12, 0, 27, 9, 3, 
-				2, 1, 9, 16, 15, 15, 11, 18, 26, 9, 
-				8, 9, 8, 9, 1, 0, 18, 2, 16, 13, 
-				5, 14, 14, 19, 16, 4, 5, 2, 13, 12, 
-				27, 17, 6, 15, 3, 4, 7, 17, 13, 4, 
-				19, 12, 3, 16, 27, 14, 17, 20, 14, 8, 
-				5, 24, 0, 1, 2, 6, 0, 6, 11, 9, 
-				28, 0, 5, 11, 12, 3, 16, 4, 17, 13, 
-				14, 16, 7, 3, 25, 25, 18, 7, 3, 30, 
-				10, 11, 3, 3, 3, 13, 6, 6, 23, 25, 
-				25, 30, 6, 6, 25, 25, 8
-			};
+	/**
+	 * (size:147) 平一指任务目标的等级限制表，用于提取限定等级内的目标，防止超过玩家能力上限，内容参考
+	 * {@link NPC#NPC_names} 范围 ["阿庆嫂","山大王")
+	 */
+	private static final int kill_task_table[] = new int[] {
+		2, 0, 1, 5, 1, 255, 12, 4, 0, 255, 
+		3, 0, 0, 255, 255, 2, 0, 12, 14, 1, 
+		0, 4, 5, 4, 1, 255, 1, 0, 0, 1, 
+		255, 0, 2, 2, 0, 255, 0, 4, 10, 7, 
+		3, 2, 16, 17, 18, 12, 0, 27, 9, 3, 
+		2, 1, 9, 16, 15, 15, 11, 18, 26, 9, 
+		8, 9, 8, 9, 1, 0, 18, 2, 16, 13, 
+		5, 14, 14, 19, 16, 4, 5, 2, 13, 12, 
+		27, 17, 6, 15, 3, 4, 7, 17, 13, 4, 
+		19, 12, 3, 16, 27, 14, 17, 20, 14, 8, 
+		5, 24, 0, 1, 2, 6, 0, 6, 11, 9, 
+		28, 0, 5, 11, 12, 3, 16, 4, 17, 13, 
+		14, 16, 7, 3, 25, 25, 18, 7, 3, 30, 
+		10, 11, 3, 3, 3, 13, 6, 6, 23, 25, 
+		25, 30, 6, 6, 25, 25, 8
+	};
 
-		static int a(int i)
-		{
-			for(int a = 0; a < 147; a++)
-				kill_task_temp_table[a] = 0;
-			int j = 0;
-			for (int k = 0; k < 147; k++)
-				if (kill_task_table[k] <= i)
-					kill_task_temp_table[j++] = k;
+	/**
+	 * 为平一指任务获取在限定等级内的目标
+	 * 
+	 * @param level
+	 *            等级限制
+	 * @return 返回可用NPC数量
+	 */
+	static int GetKillTaskTable(int level) {
+		final int[] temp = kill_task_temp_table;
+		final int[] table = kill_task_table;
 
-			return j;
-		}
-	
+		// for (int i = 0; i < 147; i++)
+		// temp[i] = 0;
+
+		int top = 0;
+		for (int i = 0; i < 147; i++)
+			if (table[i] <= level)
+				temp[top++] = i;
+		return top;
+	}
 }
