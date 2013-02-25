@@ -238,8 +238,11 @@ public class Player {
 		money = potential = 100;
 		exp = 0;
 
-		image_id = sex = face_level = class_id = teacher_id = 0;
+		image_id = sex = class_id = teacher_id = 0;
 		bliss = married = unknow1 = unknow2 = unknow3 = 0;
+		
+		// 测试：随机初始化的面貌
+		face_level = (int) (Math.random() * 12);
 
 		item_package[0][0] = 42;
 		item_package[0][1] = 0;
