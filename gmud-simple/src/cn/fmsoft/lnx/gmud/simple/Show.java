@@ -141,7 +141,10 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
+		synchronized (LOCK) {
+			mUpdateStatus &= ~(UPDATE_CANCEL);
+		}
+
 		Gmud.SetVideoCallback(this);
 
 		synchronized (LOCK) {
@@ -162,10 +165,10 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		Gmud.SetVideoCallback(null);
 		synchronized (LOCK) {
 			mUpdateStatus |= UPDATE_CANCEL;
 		}
+		Gmud.SetVideoCallback(null);
 		try {
 			Thread.sleep(50);
 		} catch (InterruptedException e) {

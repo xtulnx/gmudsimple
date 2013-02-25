@@ -111,13 +111,13 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		Gmud.SetCallback(null);
 
-		Gmud.Exit();
+		// Gmud.Exit();
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
 		}
 
-		System.exit(0);
+		// System.exit(0);
 
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
