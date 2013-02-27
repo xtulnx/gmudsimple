@@ -132,7 +132,7 @@ public class NewGame {
 					break;
 				}
 			} else if ((Input.inputstatus & Input.kKeyUp) != 0) {
-				id = id < 0 ? 3 : (id - 1);
+				id = id <= 0 ? 3 : (id - 1);
 				update = true;
 			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
 				id = id < 3 ? (id + 1) : 0;

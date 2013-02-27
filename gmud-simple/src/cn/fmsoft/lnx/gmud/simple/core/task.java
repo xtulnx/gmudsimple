@@ -51,18 +51,11 @@ public class task {
 		bad_man_mapid = -1;
 	}
 
-	/** 读取字符串，见 {@link UI#dialog_point} */
-	private static String read_UI_text(int type) {
-		final int res_start = UI.dialog_point[type];
-		final int res_end = UI.dialog_point[type + 1];
-		return Res.readtext(5, res_start, res_end);
-	}
-
 	/** 打哈哈的对话 */
 	private static void CommonDialog() {
 		Gmud.sMap.DrawMap(-1);
 		int type = util.RandomInt(5);
-		final String s1 = read_UI_text(type);
+		final String s1 = UI.readDialogText(type);
 		final String s2 = s1.replaceAll("\\$o", UI.npc_name);
 		UI.DrawDialog(s2.replaceAll("\\$n", Gmud.sPlayer.player_name));
 	}
@@ -99,7 +92,7 @@ public class task {
 		if (talk_type > 0) {
 			Gmud.sMap.DrawMap(-1);
 			
-			final String s1 = read_UI_text(talk_type);
+			final String s1 = UI.readDialogText(talk_type);
 			String s2 = s1.replaceAll("\\$o", UI.npc_name);
 			UI.DrawDialog(s2.replaceAll("\\$n", Gmud.sPlayer.player_name));
 			Input.ClearKeyStatus();
@@ -129,7 +122,7 @@ public class task {
 			// 刚好2个 "糖葫芦"
 			int index = Gmud.sPlayer.ExistItem(6, 2);
 			if (index >= 0 && Gmud.sPlayer.item_package[index][2] == 2) {
-				String tip = read_UI_text(28);
+				String tip = UI.readDialogText(28);
 				UI.DrawTalk(tip);
 				tip += yes_no;
 				Gmud.GmudDelay(80);
@@ -168,7 +161,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(41);
+			String tip = UI.readDialogText(41);
 			tip += yes_no;
 			Input.ClearKeyStatus();
 			int last_key = UI.DialogBx(tip, 8, 8);
@@ -195,7 +188,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(34);
+			String tip = UI.readDialogText(34);
 			UI.DrawTalk(tip);
 
 			Input.ClearKeyStatus();
@@ -226,7 +219,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(31);
+			String tip = UI.readDialogText(31);
 			UI.DrawTalk(tip);
 
 			Input.ClearKeyStatus();
@@ -257,7 +250,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(46);
+			String tip = UI.readDialogText(46);
 			UI.DrawTalk(tip);
 
 			Input.ClearKeyStatus();
@@ -289,7 +282,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(50);
+			String tip = UI.readDialogText(50);
 			UI.DrawTalk(tip);
 
 			int l6 = UI.DialogBx((tip += yes_no), 8, 8);
@@ -319,7 +312,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(62);
+			String tip = UI.readDialogText(62);
 			UI.DrawTalk(tip);
 
 			int k7 = UI.DialogBx((tip += yes_no), 8, 8);
@@ -349,7 +342,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String tip = read_UI_text(56);
+			String tip = UI.readDialogText(56);
 			UI.DrawTalk(tip);
 
 			int l7 = UI.DialogBx((tip += yes_no), 8, 8);
@@ -378,7 +371,7 @@ public class task {
 			if (index < 0)
 				break;
 
-			String s9 = read_UI_text(66);
+			String s9 = UI.readDialogText(66);
 			UI.DrawTalk(s9);
 			int i8 = UI.DialogBx((s9 += yes_no), 8, 8);
 			while (true) {
@@ -864,7 +857,7 @@ public class task {
 				UI.ShowDialog(136);
 			} else {
 				for (int i = 0; i < 4; i++) {
-					String str = read_UI_text(tip + i);
+					String str = UI.readDialogText(tip + i);
 					UI.DrawTalk(str);
 					Video.VideoUpdate();
 					Gmud.GmudDelay(900);

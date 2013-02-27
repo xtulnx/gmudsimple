@@ -32,6 +32,9 @@ public class Gmud {
 	public final static int WQX_ORG_HEIGHT = 80;
 	static final int FRAME_TIME = 1000 / 60;
 
+	/** 等待按键 */
+	static final int DELAY_WAITKEY = 50;
+
 	static Map sMap;
 	static Player sPlayer;
 
@@ -78,14 +81,14 @@ public class Gmud {
 	static boolean LoadSave() {
 		return sPlayer.load(sContext);
 	}
-	
+
 	static void tryWait() throws InterruptedException {
 		SYNC.wait();
 	}
-	
+
 	static void tryNotify() {
 		try {
-			SYNC.notifyAll();	
+			SYNC.notifyAll();
 		} catch (IllegalMonitorStateException e) {
 			e.printStackTrace();
 		}
@@ -122,6 +125,29 @@ public class Gmud {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(END_TAG);
 		}
+	}
+
+	/**
+	 * 等待按键，只要出现掩码中的按键，就返回
+	 * 
+	 * @param keyFlag
+	 *            按键标记，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 */
+	static void GmudWaitKey(int keyFlag) {
+		while ((Input.inputstatus & keyFlag) == 0) {
+			Gmud.GmudDelay(DELAY_WAITKEY);
+			Input.ProcessMsg();
+		}
+	}
+
+	static void GmudWaitNewKey(int keyFlag) {
+		Input.ClearKeyStatus();
+		GmudWaitKey(keyFlag);
+	}
+
+	static void GmudWaitAnyKey() {
+		Input.ClearKeyStatus();
+		GmudWaitKey(Input.kKeyAny);
 	}
 
 	// 初始化一些静态数据
@@ -213,11 +239,11 @@ public class Gmud {
 	public static void SetVideoCallback(IVideoCallback callback) {
 		Video.SetCallback(callback);
 	}
-	
+
 	public static void ResetVideoLayout(Rect rect) {
 		Video.ResetLayout(rect);
 	}
-	
+
 	public static boolean IsRunning() {
 		synchronized (SYNC) {
 			return sRunStatus == RS_RUNNING;

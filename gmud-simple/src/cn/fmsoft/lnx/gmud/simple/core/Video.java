@@ -116,6 +116,7 @@ class Video {
 
 		sPaint = new Paint();
 		sPaint.setAntiAlias(false);
+//		sPaint.setFilterBitmap(true);
 
 		lpmem = new Canvas();
 

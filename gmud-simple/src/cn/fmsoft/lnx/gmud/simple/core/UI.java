@@ -21,6 +21,8 @@ public class UI {
 	static final String main_menu_items[] = new String[] { "查看", "物品", "技能",
 			"功能" };
 
+	static final String STR_BATTLE_WIN = "战斗胜利，大获全胜!\n战斗获得\n金钱：%d\n物品：%s";
+
 	// [199]
 	static final int dialog_point[] = new int[] { 0, 59, 112, 165, 220, 292,
 			322, 355, 394, 421, 475, 551, 580, 631, 688, 742, 799, 829, 884,
@@ -42,6 +44,11 @@ public class UI {
 			11504, 11603, 11651, 11771, 11822, 11885, 11948, 12011, 12074,
 			12149, 12263, 12377, 12476, 12524, 12620, 12701, 12748, 12832,
 			12898 };
+
+	static final String readDialogText(int id) {
+		return Res.readtext(Res.TYPE_DIALOG, dialog_point[id],
+				dialog_point[1 + id]);
+	}
 
 	static void DrawDead() {
 		for (int i = 112; i < 123; i++) {
@@ -68,14 +75,12 @@ public class UI {
 			ib.append(Items.item_names[item_id]).append(" ");
 		}
 
-		String str = String.format("战斗胜利，大获全胜!\n战斗获得\n金钱：%d\n物品：%s", money,
-				ib.toString());
+		String str = String.format(STR_BATTLE_WIN, money, ib.toString());
 		DrawDialog(str);
 		Video.VideoUpdate();
 		Input.ClearKeyStatus();
 		Gmud.GmudDelay(200);
-		while ((Input.inputstatus & Input.kKeyExit) != 0)
-			Gmud.GmudDelay(100);
+		Gmud.GmudWaitKey(Input.kKeyExit);
 	}
 
 	/** 在屏幕下方绘制单行文本，如果有多行，则分多次输出 */
@@ -85,19 +90,16 @@ public class UI {
 		ArrayList<String> as = Video.SplitString(s, Gmud.WQX_ORG_WIDTH - 3);
 		for (int i = 0, c = as.size(); i < c; i++) {
 			Video.VideoClearRect(0, y, Gmud.WQX_ORG_WIDTH, lineH + 1);
-			Video.VideoDrawRectangle(0, y, Gmud.WQX_ORG_WIDTH - 1, lineH + 1);
-			Video.VideoDrawStringSingleLine(as.get(i), 2, y + 2);
+			Video.VideoDrawRectangle(1, y, Gmud.WQX_ORG_WIDTH - 2, lineH + 1);
+			Video.VideoDrawStringSingleLine(as.get(i), 2, y + 1);
 			Video.VideoUpdate();
-			Input.ClearKeyStatus();
-			while (Input.inputstatus == 0)
-				Gmud.GmudDelay(100);
+			Gmud.GmudWaitNewKey(Input.kKeyAny);
 		}
 	}
 
 	/** 加载资源，并显示不超过5行的多行文本框 */
 	static void ShowDialog2(final int id) {
-		final String s = Res.readtext(Res.TYPE_DIALOG, dialog_point[id],
-				dialog_point[1 + id]);
+		final String s = readDialogText(id);
 		final int lineH = Video.SMALL_LINE_H;
 		Video.VideoFillRectangle(0, 0, 160, 80, 0);
 		ArrayList<String> as = Video.SplitString(s, Gmud.WQX_ORG_WIDTH - 16);
@@ -108,9 +110,7 @@ public class UI {
 	}
 
 	static void ShowDialog(int tip_id) {
-		String s = Res.readtext(Res.TYPE_DIALOG, dialog_point[tip_id],
-				dialog_point[1 + tip_id]);
-		DrawDialog(s);
+		DrawDialog(readDialogText(tip_id));
 	}
 
 	/** 在顶端显示最多2行的文本，如果有更多行数，则分批输出 */
@@ -130,15 +130,12 @@ public class UI {
 				i++;
 			}
 			Video.VideoUpdate();
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(300);
 			if (i < c) {
 				// 如果还有文本，就闪光标
 				DrawFlashCursor(Gmud.WQX_ORG_WIDTH - 14, height - 10, 8);
 			} else {
 				// 等待任意键返回
-				while (Input.inputstatus == 0)
-					Gmud.GmudDelay(100);
+				Gmud.GmudWaitAnyKey();
 			}
 		}
 	}
@@ -155,9 +152,7 @@ public class UI {
 		final int h = w / 2 + 1;
 		boolean blink = false;
 		int count = 0;
-		Input.ClearKeyStatus();
-		Input.ProcessMsg();
-		while (Input.inputstatus == 0) {
+		while (true) {
 			if (count == 0) {
 				if (!blink) {
 					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 0);
@@ -165,14 +160,17 @@ public class UI {
 					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 4);
 				}
 				Video.VideoUpdate();
-
 				count = 6;
 				blink = !blink;
 			} else {
 				count--;
 			}
 			Input.ClearKeyStatus();
-			Gmud.GmudDelay(50);
+			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
+			Input.ProcessMsg();
+			if (Input.inputstatus != 0) {
+				break;
+			}
 		}
 		return Input.inputstatus;
 	}
@@ -215,8 +213,7 @@ public class UI {
 
 	static void MainMenu() {
 		int menu_id = 0;
-		DrawMainMenu(menu_id);
-		Video.VideoUpdate();
+		boolean update = true;
 		Input.ClearKeyStatus();
 		while (Input.Running) {
 			Input.ProcessMsg();
@@ -225,50 +222,47 @@ public class UI {
 					menu_id--;
 				else
 					menu_id = 3;
-				DrawMainMenu(menu_id);
-				Video.VideoUpdate();
+				update = true;
 			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
 				if (menu_id < 3)
 					menu_id++;
 				else
 					menu_id = 0;
-				DrawMainMenu(menu_id);
-				Video.VideoUpdate();
+				update = true;
 			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
 				if (menu_id == 0) {
 					ViewPlayer();
-					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(menu_id);
-					Video.VideoUpdate();
 				} else if (menu_id == 1) {
 					PlayerItem();
-					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(menu_id);
-					Video.VideoUpdate();
 				} else if (menu_id == 2) {
 					PlayerSkill();
-					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(menu_id);
-					Video.VideoUpdate();
 				} else if (menu_id == 3) {
 					Input.ClearKeyStatus();
 					if (SystemMenu() != 0) {
-						Gmud.sMap.DrawMap(-1);
-						Video.VideoUpdate();
-						return;
+						update = true;
+						break;
 					}
-					Gmud.sMap.DrawMap(-1);
-					DrawMainMenu(menu_id);
-					Video.VideoUpdate();
 				}
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
 				Gmud.sMap.DrawMap(-1);
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+				update = true;
+				break;
+			}
+
+			if (update) {
+				update = false;
+				DrawMainMenu(menu_id);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-				return;
 			}
 			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
+		}
+
+		if (update) {
+			Gmud.sMap.DrawMap(-1);
+			Video.VideoUpdate();
+			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
 		}
 	}
 
@@ -413,10 +407,7 @@ public class UI {
 			Video.VideoDrawStringSingleLine(as.get(i), x + 1, y + 1 + top);
 		}
 		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		while (Input.inputstatus == 0) {
-			Gmud.GmudDelay(50);
-		}
+		Gmud.GmudWaitAnyKey();
 		return Input.inputstatus;
 	}
 
@@ -661,8 +652,8 @@ public class UI {
 		}
 
 		int menu_id = 0;
-		Input.ClearKeyStatus();
 		boolean update = true;
+		Input.ClearKeyStatus();
 		while (Input.Running) {
 			Input.ProcessMsg();
 			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
@@ -701,7 +692,6 @@ public class UI {
 	static void DrawPlayerStatus() {
 		String as[] = new String[6];
 		int i = 0;
-
 		as[i] = String.format("食物:%d/%d", Gmud.sPlayer.food,
 				Gmud.sPlayer.GetFoodMax());
 
@@ -715,13 +705,12 @@ public class UI {
 				Gmud.sPlayer.GetWaterMax());
 		i++;
 
-		int i1;
-		if ((i1 = (Gmud.sPlayer.hp_max * 1000)
-				/ ((Gmud.sPlayer.hp_full * 1000) / 100)) == 100
-				&& Gmud.sPlayer.hp_max < Gmud.sPlayer.hp_full)
-			i1 = 99;
+		int hp = (Gmud.sPlayer.hp_max * 1000)
+				/ ((Gmud.sPlayer.hp_full * 1000) / 100);
+		if (hp >= 100 && Gmud.sPlayer.hp_max < Gmud.sPlayer.hp_full)
+			hp = 99;
 		as[i] = String.format("生命:%d/%d(%d%%)", Gmud.sPlayer.hp,
-				Gmud.sPlayer.hp_max, i1);
+				Gmud.sPlayer.hp_max, hp);
 		i++;
 
 		as[i] = String.format("内力:%d/%d(+%d)", Gmud.sPlayer.fp,
@@ -817,16 +806,10 @@ public class UI {
 		Video.VideoDrawRectangle(x, y, w, h);
 		Video.VideoDrawStringSingleLine("删除吗？", x, y);
 		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		Gmud.GmudDelay(100);
-		while (Input.Running && Input.inputstatus == 0) {
-			Input.ProcessMsg();
-			Gmud.GmudDelay(80);
-		}
-		if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+		Gmud.GmudWaitAnyKey();
+		if ((Input.getKeyCode() & Input.kKeyEnt) != 0) {
 			ret = 1;
 		}
-		Input.ClearKeyStatus();
 		return ret;
 	}
 
@@ -1072,89 +1055,40 @@ public class UI {
 		}
 	}
 
-	/** 绘制物品操作菜单 */
-	static void DrawItemMenu(int sel) {
-		final int lineH = Video.SMALL_LINE_H;
-		final int t_w = lineH * 2; // 文本2个字宽
-		final int w = t_w + 10;
-		final int h = lineH * 3;
-		int x = 32 + (t_w + 6) + t_w;
-		int y = 5 + t_w;
-		Video.VideoClearRect(x, y, w, h + 2);
-		Video.VideoDrawRectangle(x, y, w, h + 2);
-		int oy = (lineH - 4) / 2;
-		y += 1;
-		for (int i = 0; i < 3; i++) {
-			Video.VideoDrawRectangle(x + 3, y + oy, 5, 5);
-			if (sel == i)
-				Video.VideoFillRectangle(x + 3, y + oy, 5, 5);
-			Video.VideoDrawStringSingleLine(useitem_menu_words[i], x + 10, y);
-			y += lineH;
-		}
-	}
-
+	/** 物品操作菜单 */
 	static void ItemMenu(final int top, final int sel) {
+		final int t_w = Video.SMALL_LINE_H * 2; // 文本2个字宽
+		final int x = 32 + (t_w + 6) + t_w;
+		final int w = t_w + 10;// 文本2个字宽
+		final int y = t_w + 5;
+		final int ret = UIUtils.ShowMenu(UIUtils.MENU_TYPE_BOX, 10,
+				useitem_menu_words, useitem_menu_words.length, 3, x, y, w,
+				MENUID_ITEM) - 1;
+
 		final int item_id = GmudTemp.temp_array_32_2[top + sel][0];
-		int curl = 0;
-		DrawItemMenu(0);
-		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		Gmud.GmudDelay(100);
-		while (true) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
-				if (curl == 0)
-					curl = 2;
-				else
-					curl--;
-				DrawItemMenu(curl);
+		if (ret == 0) {
+			// use item
+			String s = Gmud.sPlayer.UseItem(item_id);
+			if (s.length() > 0) {
+				final int lineH = Video.SMALL_LINE_H;
+				Video.VideoClearRect(0, Gmud.WQX_ORG_HEIGHT - lineH,
+						Gmud.WQX_ORG_WIDTH, lineH);
+				Video.VideoDrawStringSingleLine(s, 2, Gmud.WQX_ORG_WIDTH / 2
+						- lineH);
 				Video.VideoUpdate();
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
-				if (curl == 2)
-					curl = 0;
-				else
-					curl++;
-				DrawItemMenu(curl);
-				Video.VideoUpdate();
-			} else {
-				if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-					if (curl == 0) {
-						// use item
-						String s1 = Gmud.sPlayer.UseItem(item_id);
-						if (s1.length() > 0) {
-							final int lineH = Video.SMALL_LINE_H;
-							Video.VideoClearRect(0,
-									Gmud.WQX_ORG_HEIGHT - lineH,
-									Gmud.WQX_ORG_WIDTH, lineH);
-							Video.VideoDrawStringSingleLine(s1, 2,
-									Gmud.WQX_ORG_WIDTH / 2 - lineH);
-							Video.VideoUpdate();
-							Gmud.GmudDelay(100);
-							Input.ClearKeyStatus();
-							while (Input.inputstatus == 0)
-								Gmud.GmudDelay(100);
-						}
-						return;
-					}
-					if (curl == 1) {
-						// delete item
-						int ret = DrawDeleteItem();
-						if (ret == 1) {
-							Gmud.sPlayer.DeleteOneItem(item_id);
-						}
-						return;
-					}
-					if (curl == 2) {
-						// TODO send item
-						DrawTip("不能发送!");
-						break;
-					}
-				}
-				if ((Input.inputstatus & Input.kKeyExit) != 0)
-					return;
+				Gmud.GmudDelay(100);
+				Gmud.GmudWaitAnyKey();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+		} else if (ret == 1) {
+			// delete item
+			if (DrawDeleteItem() == 1) {
+				Gmud.sPlayer.DeleteOneItem(item_id);
+			}
+		} else if (ret == 2) {
+			// TODO send item
+			DrawTip("不能发送!");
+			Video.VideoUpdate();
+			Gmud.GmudWaitAnyKey();
 		}
 	}
 
@@ -1752,56 +1686,11 @@ public class UI {
 	}
 
 	// ********** UI-NPC **********//
-	static int npc_menu_type = 0;
 	static int npc_id = 0;
 	static int npc_image_id = 0;
 	static String npc_name;
-	static int npc_menu_x = 0;
 	static final String npc_menu_words[] = new String[] { "交谈", "查看", "战斗",
 			"切磋", "交易", "拜师", "请教" };
-
-	private static void DrawNPCMainMenu(int sel) {
-		// 显示 NPC 名称
-		int n_h = 13;
-		int n_w = 26;
-		Video.VideoClearRect(4, 4, n_w * 2, n_h);
-		Video.VideoDrawStringSingleLine(npc_name, 4, 4);
-
-		int m_h = (n_h + 1) * 4 + 4; // 菜单高度，4行
-		if (npc_menu_type > 0)
-			m_h += n_h + 1;
-		final int m_y = (Gmud.WQX_ORG_WIDTH / 2 - m_h) / 2; // 纵向居中
-
-		int box_w = 6;
-		int m_w = n_w + 10 + box_w;
-		if (npc_menu_x < 4)
-			npc_menu_x = 4;
-		if (npc_menu_x + m_w + 4 > Gmud.WQX_ORG_WIDTH)
-			npc_menu_x = Gmud.WQX_ORG_WIDTH - 4 - m_w;
-		Video.VideoClearRect(npc_menu_x, m_y, m_w, m_h);
-		Video.VideoDrawRectangle(npc_menu_x, m_y, m_w, m_h);
-
-		// 黑块在行内纵向空隙
-		int pad = (n_h - box_w) / 2;
-		if (pad < 0)
-			pad = 0;
-		for (int i = 0; i < 4; i++) {
-			Video.VideoDrawRectangle(npc_menu_x + 3, m_y + i * (n_h + 1) + 2
-					+ pad, box_w, box_w);
-			Video.VideoDrawStringSingleLine(npc_menu_words[i], npc_menu_x + 8
-					+ box_w, m_y + i * (n_h + 1) + 2);
-		}
-
-		Video.VideoFillRectangle(npc_menu_x + 3, m_y + sel * (n_h + 1) + 2
-				+ pad, box_w, box_w);
-
-		if (npc_menu_type > 0) {
-			Video.VideoDrawRectangle(npc_menu_x + 3, m_y + 4 * (n_h + 1) + 2
-					+ pad, box_w, box_w);
-			Video.VideoDrawStringSingleLine(npc_menu_words[npc_menu_type],
-					npc_menu_x + 8 + box_w, m_y + 4 * (n_h + 1) + 2);
-		}
-	}
 
 	static void TalkWithNPC(int npc_id) {
 		task.Talk(npc_id);
@@ -1862,8 +1751,7 @@ public class UI {
 		if (size <= 0)
 			return;
 		Gmud.sMap.DrawMap(-1);
-		DrawTalk(Res.readtext(5, dialog_point[6 + type],
-				dialog_point[1 + 6 + type]));
+		DrawTalk(readDialogText(6 + type));
 		int x = 10;
 		int l1 = 13 + 4;
 		int i2 = 0;
@@ -2008,8 +1896,7 @@ public class UI {
 		// UI.DrawDialog(&ReplaceStr(&ReplaceStr(&gmud_readtext(5,
 		// UI.dialog_point[i], UI.dialog_point[1 + i]), "$o",
 		// UI.npc_name.c_str()), "m", Gmud.sPlayer.player_name));
-		String str = Res
-				.readtext(5, UI.dialog_point[i], UI.dialog_point[1 + i]);
+		String str = readDialogText(i);
 		String s1 = str.replaceAll("\\$o", UI.npc_name);
 		UI.DrawDialog(s1.replaceAll("m", Gmud.sPlayer.player_name));
 	}
@@ -2018,7 +1905,7 @@ public class UI {
 		if (Gmud.sPlayer.class_id != 0
 				&& Gmud.sPlayer.class_id != NPCINFO.NPC_attribute[id][1]) {
 			Gmud.sMap.DrawMap(-1);
-			DrawDialog(Res.readtext(5, dialog_point[9], dialog_point[1 + 9]));
+			DrawDialog(readDialogText(9));
 			return;
 		}
 		Gmud.sMap.DrawMap(-1);
@@ -2433,7 +2320,7 @@ public class UI {
 
 	static void ConsultWithNPC(int size) {
 		Gmud.sMap.DrawMap(-1);
-		UI.DrawTalk(Res.readtext(5, UI.dialog_point[8], UI.dialog_point[1 + 8]));
+		UI.DrawTalk(readDialogText(8));
 		final int x = 10;
 		final int y = 13 + 4;
 		int top = 0;
@@ -2523,68 +2410,48 @@ public class UI {
 		}
 	}
 
-	static void NPCMainMenu() {
-		int max = 4;
-		if (npc_menu_type > 0)
-			max++;
-
-		int sel = 0;
-		int key = 0;
-		boolean bUpdate = true;
-
-		Input.ClearKeyStatus();
-		while (key == 0) {
-			Input.ProcessMsg();
-
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
-				if (sel == 0)
-					sel = max - 1;
-				else
-					sel--;
-				bUpdate = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
-				if (sel < max - 1)
-					sel++;
-				else
-					sel = 0;
-				bUpdate = true;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				key = 1;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
-				key = -1;
-			}
-
-			if (bUpdate) {
-				bUpdate = false;
-				Input.ClearKeyStatus();
-				DrawNPCMainMenu(sel);
-				Video.VideoUpdate();
-			}
-			Gmud.GmudDelay(80);
+	static void NPCMainMenu(int npc_id, int npc_type, int x) {
+		final String[] titles;
+		final int count;
+		if (npc_type <= 0) {
+			count = 4;
+			titles = npc_menu_words;
+		} else {
+			count = 5;
+			titles = new String[5];
+			System.arraycopy(npc_menu_words, 0, titles, 0, 4);
+			titles[4] = npc_menu_words[npc_type];
 		}
-		if (key == 1) {
-			if (sel == 0)
+		final int w = Video.SMALL_LINE_H * 2 + 12;
+		if (x < 4)
+			x = 4;
+		if (x + w + 4 > Gmud.WQX_ORG_WIDTH)
+			x = Gmud.WQX_ORG_WIDTH - 4 - w;
+		final int sel = UIUtils.ShowMenu(UIUtils.MENU_TYPE_BOX, 12, titles,
+				count, count, x, -1, w, MENUID_NPC) - 1;
+		if (sel >= 0) {
+			if (sel == 0) {
 				TalkWithNPC(npc_id); // 交谈
-			else if (sel == 1)
+			} else if (sel == 1) {
 				ViewNPC(npc_id); // 查看
-			else if (sel == 2)
+			} else if (sel == 2) {
 				EnterBattle(npc_id); // 战斗
-			else if (sel == 3)
+			} else if (sel == 3) {
 				EnterTryBattle(npc_id); // 切磋
-			else if (sel == 4)
-				if (npc_menu_type == 4)
+			} else if (sel == 4) {
+				if (npc_type == 4)
 					Trade(npc_id); // 交易
-				else if (npc_menu_type == 5)
+				else if (npc_type == 5)
 					Apprentice(npc_id); // 拜师
-				else if (npc_menu_type == 6)
+				else if (npc_type == 6)
 					Consult(npc_id); // 请教
+			}
 			Gmud.GmudDelay(100);
 		}
-		Input.ClearKeyStatus();
 	}
 
 	static void DrawTalk(String tip) {
-		final int h = 13 * 2 + 2;
+		final int h = Video.SMALL_LINE_H * 2 + 2;
 		ArrayList<String> as = Video.SplitString(tip, Gmud.WQX_ORG_WIDTH - 3);
 		final int size = as.size();
 		for (int i = 0; i < size;) {
@@ -2664,6 +2531,12 @@ public class UI {
 	final static int MENUID_PRACT = 2;
 	final static int MENUID_SYSTEM = 3;
 	final static int MENUID_FLY = 4;
+	final static int MENUID_ITEM = 5;
+	final static int MENUID_NPC = 6;
+
+	private static int _def_callback_index(int sel) {
+		return sel + 1;
+	}
 
 	public static int onMenuCallBack(int callbackID, int sel) {
 		int ret = 0;
@@ -2676,6 +2549,10 @@ public class UI {
 			return SystemCallback(sel);
 		case MENUID_FLY:
 			return FlyCallback(sel);
+		case MENUID_ITEM:
+			return _def_callback_index(sel);
+		case MENUID_NPC:
+			return _def_callback_index(sel);
 
 		default:
 			break;

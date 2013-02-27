@@ -23,6 +23,7 @@ public class Input {
 	public static final int kKeyPgUp = 1 << 6;
 	public static final int kKeyPgDn = 1 << 7;
 	public static final int kKeyFly = 1 << 8;
+	public static final int kKeyAny = 0xffff;
 
 	public static boolean Running = false;
 
@@ -110,6 +111,10 @@ public class Input {
 	 */
 	protected static synchronized int getScanCode() {
 		return sScanCode;
+	}
+	
+	static synchronized int getKeyCode() {
+		return inputstatus;
 	}
 
 	static public synchronized void GmudSetKey(int mask) {
