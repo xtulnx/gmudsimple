@@ -656,6 +656,7 @@ public class task {
 				}
 
 				// 取回送给玩家的装备
+				player.UnEquipWeapon();
 				index = player.ExistItem(weapon_id, 1);
 				if (index != -1)
 					player.DeleteOneItem(index);
@@ -685,7 +686,8 @@ public class task {
 
 		// 恢复玩家的武器
 		index = player.ExistItem(last_weapon, 1);
-		player.EquipWeapon(index);
+		if (index != -1)
+			player.EquipWeapon(index);
 	}
 
 	/** 检查是否有 交接任务但没有领赏 */
