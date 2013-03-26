@@ -373,7 +373,6 @@ public class UI {
 	}
 
 	static void SaveMenu() {
-		Input.ClearKeyStatus();
 		if (task.temp_tasks_data[30] >= 100) {
 			// save file
 			String str = "存档成功!";
@@ -388,11 +387,7 @@ public class UI {
 			DrawTip(str);
 		}
 		Video.VideoUpdate();
-		Gmud.GmudDelay(100);
-		while (Input.inputstatus != Input.kKeyExit) {
-			Input.ProcessMsg();
-			Gmud.GmudDelay(50);
-		}
+		Gmud.GmudWaitNewKey(Input.kKeyExit);
 	}
 
 	static int DialogBx(String s, int x, int y) {
@@ -2509,16 +2504,16 @@ public class UI {
 			Input.ClearKeyStatus();
 			Gmud.GmudDelay(120);
 			if (++i < pages) {
-				while (Input.inputstatus != Input.kKeyDown) {
+				while ((Input.inputstatus & Input.kKeyDown) == 0) {
 					UI.DrawFlashCursor(Gmud.WQX_ORG_WIDTH - 16, 5, 8);
-					if (Input.inputstatus == Input.kKeyExit) {
-						Gmud.GmudDelay(100);
+					if ((Input.inputstatus & Input.kKeyExit) != 0) {
+						Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
 						return;
 					}
 				}
 			} else {
-				while (Input.inputstatus != Input.kKeyExit)
-					Gmud.GmudDelay(100);
+				while ((Input.inputstatus & Input.kKeyExit) == 0)
+					Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
 				Input.ClearKeyStatus();
 				Gmud.GmudDelay(100);
 				return;

@@ -352,7 +352,7 @@ public final class Configure {
 	/** 返回位置所在的所有元件掩码 */
 	protected static int HitTestFlag(int x, int y) {
 		int flag = 0;
-		for (int i = 0, c = _KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			if (sRcKeys[i].contains(x, y)) {
 				flag |= 1 << i;
 			}
