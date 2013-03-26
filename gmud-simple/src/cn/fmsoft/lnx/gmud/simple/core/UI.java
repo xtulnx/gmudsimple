@@ -1730,11 +1730,11 @@ public class UI {
 		if (NPC.NPC_sell_list[id][0] == 0) // 卖
 		{
 			int size = Gmud.sPlayer.CopyItemList();
-			TradeWithNPC(1, size);
+			TradeWithNPC(true, size);
 			return;
 		} else {
 			int k1 = NPC.CopyItemList(id); // 买
-			TradeWithNPC(0, k1);
+			TradeWithNPC(false, k1);
 			return;
 		}
 	}
@@ -1742,85 +1742,82 @@ public class UI {
 	/***
 	 * 与 NPC 交易
 	 * 
-	 * @param type
-	 *            0买，1卖
+	 * @param sell
+	 *            false买，true卖
 	 * @param size
 	 *            物品列表大小，见 {@link GmudTemp#temp_array_32_2}
 	 */
-	static void TradeWithNPC(int type, int size) {
+	static void TradeWithNPC(boolean sell, int size) {
 		if (size <= 0)
 			return;
 		Gmud.sMap.DrawMap(-1);
-		DrawTalk(readDialogText(6 + type));
-		int x = 10;
-		int l1 = 13 + 4;
-		int i2 = 0;
-		int j2 = 0;
-		DrawItemList(x, l1, size, 0, 0, type);
-		Video.VideoUpdate();
-		Gmud.GmudDelay(200);
+		DrawTalk(readDialogText(6 + (sell ? 1 : 0)));
+		final int x = 10;
+		final int y = 13 + 4;
+		int top = 0;
+		int sel = 0;
+		Input.ClearKeyStatus();
+		boolean update = true;
 		while (true) {
 			Input.ProcessMsg();
 			if ((Input.inputstatus & Input.kKeyUp) != 0) {
-				if (j2 > 0)
-					j2--;
-				else if (i2 > 0) {
-					i2--;
+				if (sel > 0) {
+					sel--;
+				} else if (top > 0) {
+					top--;
+				} else if (size > 3) {
+					top = size - 3;
+					sel = 2;
 				} else {
-					if ((i2 = size - 3) < 0)
-						i2 = 0;
-					if (size - 1 < 2)
-						j2 = size - 1;
-					else
-						j2 = 2;
+					top = 0;
+					sel = size - 1;
 				}
-				DrawItemList(x, l1, size, i2, j2, type);
-				Video.VideoUpdate();
+				update = true;
 			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
-				if (j2 < 2 && j2 < size - 1)
-					j2++;
-				else if (i2 < size - 3) {
-					i2++;
-				} else {
-					i2 = 0;
-					j2 = 0;
-				}
-				DrawItemList(x, l1, size, i2, j2, type);
-				Video.VideoUpdate();
+				if (top + sel + 1 >= size) {
+					top = 0;
+					sel = 0;
+				} else if (sel < 2)
+					sel++;
+				else
+					top++;
+				update = true;
 			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.GmudDelay(100);
-				int l2 = i2 + j2;
-				int i3 = GmudTemp.temp_array_32_2[l2][0];
-				if (type == 0) {
-					int limit_money = (Items.item_attribs[i3][6] != 0 && Gmud.sPlayer
-							.GainOneItem(i3)) ? 1 : 0;
-					if (Gmud.sPlayer.money >= limit_money) {
-						Gmud.sPlayer.money -= Items.item_attribs[i3][6];
-						Gmud.GmudDelay(200);
-						return;
+				final int pos = top + sel;
+				final int id = GmudTemp.temp_array_32_2[pos][0];
+				if (!sell) {
+					int limit_money = Items.item_attribs[id][6];
+					if (Gmud.sPlayer.money >= limit_money
+							&& Gmud.sPlayer.GainOneItem(id)) {
+						Gmud.sPlayer.money -= Items.item_attribs[id][6];
+						break;
 					}
 				} else {
-					int j3 = (Items.item_attribs[i3][6] * 7) / 10;
-					Gmud.sPlayer.money += j3;
-
 					// TODO: 用 序号 代替 ID
 					// Gmud.sPlayer.LoseItem(i3, 1);
-					if ((j3 = Gmud.sPlayer.ExistItem(i3, 1)) >= 0) {
-						Gmud.sPlayer.LoseItem(j3, 1);
+					int index = Gmud.sPlayer.ExistItem(id, 1);
+					if (index >= 0) {
+						Gmud.sPlayer.LoseItem(index, 1);
+						Gmud.sPlayer.money += (Items.item_attribs[id][6] * 7) / 10;
+						break;
 					}
-					return;
 				}
 			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
-				Gmud.GmudDelay(100);
-				return;
+				break;
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			if (update) {
+				update = false;
+				DrawItemList(x, y, size, top, sel, sell);
+				Video.VideoUpdate();
+			}
+			Gmud.GmudWaitNewKey(Input.kKeyExit | Input.kKeyEnt | Input.kKeyDown
+					| Input.kKeyUp);
 		}
+		return;
 	}
 
 	/**
-	 * 绘制物品列表
+	 * 绘制物品列表，最多３行
 	 * 
 	 * @param x
 	 * @param y
@@ -1829,9 +1826,10 @@ public class UI {
 	 * @param start
 	 *            可见列表中最顶上一个的索引
 	 * @param sel
-	 * @param j2
+	 * @param sell
 	 */
-	static void DrawItemList(int x, int y, int size, int start, int sel, int j2) {
+	static void DrawItemList(int x, int y, int size, int start, int sel,
+			boolean sell) {
 		if (size <= 0)
 			return;
 		int lineH = 13;
@@ -1842,7 +1840,7 @@ public class UI {
 			h = lineH * 3 + 6;
 		else
 			h = size * lineH + 6;
-		if (j2 == 0)
+		if (!sell)
 			w = charW * 5 + 16 + 4;
 		else
 			w = charW * 7 + 16 + 10;
@@ -1860,7 +1858,7 @@ public class UI {
 						y + pad + 2 + 6 + i * (lineH + 1), 4);
 				int k4 = y + h + 4;
 				int cost = Items.item_attribs[item_id][6];
-				if (j2 == 1)
+				if (sell)
 					cost = (cost * 7) / 10;
 				String s2 = String.format("金钱：%d 价格：%d", Gmud.sPlayer.money,
 						cost);
@@ -1869,7 +1867,7 @@ public class UI {
 				Video.VideoDrawStringSingleLine(s2/* .c_str() */, x, k4);
 			}
 			String s1 = Items.item_names[item_id];
-			if (j2 != 0) {
+			if (sell) {
 				s1 += String.format("x%d", item_number);
 			}
 			Video.VideoDrawStringSingleLine(s1, x + 4 + 16, y + 2 + i
