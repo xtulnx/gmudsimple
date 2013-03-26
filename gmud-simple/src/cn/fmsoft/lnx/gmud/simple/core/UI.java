@@ -2425,6 +2425,8 @@ public class UI {
 			x = 4;
 		if (x + w + 4 > Gmud.WQX_ORG_WIDTH)
 			x = Gmud.WQX_ORG_WIDTH - 4 - w;
+		Video.VideoClearRect(4, 4, 26 * 2, 13);
+		Video.VideoDrawStringSingleLine(npc_name, 4, 4);
 		final int sel = UIUtils.ShowMenu(UIUtils.MENU_TYPE_BOX, 12, titles,
 				count, count, x, -1, w, MENUID_NPC) - 1;
 		if (sel >= 0) {
