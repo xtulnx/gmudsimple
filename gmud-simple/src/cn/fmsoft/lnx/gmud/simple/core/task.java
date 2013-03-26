@@ -643,8 +643,9 @@ public class task {
 				Gmud.sMap.DrawMap(-1);
 
 				boolean failed = false;
-				if (player.hp < player.hp_max / 2) {
-					// 玩家血量不及上限一半，失败
+				//if (player.hp < player.hp_max / 2 ) {
+				// 玩家血量不及上限一半，失败
+				if (NPC.NPC_attrib[146][11] >= NPCINFO.NPC_attribute[146][12] / 2) {
 					UI.ShowDialog(95);
 					failed = true;
 				} else if (player.equips[15] != weapon_id) {

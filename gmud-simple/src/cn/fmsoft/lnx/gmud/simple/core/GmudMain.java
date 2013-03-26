@@ -186,8 +186,12 @@ public class GmudMain extends Thread {
 		}
 		if (player.lasting_tasks[9] == 1)
 			SetWeapon(player); // 自制武器调整
-		if (player.lasting_tasks[1] > 0 && player.lasting_tasks[1] < 8)
-			player.GainOneItem(79 + player.lasting_tasks[1]); // +坛地图
+		if (player.lasting_tasks[1] > 0 && player.lasting_tasks[1] < 8) {
+			// 如果正在打坛，须防止玩家丢了地图
+			final int item_id = 79 + player.lasting_tasks[1];
+			if (player.ExistItem(item_id, 1) < 0)
+				player.GainOneItem(item_id);
+		}
 		// initialize & load
 		task.reset();
 		NPC.InitData();

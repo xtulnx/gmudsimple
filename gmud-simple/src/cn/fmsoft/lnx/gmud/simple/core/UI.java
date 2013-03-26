@@ -286,13 +286,41 @@ public class UI {
 			return;
 		}
 		Gmud.sPlayer.fp -= 200;
+		
+		// 隐藏未激活的地图:铸剑谷　桃花园
+		boolean open_choujiangu = Gmud.sPlayer.lasting_tasks[2] != 0;
+		boolean open_taohuayuan = Gmud.sPlayer.lasting_tasks[6] != 0;
+		String[] title = GmudData.map_name;
+		final int max_count = GmudData.map_name.length;
+		int count;
+		if (!open_choujiangu || !open_taohuayuan) {
+			title = new String[max_count];
+			System.arraycopy(GmudData.map_name, 0, title, 0, max_count - 2);
+			count = max_count - 2;
+			if (open_choujiangu) {
+				title[count++] = GmudData.map_name[max_count - 2];
+			}
+			if (open_taohuayuan) {
+				title[count++] = GmudData.map_name[max_count - 1];
+			}
+		} else {
+			count = max_count;
+		}
 
 		// 让玩家选择目标地图
-		UIUtils.ShowMenu(GmudData.map_name, GmudData.map_name.length, 4, 4, 4,
-				Video.SMALL_LINE_H * 4, MENUID_FLY);
+		UIUtils.ShowMenu(title, count, 4, 4, 4, Video.SMALL_LINE_H * 4,
+				MENUID_FLY);
 	}
 
 	static int FlyCallback(int index) {
+		// 隐藏未激活的地图:铸剑谷　桃花园
+		if (Gmud.sPlayer.lasting_tasks[2] == 0) {
+			final int max_count = GmudData.fly_dest_map.length;
+			if (index == max_count - 2) {
+				index = max_count - 1;
+			}
+		}
+		
 		int map_id = GmudData.fly_dest_map[index]; // read map
 		Gmud.sMap.LoadMap(map_id);
 		// Gmud.sMap.m_stack_pointer = 0;
