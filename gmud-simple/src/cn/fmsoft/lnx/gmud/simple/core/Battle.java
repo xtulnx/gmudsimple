@@ -648,6 +648,7 @@ class Battle {
 			fighter_data[1][46 + i * 2 + 1] = NPC.GetNPCSkillLevel(npc_id,
 					skill_id);
 		}
+		CalcFighterLevel(1);
 	}
 
 	/**
@@ -1170,7 +1171,7 @@ class Battle {
 		int level_gap = data[62] - data_rival[62];
 
 		int gap = agility_gap + 50 + level_gap + exp_gap;
-		if (gap < 1) {
+		if (gap < 10) {
 			gap = 10;
 		} else if (gap > 95) {
 			gap = 95;

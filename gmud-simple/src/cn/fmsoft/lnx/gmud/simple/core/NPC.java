@@ -1,6 +1,7 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
 public class NPC {
+	/** {@link NPCINFO#NPC_attribute} */
 	static int NPC_attrib[][] = new int [180][18];
 
 	// [180]

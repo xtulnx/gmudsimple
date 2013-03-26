@@ -191,99 +191,62 @@ public class uibattle {
 	}
 
 	/** 战斗菜单 */
-	static void Main()
-	{
-		DrawMain();
-		Video.VideoUpdate();
-		Gmud.GmudDelay(100);
-		while (true)
-		{
+	static void Main() {
+		boolean update = true;
+		Input.ClearKeyStatus();
+		while (true) {
 			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyLeft)!=0)  //left
-			{
-				if (menu_id == 0)
-					menu_id = 5;
-				else
+			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+				if (menu_id > 0)
 					menu_id--;
-				DrawMain();
-				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-			} else
-			if ((Input.inputstatus & Input.kKeyRight)!=0)    //right
-			{
-				if (menu_id == 5)
-					menu_id = 0;
-				else
+				else 
+					menu_id = 5;
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+				if (menu_id < 5)
 					menu_id++;
-				DrawMain();
-				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-			} else
-			if ((Input.inputstatus & Input.kKeyExit)!=0)  //esc
-			{
+				else
+					menu_id = 0;
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
 				menu_id = 0;
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+				if (menu_id == 0) { // "普通攻击",
+					Battle.sBattle.PhyAttack(false);
+					break;
+				} else if (menu_id == 1) { // "绝招攻击"
+					int i1 = MagicMenu();
+					update = true;
+					if (i1 > 0)
+						break;
+				} else if (menu_id == 2) { // "使用内力"
+					UseFPMenu();
+					update = true;
+				} else if (menu_id == 3) { // "使用物品"
+					UI.PlayerItem();
+					update = true;
+				} else if (menu_id == 4) { // "调整招式"
+					UI.PlayerSkill();
+					update = true;
+				} else if (menu_id == 5) { // "逃跑"
+					if (Battle.sBattle.CalcAct()) {
+						Battle.sBattle.bEscape = true;
+						// Battle.sBattle.b_int_static = -1;
+					} else {
+						Battle.sBattle.b(2, 36, 1);
+					}
+					break;
+				}
+			}
+			if (update) {
+				update = false;
 				DrawMain();
 				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
 			}
-			else
-			if ((Input.inputstatus & Input.kKeyEnt)!=0)   //enter
-			{
-				if (menu_id == 0)  //"普通攻击",
-				{
-					Battle.sBattle.PhyAttack(false);
-					Input.ClearKeyStatus();
-					return;
-				}
-				if (menu_id == 1)  // "绝招攻击"
-				{
-					int i1 = MagicMenu();
-					DrawMain();
-					Video.VideoUpdate();
-					Input.ClearKeyStatus();
-					Gmud.GmudDelay(80);
-					if (i1 > 0)
-						return;
-				} else
-				if (menu_id == 2)  //"使用内力"
-				{
-					UseFPMenu();
-					DrawMain();
-					Video.VideoUpdate();
-					Input.ClearKeyStatus();
-					Gmud.GmudDelay(50);
-				} else
-				if (menu_id == 3)  //"使用物品"
-				{
-					UI.PlayerItem();
-					DrawMain();
-					Video.VideoUpdate();
-					Gmud.GmudDelay(80);
-				} else
-				if (menu_id == 4)  //"调整招式"
-				{
-					UI.PlayerSkill();
-					DrawMain();
-					Video.VideoUpdate();
-					Gmud.GmudDelay(80);
-				} else
-				if (menu_id == 5)  //"逃跑"
-				{
-					if (Battle.sBattle.CalcActOrder() == 0)
-					{
-						Battle.sBattle.b(2, 36, 1);
-						Input.ClearKeyStatus();
-						return;
-					}
-					Battle.sBattle.bEscape = true;
-					//Battle.sBattle.b_int_static = -1;
-					Input.ClearKeyStatus();
-					return;
-				}
-			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			Gmud.GmudWaitAnyKey();
 		}
+		Input.ClearKeyStatus();
 	}
 
 	/**
@@ -328,61 +291,69 @@ public class uibattle {
 		}
 	}
 
-	static void DrawMain()
-	{
+	static void DrawMain() {
 		Video.VideoClear();
-		int l;
-		int i = l = 12;
-		int i1 = Battle.sBattle.m_player_id==0?1:0;
-		l = (l += 16 + 2) + 12 * 5;
-		int j1;
-		if ((j1 = 80 - l) > 0)
-			j1 /= 2;
-		else
-			j1 = 0;
-		int k1 = (160 - 8) / 2 + 30;
-		Video.VideoDrawStringSingleLine(Battle.sBattle.m_player_name/*.c_str()*/, 4, j1);
-		Video.VideoDrawStringSingleLine(Battle.sBattle.m_npc_name/*.c_str()*/, k1, j1);
-		j1 += i + 2;
-		if (hit_id == Battle.sBattle.m_player_id)
-			Video.VideoDrawImage(hit_img, 18, j1);    //draw hit
-		else
-			Video.VideoDrawImage(player_img, 18, j1);
-		if (hit_id == i1)
-			Video.VideoDrawImage(hit_img, k1 + 10, j1);   //draw hit
-		else
-			Video.VideoDrawImage(NPC_img, k1 + 10, j1);
-		hit_id = -1;
-		j1 += 19;
-		Video.VideoDrawImage(hp_img, 4, j1);
-		int l1 = 4 + 20;
-		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][1], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][2], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][3], l1, j1 + 4, true);
-		DrawHPRect(Battle.sBattle.fighter_data[i1][1], Battle.sBattle.fighter_data[i1][2], Battle.sBattle.fighter_data[i1][3], k1 + 2, j1 + 4, false);
-		j1 += 16;
-		Video.VideoDrawImage(fp_img, 4, j1);
-		DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][4], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][5], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][5], l1, j1 + 4, true);
-		DrawHPRect(Battle.sBattle.fighter_data[i1][4], Battle.sBattle.fighter_data[i1][5], Battle.sBattle.fighter_data[i1][5], k1 + 2, j1 + 4, false);
-		j1 += 16;
-		if(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][42] != 255)
-		{
-			Video.VideoDrawImage(mp_img, 4, j1);
-			DrawHPRect(Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][6], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][7], Battle.sBattle.fighter_data[Battle.sBattle.m_player_id][7], l1, j1 + 4, true);
-			j1 += 16;
-		}
-		//u.a(0);
-		int i2 = 61;
-		int j2 = 50;
-		for (int k2 = 0; k2 < 6; k2++)
-			if (k2 == menu_id)
-			{
-				Video.VideoFillRectangle(j2 + k2 * 8, i2, 7, 7);
-				Video.VideoDrawStringSingleLine(menu_title[k2], j2 - 2, i2 + 7);
-			} else
-			{
-				Video.VideoDrawRectangle(j2 + k2 * 8, i2, 6, 6);
-			}
-	}
 
+		final int id_player = Battle.sBattle.m_player_id;
+		final int id_rival = (id_player == 0) ? 1 : 0;
+		final int x = 4;
+		final int x_npc = (160 - 8) / 2 + 30;
+		int y = 0;
+
+		// draw name
+		Video.VideoDrawStringSingleLine(Battle.sBattle.m_player_name, x, y);
+		Video.VideoDrawStringSingleLine(Battle.sBattle.m_npc_name, x_npc, y);
+		y += Video.SMALL_LINE_H + 1;
+
+		// draw image
+		Video.VideoDrawImage(hit_id == id_player ? hit_img : player_img,
+				x + 10, y);
+		Video.VideoDrawImage(hit_id == id_rival ? hit_img : NPC_img,
+				x_npc + 10, y);
+		hit_id = -1;
+		y += 19;
+
+		final int[] data_player = Battle.sBattle.fighter_data[id_player];
+		final int[] data_rival = Battle.sBattle.fighter_data[id_rival];
+		final int x_r = x + 20;
+
+		// draw HP
+		Video.VideoDrawImage(hp_img, x, y);
+		DrawHPRect(data_player[1], data_player[2], data_player[3], x_r, y + 4,
+				true);
+		DrawHPRect(data_rival[1], data_rival[2], data_rival[3], x_npc + 2,
+				y + 4, false);
+		y += 16;
+
+		// draw FP
+		Video.VideoDrawImage(fp_img, x, y);
+		DrawHPRect(data_player[4], data_player[5], data_player[5], x_r, y + 4,
+				true);
+		DrawHPRect(data_rival[4], data_rival[5], data_rival[5], x_npc + 2,
+				y + 4, false);
+		y += 16;
+
+		// draw MP
+		if (data_player[42] != 255) {
+			Video.VideoDrawImage(mp_img, x, y);
+			DrawHPRect(data_player[6], data_player[7], data_player[7], x_r,
+					y + 4, true);
+			y += 16;
+		}
+
+		// u.a(0);
+
+		final int t_y = 61;
+		final int t_x = 50;
+		for (int i = 0; i < 6; i++) {
+			if (i == menu_id) {
+				Video.VideoFillRectangle(t_x + i * 8, t_y, 7, 7);
+				Video.VideoDrawStringSingleLine(menu_title[i], t_x - 2, t_y + 7);
+			} else {
+				Video.VideoDrawRectangle(t_x + i * 8, t_y, 6, 6);
+			}
+		}
+	}
 	
 	/**
 	 * 描述过招内容
@@ -506,115 +477,101 @@ public class uibattle {
 		Video.VideoUpdate();
 	}
 
-	static void DrawMagicMenu(int i, int l, int i1)
-	{
-		int j1 = Gmud.WQX_ORG_WIDTH / 2 - 84 - 4;
-		if (j1 <= 0)
-			j1 = 10;
-		int k1 = 12;
-		int l1 = ( k1 + (16 + 2)) + 12 * 5;
-		int i2= Gmud.WQX_ORG_WIDTH /2 - l1;
-		if (i2 > 0)
-			i2 /= 2;
-		else
-			i2 = 0;
-		i2 += 12 + 16 + 16;
-		int j2 = 13;
-		int k2 = j2 * 6 + 8;
-		int l2 = k1 + 4;
-		if (Battle.sBattle.a_int_array2d_static[i][l + 1] >= 0 && Battle.sBattle.a_int_array2d_static[i][l + 1] < 39)
-			l2 += k1;
-		Video.VideoClearRect(j1, i2, k2, l2);
-		Video.VideoDrawRectangle(j1, i2, k2, l2);
-		int j3;
-		for (int i3 = 0; i3 < 2 && (j3 = Battle.sBattle.a_int_array2d_static[i][l + i3]) >= 0; i3++)
-		{
-			if (j3 > 38)
-				return;
-			Video.VideoDrawStringSingleLine(Magic.MAGIC_NAME[j3], j1 + 18, i2 + 1 + i3 * (k1 + 1));
-			if (i3 == i1)
-				UI.DrawCursor(j1 + (j2 - 8) / 2, i2 + i3 * (k1 + 1) + (k1 - 9) / 2);
+	/**
+	 * 绘制　大招　列表，最多２行
+	 * 
+	 * @param id_active
+	 * @param top
+	 * @param sel
+	 */
+	static void DrawMagicMenu(int id_active, int top, int sel) {
+		final int[] data = Battle.sBattle.a_int_array2d_static[id_active];
+		final int lineH = Video.SMALL_LINE_H;
+		final int w = lineH * 6 + 2;
+		final int h;
+		if (data[top + 1] >= 0 && data[top + 1] < 39) {
+			h = Video.SMALL_LINE_H * 2;
+		} else {
+			h = Video.SMALL_LINE_H;
+		}
+		int x = 10;
+		int y = lineH * 3 + lineH / 2;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		UI.DrawCursor(x + (lineH - 7) / 2, y + sel * lineH + (lineH - 11) / 2);
+		x += lineH;
+		for (int i = 0; i < 2; i++) {
+			final int magic_id = data[top + i];
+			if (magic_id < 0 || magic_id > 38)
+				break;
+			Video.VideoDrawStringSingleLine(Magic.MAGIC_NAME[magic_id], x, y);
+			y += lineH;
 		}
 	}
 
-	static int MagicMenu()
-	{
-		int l = 0;
-		int i1 = 0;
-		int j1;
-		Magic.Effect(j1 = Battle.sBattle.m_player_id);
-		int k1 = Battle.sBattle.CountMagicEffect(j1);
-		if (k1 < 1)  //get Battle skill number
+	/**
+	 * 大招菜单
+	 * 
+	 * @return 0没有使用任何招式 1已成功使用招式
+	 */
+	static int MagicMenu() {
+		final int id_active = Battle.sBattle.m_player_id;
+		Magic.Effect(id_active);
+		final int count = Battle.sBattle.CountMagicEffect(id_active);
+		if (count < 1)
 			return 0;
-		DrawMagicMenu(Battle.sBattle.m_player_id, 0, 0);
-		Video.VideoUpdate();
+		int top = 0;
+		int sel = 0;
+		boolean update = true;
 		Input.ClearKeyStatus();
-		Gmud.GmudDelay(150);
-		while(true)
-		{
+		while (true) {
 			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp)!=0)  //UP
-			{	//goto label1;
-				if (i1 <= 0)
-				{
-					if (l > 0)
-					{
-						l--;
-						Input.ClearKeyStatus();
-						continue;
-					}
-					if ((l = k1 - 2) < 0)
-						l = 0;
-					if (k1 >= 2)
-					{
-						i1 = 1;
-						Input.ClearKeyStatus();
-						continue;
-					}
+			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+				if (sel > 0)
+					sel--;
+				else if (top > 0)
+					top--;
+				else if (count > 2) {
+					top = count - 2;
+					sel = 1;
+				} else {
+					top = 0;
+					sel = count - 1;
 				}
-				i1 = 0;
-				DrawMagicMenu(Battle.sBattle.m_player_id, l, i1);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(50);
-				continue;
-			}
-				if ((Input.inputstatus & Input.kKeyDown)!=0)   //down 
-				{
-					if (i1 < 1 && l + i1 < k1 - 1)
-						i1 = 1;
-					else
-					if (l < k1 - 2)
-					{
-						l++;
-					} else
-					{
-						l = 0;
-						i1 = 0;
-					}
-					DrawMagicMenu(Battle.sBattle.m_player_id, l, i1);
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+				if (sel + top + 1 >= count) {
+					sel = 0;
+					top = 0;
+				} else if (sel < 1)
+					sel++;
+				else
+					top++;
+				update = true;
+			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+				int magic_id = Battle.sBattle.a_int_array2d_static[id_active][top
+						+ sel];
+				String s = Magic.UseMagic(magic_id);
+				if (s.length() == 0) {
+					return 1;
+				} else {
+					UI.DrawStringFromY(s, 660);
 					Video.VideoUpdate();
-					Gmud.GmudDelay(50);
-				} else
-				{
-					int l1;
-					String s;
-					if ((Input.inputstatus & Input.kKeyEnt)!=0)  //enter
-						if ((s = Magic.UseMagic(l1 = Battle.sBattle.a_int_array2d_static[Battle.sBattle.m_player_id][l + i1])).length() == 0)
-						{
-							return 1;
-						} else
-						{
-							UI.DrawStringFromY(s, 660);
-							Video.VideoUpdate();
-							Gmud.GmudDelay(1200);
-							return 0;
-						}
-					if ((Input.inputstatus & Input.kKeyExit)!=0)  //Esc
-						return 0;
+					Gmud.GmudDelay(1200);
+					break;
 				}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+				break;
+			}
+
+			if (update) {
+				update = false;
+				DrawMagicMenu(id_active, top, sel);
+				Video.VideoUpdate();
+			}
+			Gmud.GmudWaitNewKey(Input.kKeyDown | Input.kKeyUp | Input.kKeyEnt
+					| Input.kKeyExit);
 		}
+		return 0;
 	}
 }
