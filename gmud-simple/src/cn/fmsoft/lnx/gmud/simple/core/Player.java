@@ -18,8 +18,13 @@ public class Player {
 
 	static final int AGE_TIME = 240;
 
+	/** 物品列表的最多数量 */
+	static final int MAX_ITEM_SIZE = 32;
+	/** 技能列表的最多数量 */
+	static final int MAX_SKILL_SIZE = 32;
+
 	int image_id; // 人物形象
-	int sex; // 性别
+	int sex; // 性别 0男 1女
 	int hp, hp_max, hp_full; // 生命
 	int fp, fp_level, fp_plus; // 内力
 	int mp, mp_level, mp_plus; // 魔法
@@ -40,7 +45,7 @@ public class Player {
 	 * .[][0]:技能ID[0,53] .[][1]:技能等级 .[][2]:已学习的点数 .[][3]:未知
 	 * .[][4]:当前级别技能提升技能的点数=(Level+1)*(Level+1)/(GetSavvy()*2*10 + Rnd(16))
 	 */
-	int skills[][] = new int[32][5];
+	int skills[][] = new int[MAX_SKILL_SIZE][5];
 
 	int lasting_tasks[] = new int[40];
 
@@ -55,7 +60,7 @@ public class Player {
 	int select_skills[] = new int[8];
 
 	/** (size:32,3) [0]:ID [1]:是否已装备 [2]:数量 */
-	int item_package[][] = new int[32][3];
+	int item_package[][] = new int[MAX_ITEM_SIZE][3];
 
 	// byte player_name[] = new byte[16];
 	// char weapon_name[] = new char[16]; // wchar_t
@@ -160,11 +165,12 @@ public class Player {
 				.putInt("unknow1", unknow1)
 				.putInt("unknow2", unknow2)
 				.putInt("unknow3", unknow3)
-				.putString("skills", intArray2String(skills, 32, 5))
+				.putString("skills", intArray2String(skills, MAX_SKILL_SIZE, 5))
 				.putString("lasting_tasks", intArray2String(lasting_tasks, 40))
 				.putString("equips", intArray2String(equips, 16))
 				.putString("select_skills", intArray2String(select_skills, 8))
-				.putString("item_package", intArray2String(item_package, 32, 3))
+				.putString("item_package",
+						intArray2String(item_package, MAX_ITEM_SIZE, 3))
 				.putLong("played_time", played_time);
 
 		editor.putString("key", "lnx");
@@ -216,14 +222,15 @@ public class Player {
 		unknow2 = preferences.getInt("unknow2", unknow2);
 		unknow3 = preferences.getInt("unknow3", unknow3);
 
-		String2IntArray(preferences.getString("skills", ""), skills, 32, 5);
+		String2IntArray(preferences.getString("skills", ""), skills,
+				MAX_SKILL_SIZE, 5);
 		String2IntArray(preferences.getString("lasting_tasks", ""),
 				lasting_tasks, 40);
 		String2IntArray(preferences.getString("equips", ""), equips, 16);
 		String2IntArray(preferences.getString("select_skills", ""),
 				select_skills, 8);
 		String2IntArray(preferences.getString("item_package", ""),
-				item_package, 32, 3);
+				item_package, MAX_ITEM_SIZE, 3);
 		played_time = preferences.getLong("played_time", played_time);
 
 		GmudTemp.ClearAllData();
@@ -240,7 +247,7 @@ public class Player {
 
 		image_id = sex = class_id = teacher_id = 0;
 		bliss = married = unknow1 = unknow2 = unknow3 = 0;
-		
+
 		// 测试：随机初始化的面貌
 		face_level = (int) (Math.random() * 12);
 
@@ -250,12 +257,12 @@ public class Player {
 		int i;
 		for (i = 0; i < 16; i++)
 			equips[i] = 0;
-		for (i = 1; i < 32; i++)
+		for (i = 1; i < MAX_ITEM_SIZE; i++)
 			item_package[i][0] = item_package[i][1] = item_package[i][2] = 0;
 
 		for (i = 0; i < 8; i++)
 			select_skills[i] = 255;
-		for (i = 0; i < 32; i++) {
+		for (i = 0; i < MAX_SKILL_SIZE; i++) {
 			skills[i][0] = 255;
 			skills[i][1] = skills[i][2] = skills[i][3] = skills[i][4] = 0;
 		}
@@ -292,7 +299,7 @@ public class Player {
 		}
 
 		// skill--
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_SKILL_SIZE; i++) {
 			if (skills[i][0] == 255 || skills[i][1] == 0)
 				continue;
 			--skills[i][1];
@@ -352,7 +359,7 @@ public class Player {
 	int GetSkillLevel(int id) {
 		if (id > 53 || id < 0)
 			return 0;
-		for (int j = 0; j < 32; j++) {
+		for (int j = 0; j < MAX_SKILL_SIZE; j++) {
 			final int skill_id = skills[j][0];
 			if (skill_id >= 0 && skill_id <= 53 && skill_id == id)
 				return skills[j][1];
@@ -365,7 +372,7 @@ public class Player {
 	 */
 	int GetSkillNumber() {
 		int c = 0;
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < MAX_SKILL_SIZE; i++)
 			if (skills[i][0] != 255)
 				c++;
 		return c;
@@ -429,7 +436,7 @@ public class Player {
 	int GetSkillAverageLevel() {
 		int count = 0;
 		int sum_level = 0;
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < MAX_SKILL_SIZE; i++)
 			if (skills[i][0] != 255) {
 				count++;
 				sum_level += skills[i][1];
@@ -456,7 +463,7 @@ public class Player {
 	 */
 	int SetFaceLevel() {
 		int i = GetSkillLevel(10) / 15 + GetSkillLevel(26) / 15 + face_level;
-		return (i > 12) ? 12 : i;
+		return (i > 13) ? 13 : i;
 	}
 
 	/**
@@ -466,10 +473,8 @@ public class Player {
 	int GetFaceLevel() {
 		if (GetAge() < 2)
 			return -1;
-		if (face_level > 13)
-			return 13;
-		else
-			return face_level;
+
+		return SetFaceLevel();
 	}
 
 	/**
@@ -477,12 +482,12 @@ public class Player {
 	 * @return 加力max
 	 */
 	int GetPlusFPMax() {
-		int i1 = GetSkillLevel(0);
-		if (0 == i1) {
+		int base_level = GetSkillLevel(0);
+		if (0 == base_level) {
 			return 0;
 		} else {
-			int j1 = GetSkillLevel(select_skills[3]);
-			return (i1 / 2 + j1) / 2;
+			int skill_level = GetSkillLevel(select_skills[3]);
+			return (base_level / 2 + skill_level) / 2;
 		}
 	}
 
@@ -493,12 +498,12 @@ public class Player {
 	 */
 	int GetPlusMPMax() {
 		// "基本法术"
-		int level = GetSkillLevel(4);
-		if (0 == level) {
+		int base_level = GetSkillLevel(4);
+		if (0 == base_level) {
 			return 0;
 		} else {
-			int j1 = GetSkillLevel(select_skills[6]);
-			return (level / 2 + j1) / 2;
+			int skill_level = GetSkillLevel(select_skills[6]);
+			return (base_level / 2 + skill_level) / 2;
 		}
 	}
 
@@ -510,68 +515,71 @@ public class Player {
 		return equips[15];
 	}
 
-	/**
-	 * 
-	 * @return 后天膂力
-	 */
+	/** 后天膂力 */
 	int GetForce() {
-		int i1 = GetSkillLevel(1);
+		int base_level = GetSkillLevel(1);
+
+		// 加上自制武器的属性
 		int j1 = 0;
 		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 4
 				&& equips[15] == 77)
 			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */; // 自制武器加成，下同
-		return i1 / 10 + pre_force + j1;
+
+		return base_level / 10 + pre_force + j1;
 	}
 
-	/**
-	 * 
-	 * @return 敏捷
-	 */
+	/** 敏捷 */
 	int GetAgility() {
-		int i1 = GetSkillLevel(7);
+		int base_level = GetSkillLevel(7);
+
+		// 加上自制武器的属性
 		int j1 = 0;
 		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 3
 				&& equips[15] == 77)
 			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
-		return i1 / 10 + pre_agility + j1;
+
+		return base_level / 10 + pre_agility + j1;
 	}
 
-	/**
-	 * 
-	 * @return 悟性
-	 */
+	/** 悟性 */
 	int GetSavvy() {
-		int i1 = GetSkillLevel(9);
+		int base_level = GetSkillLevel(9);
+
+		// 加上自制武器的属性
 		int j1 = 0;
 		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 6
 				&& equips[15] == 77)
 			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
-		return i1 / 10 + pre_savvy + j1;
+
+		return base_level / 10 + pre_savvy + j1;
 	}
 
-	// 根骨
+	/** 根骨 */
 	int GetAptitude() {
-		int i1 = GetSkillLevel(0);
+		int base_level = GetSkillLevel(0);
+
+		// 加上自制武器的属性
 		int j1 = 0;
 		if (lasting_tasks[9] != 0 && lasting_tasks[8] / 256 == 5
 				&& equips[15] == 77)
 			j1 = 20 - (lasting_tasks[8] & 3) * 5/* Items.item_attribs[77][4] */;
-		return i1 / 10 + pre_aptitude + j1;
+
+		return base_level / 10 + pre_aptitude + j1;
 	}
 
-	// 婚姻
+	/** 婚姻 */
 	String GetConsortName() {
 		final String str;
 		if (null == consort_name) {
 			if (0 == sex)
-				str = "你还是光棍一条";
+				str = Res.STR_CONSORT_NONE_M;
 			else
-				str = "你还待字闺中";
+				str = Res.STR_CONSORT_NONE_F;
 		} else {
 			if (0 == sex) {
-				str = "你老婆是" + consort_name;
+				str = String.format(Res.STR_CONSORT_IS_M, consort_name);
 			} else {
-				str = "你老公是" + consort_name;
+				str = String.format(Res.STR_CONSORT_IS_F, consort_name);
 			}
 		}
 		return str;
@@ -583,13 +591,12 @@ public class Player {
 	 * @param id
 	 */
 	void SetSkillUpgrate(int id) {
-		int j1 = skills[id][1] + 1;
-		int k1;
-		if ((k1 = (((j1 + 1) * (j1 + 1)) / GetSavvy()) * 2 * 10) < 10)
-			k1 = 10 + util.RandomInt(16);
-		else
-			k1 += util.RandomInt(16);
-		skills[id][4] = k1;
+		int level = skills[id][1] + 1;
+		int point = (((level + 1) * (level + 1)) / GetSavvy()) * 2 * 10;
+		if (point < 10)
+			point = 10;
+		point += util.RandomInt(16);
+		skills[id][4] = point;
 		// skills[id][2] = 0;
 	}
 
@@ -602,37 +609,35 @@ public class Player {
 		attack += fp_plus;
 		if (attack > 5 * 20)
 			return 5;
-		return attack / 20;
+		return (attack) / 20;
 	}
 
 	// 打坐速度
 	int GetFPSpeed() {
-		int i1 = GetSkillLevel(0);
-		int j1;
-		int k1 = GetSkillLevel(j1 = select_skills[3]);
-		int l1 = GetAptitude();
-		int i2;
-		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本内功/20 + 门派内功/20 + 后天根骨
-														// / 5
-			i2 = 1;
-		if (i2 > 60)
-			i2 = 60;
-		return i2;
+		final int base_level = GetSkillLevel(0);
+		final int skill_level = GetSkillLevel(select_skills[3]);
+		final int aptitude = GetAptitude();
+		// 基本内功/20 + 门派内功/10 + 后天根骨/5
+		int speed = (base_level / 2 + skill_level) / 10 + aptitude / 5;
+		if (speed <= 0)
+			speed = 1;
+		if (speed > 60)
+			speed = 60;
+		return speed;
 	}
 
 	// 冥思速度
 	int GetMPSpeed() {
-		int i1 = GetSkillLevel(4);
-		int j1;
-		int k1 = GetSkillLevel(j1 = select_skills[6]);
-		int l1 = GetSavvy();
-		int i2;
-		if ((i2 = (i1 / 2 + k1) / 10 + l1 / 5) <= 0) // 基本法术/20 + 选择法术/10 + 后天悟性
-														// / 5
-			i2 = 1;
-		if (i2 > 60)
-			i2 = 60;
-		return i2;
+		final int base_level = GetSkillLevel(4);
+		final int skill_level = GetSkillLevel(select_skills[6]);
+		final int savvy = GetSavvy();
+		// 基本法术/20 + 选择法术/10 + 后天悟性/5
+		int speed = (base_level / 2 + skill_level) / 10 + savvy / 5;
+		if (speed <= 0)
+			speed = 1;
+		if (speed > 60)
+			speed = 60;
+		return speed;
 	}
 
 	/** 学习速度 */
@@ -695,7 +700,7 @@ public class Player {
 
 	/** 检查是否存在id物品有num个，返回 背包索引，如果不存在物品或数量不够，返回-1 */
 	int ExistItem(int item_id, int num) {
-		for (int index = 0; index < 32; index++)
+		for (int index = 0; index < MAX_ITEM_SIZE; index++)
 			if (item_package[index][0] == item_id
 					&& item_package[index][2] >= num)
 				return index;
@@ -715,7 +720,7 @@ public class Player {
 			return false;
 		// item 可叠加
 		if (Items.item_repeat[item_id] > 0) {
-			for (int i = 0; i < 32; i++) {
+			for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 				if (item_package[i][0] == item_id && item_package[i][2] < 255) {
 					item_package[i][2]++;
 					return true;
@@ -723,7 +728,7 @@ public class Player {
 			}
 		}
 		// 找个空位添加物品
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 			if (item_package[i][0] == 0) {
 				item_package[i][0] = item_id;
 				item_package[i][1] = 0;
@@ -737,7 +742,7 @@ public class Player {
 	}
 
 	void LoseOneItem(int item_id) {
-		for (int index = 0; index < 32; index++)
+		for (int index = 0; index < MAX_ITEM_SIZE; index++)
 			if (item_package[index][0] == item_id)
 				DeleteOneItem(index);
 	}
@@ -754,13 +759,13 @@ public class Player {
 		int index = -1;
 
 		// TODO: 其实应该不用下面的循环，待分析 @lnx
-		if (0 <= package_index && package_index < 32) {
+		if (0 <= package_index && package_index < MAX_ITEM_SIZE) {
 			// 转成ID
 			package_index = item_package[package_index][0];
 		}
 
 		// 根据物品ID找最后一个
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 			if (item_package[i][0] != package_index)
 				continue;
 			// 又找到了物品，并且没有被【已装备】
@@ -1014,7 +1019,7 @@ public class Player {
 			return;
 
 		// 将背包中物品去掉【已装备】的标志
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 			if (item_package[i][0] == item_id && item_package[i][1] != 0) {
 				item_package[i][1] = 0;
 				break;
@@ -1045,7 +1050,7 @@ public class Player {
 		if (item_id == 0)
 			return;
 
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 			if (item_package[i][0] == item_id && item_package[i][1] != 0) {
 				// 刪除【已装备】的标记
 				item_package[i][1] = 0;
@@ -1058,7 +1063,7 @@ public class Player {
 
 	int CopyItemList() {
 		int top = 0;
-		for (int i = 0; i < 32; i++) {
+		for (int i = 0; i < MAX_ITEM_SIZE; i++) {
 			if (item_package[i][0] != 0 && item_package[i][1] == 0) {
 				GmudTemp.temp_array_32_2[top][0] = item_package[i][0];
 				GmudTemp.temp_array_32_2[top][1] = item_package[i][2];
@@ -1077,7 +1082,7 @@ public class Player {
 	int AddNewSkill(int id) {
 		if (GetSkillLevel(id) > 0)
 			return SetNewSkill(id);
-		for (int j1 = 0; j1 < 32; j1++)
+		for (int j1 = 0; j1 < MAX_SKILL_SIZE; j1++)
 			if (skills[j1][0] == 255) {
 				skills[j1][0] = id;
 				skills[j1][1] = 1;
@@ -1101,12 +1106,12 @@ public class Player {
 		if (skill_id < 0 || skill_id > 53)
 			return -1;
 
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < MAX_SKILL_SIZE; i++)
 			if (skills[i][0] >= 0 && skills[i][0] <= 53
 					&& skills[i][0] == skill_id)
 				return i;
 
-		for (int i = 0; i < 32; i++)
+		for (int i = 0; i < MAX_SKILL_SIZE; i++)
 			if (skills[i][0] > 53) {
 				skills[i][0] = skill_id;
 				skills[i][1] = 0;
@@ -1189,164 +1194,145 @@ public class Player {
 	/**
 	 * 练功
 	 * 
-	 * @param id
+	 * @param index
 	 *            技能的序号
 	 * @return 0 正常学习 1 很难提高，需要向师傅请教 2 需要提升内功 3 打坐不够 4 没有趁手兵器 5 有伤 6 升级
 	 */
-	int PracticeSkill(int id) {
+	int PracticeSkill(int index) {
 
 		// 要先疗伤
 		if (hp_full != hp_max)
 			return 5;
 
 		// 计算基本功的等级
-		final int k1;
+		final int base_level;
 
-		final int j1 = skills[id][0]; // 实际技能ID
-		if (j1 == select_skills[2]) {
+		final int skill_id = skills[index][0]; // 实际技能ID
+		if (skill_id == select_skills[2]) {
 			// 如果是已选择的轻功
-			k1 = GetSkillLevel(7);
+			base_level = GetSkillLevel(7);
 		} else {
-			final int l1 = Skill.skill_weapon_type[j1];
-			switch (l1) {
-			case 0: // 拳脚类
-				k1 = GetSkillLevel(1);
-				break;
-
-			case 1: // 刀法类
-				k1 = GetSkillLevel(3);
-				break;
-
-			case 6: // 剑法类
-				k1 = GetSkillLevel(2);
-				break;
-
-			case 7: // 杖法类
-				k1 = GetSkillLevel(5);
-				break;
-
-			case 9: // 鞭法类
-				k1 = GetSkillLevel(6);
-				break;
-			default:
-				k1 = 0;
-				break;
-			}
-
-			// 检查武器
-			if (l1 > 0) {
-				int i2 = GetWeaponID();
-				int j2 = Items.item_attribs[i2][1];
-				if (j2 != l1)
+			final int weapon_type = Skill.skill_weapon_type[skill_id];
+			if (weapon_type == 0) {
+				// 拳脚类
+				base_level = GetSkillLevel(1);
+			} else {
+				// 检查武器
+				final int weapon_id = GetWeaponID();
+				if (weapon_id <= 0 || weapon_id > 92
+						|| weapon_type != Items.item_attribs[weapon_id][1])
 					return 4;
+
+				// 计算武器类基本功的等级
+				final int base_skill_weapon = Skill.weapon_to_base_skill[weapon_type];
+				if (base_skill_weapon != 255) {
+					base_level = GetSkillLevel(base_skill_weapon);
+				} else {
+					base_level = 0;
+				}
 			}
 		}
 
 		// 已超过基本功
-		int k2;
-		if ((k2 = skills[id][1]) > k1)
+		int skill_level = skills[index][1];
+		if (skill_level > base_level)
 			return 1;
 
-		// 查检内功修为是否足够
-		int l2 = GetSkillLevel(0);
-		int i3;
-		int j3;
-		if ((i3 = select_skills[3]) == 255)
-			j3 = 0;
-		else
-			j3 = GetSkillLevel(i3);
-		int k3 = l2 / 2 + j3; // (基本内功/2 + 门派内功)
-		if (k2 > k3)
+		// 检查内功修为是否足够 (基本内功/2 + 门派内功)
+		int k3 = GetSkillLevel(0) / 2 + GetSkillLevel(select_skills[3]);
+		if (skill_level > k3)
 			return 2;
 
+		// 检查内力等级是否足够
 		int l3 = k3 * 10;
 		if (class_id == 8)
 			l3 += exp / 1000;
-		int i4;
-		if ((i4 = ((k2 + 1) * ((l3 * 1000) / k3)) / 1000) > fp_level)
+		int i4 = ((skill_level + 1) * ((l3 * 1000) / k3)) / 1000;
+		if (i4 > fp_level)
 			return 3;
 
-		int j4;
-		if ((j4 = skills[id][4]) <= 0)
-			SetSkillUpgrate(id);
+		if (skills[index][4] <= 0)
+			SetSkillUpgrate(index);
 
-		int k4;
-		if ((k4 = skills[id][2]) > skills[id][4]) {
-			skills[id][2] = skills[id][4];
+		int k4 = skills[index][2];
+		if (k4 > skills[index][4]) {
+			skills[index][2] = skills[index][4];
 			return 0;
 		}
-		if (k4 == skills[id][4]) {
-			skills[id][2] = 0;
-			skills[id][4] = 0;
-			skills[id][1] += 1;
+		if (k4 == skills[index][4]) {
+			skills[index][2] = 0;
+			skills[index][4] = 0;
+			skills[index][1] += 1;
 			return 6;
 		} else {
-			k4 += 1 + k1 / 5 + GetSavvy() / 10;
-			skills[id][2] = k4;
+			k4 += 1 + base_level / 5 + GetSavvy() / 10;
+			skills[index][2] = k4;
 			return 0;
 		}
 	}
 
 	// 所学技能最高等级
 	int GetMaxSkillLevel() {
-		int i1 = 0;
-		for (int k1 = 0; k1 < 32; k1++) {
-			int j1;
-			if (skills[k1][0] != 255 && (j1 = skills[k1][1]) > i1)
-				i1 = j1;
+		int max_level = 0;
+		for (int i = 0; i < MAX_SKILL_SIZE; i++) {
+			int level = skills[i][1];
+			if (skills[i][0] != 255 && level > max_level)
+				max_level = level;
 		}
-		return i1;
+		return max_level;
 	}
 
-	// 吸气
+	/** 吸气 */
 	String Breathing() {
-		int i1 = GetSkillLevel(0);
-		if (255 == select_skills[3] || i1 == 0) {
+		final int base_level = GetSkillLevel(0);
+		final int skill_id = select_skills[3];
+		if (skill_id >= 255 || base_level <= 0) {
 			return Res.STR_NO_INNER_KONGFU_STRING;
 		}
 		if (hp >= hp_max) {
 			hp = hp_max;
-			return "你现在体力充沛.";
+			return Res.STR_BREATH_HEALTHFUL;
 		}
 		if (fp_level < 50 || fp < 50) {
-			return "你的内力不够.";
+			return Res.STR_BREATH_NEED_MORE_FP;
 		}
-		int j1;
-		if ((j1 = (hp_max - hp) * 2) > fp)
+		int j1 = (hp_max - hp) * 2;
+		if (j1 > fp)
 			j1 = fp;
 		fp -= j1;
 		hp += j1 / 2;
 		if (hp > hp_max)
 			hp = hp_max;
-		return "你深深吸了几口气,脸色看起来好多了.";
+		return Res.STR_BREATH_SUCCESS;
 	}
 
-	// 疗伤
+	/** 疗伤 */
 	String Recovery() {
-		int j1 = GetSkillLevel(0);
-		if (select_skills[3] == 255 || j1 == 0) {
+		final int base_leve = GetSkillLevel(0);
+		final int skill_id = select_skills[3];
+		if (skill_id >= 255 || base_leve <= 0) {
 			return Res.STR_NO_INNER_KONGFU_STRING;
 		}
-		if (hp_full == hp_max) {
-			return "你并没有受伤.";
+		if (hp_max >= hp_full) {
+			hp_max = hp_full;
+			return Res.STR_RECOVER_HEALTHFUL;
 		}
-		int i1 = 0;
-		int k1 = GetSkillLevel(select_skills[3]);
-		if ((i1 = j1 / 2 + k1) < 45) {
-			return "你运功良久,一抖衣袖,长叹一声站起身来.";
+		final int skill_level = GetSkillLevel(skill_id);
+		final int level = base_leve / 2 + skill_level;
+		if (level < 45) {
+			return Res.STR_RECOVER_KONGFU_LEVEL_TOO_LOW;
 		}
 		if (hp_max <= 0 || hp_full / hp_max > 4) {
-			return "你已经受伤过重,只怕一运真气就会有生命危险.";
+			return Res.STR_RECOVER_INJURED_TOO_HEAVY;
 		}
 		if (fp_level < 150 || fp < 150) {
-			return "你的真气不够,还不能用来疗伤.";
+			return Res.STR_RECOVER_NEED_MORE_FP;
 		}
 		fp -= 50;
-		int l1 = (i1 * 2) / 3;
-		hp_max += l1;
+		hp_max += (level * 2) / 3;
 		if (hp_max > hp_full)
 			hp_max = hp_full;
-		return "你摧动真气,脸上一阵红一阵白,哇的一声吐出一口淤血,脸色看起来好多了.";
+		return Res.STR_RECOVER_SUCCESS;
 	}
 
 	/**
@@ -1429,7 +1415,7 @@ public class Player {
 		i1++;
 		int k1 = 0;
 		int pos = 0;
-		for (int i2 = i1; i2 < 32; i2++) {
+		for (int i2 = i1; i2 < MAX_ITEM_SIZE; i2++) {
 			int item_id = item_package[i2][0];
 			if (item_id == 0 || item_id > 91)
 				continue;
@@ -1472,7 +1458,7 @@ public class Player {
 		int k1 = 0;
 		int pos = 0;
 		final int sel_skill_id = select_skills[type];
-		for (int i2 = i1; i2 < 32; i2++) {
+		for (int i2 = i1; i2 < MAX_SKILL_SIZE; i2++) {
 			final int skill_id = skills[i2][0];
 			if (skill_id < 0 || skill_id > 53)
 				continue;
@@ -1492,7 +1478,7 @@ public class Player {
 				k1 = i2;
 				continue;
 			}
-			if (pos < 32) {
+			if (pos < MAX_SKILL_SIZE) {
 				GmudTemp.temp_array_32_2[pos][0] = i2;
 				GmudTemp.temp_array_32_2[pos][1] = (sel_skill_id != skill_id ? 0
 						: 1);

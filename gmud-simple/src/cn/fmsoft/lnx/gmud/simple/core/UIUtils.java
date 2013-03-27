@@ -15,8 +15,9 @@ class UIUtils {
 	/** 指示器：圆圈 */
 	static int MENU_TYPE_CIRCLE = 2;
 
-	private static final int menu_indicator_size[] = new int[] { 7, 11, 5, 5,
-			6, 6 };
+	private static final int menu_indicator_size[] = new int[] { UI.CURSOR_W,
+			UI.CURSOR_H, UI.CURSOR_BOX_W, UI.CURSOR_BOX_W, UI.CURSOR_CIRCLE_R,
+			UI.CURSOR_CIRCLE_R };
 
 	/**
 	 * 竖向菜单

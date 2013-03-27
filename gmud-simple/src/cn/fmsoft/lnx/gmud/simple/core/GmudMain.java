@@ -276,6 +276,7 @@ public class GmudMain extends Thread {
 				map.KeyEnter();
 				map.DrawMap(-1);
 				Video.VideoUpdate();
+				Input.ClearKeyStatus();
 			} else if ((Input.inputstatus & Input.kKeyExit) != 0) // press Esc
 			{
 				Input.ClearKeyStatus();

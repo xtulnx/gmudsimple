@@ -544,29 +544,23 @@ public class task {
 			break;
 
 		case 156:    //月下老人
-			{
-				if(8 == Gmud.sPlayer.class_id)
-				{
-					String str = "茅山一派属方外之士，岂能再动凡心？";
-					UI.DrawDialog(str);
-					return;
-				}
-				if(6 > Gmud.sPlayer.GetAge())
-				{
-					String str = "这么嫩的小伢仔也要结婚？早恋可不好哟！";
-					UI.DrawDialog(str);
-					return;
-				}
-				if(0 == Gmud.sPlayer.lasting_tasks[6])
-				{
-					String str = "房子都没有就想结婚？我可不能眼看你们婚后露宿街头！";
-					UI.DrawDialog(str);
-					return;
-				}
-				String str = "请选择下列选项: 结婚: 1.求婚 2.允婚 离婚: 3.分道 4.扬镳";
-				UI.DrawDialog(str);
+		{
+			if (8 == Gmud.sPlayer.class_id) {
+				UI.DrawDialog(Res.STR_MATCHMAKER_MAOSHAN);
 				return;
 			}
+			if (6 > Gmud.sPlayer.GetAge()) {
+				UI.DrawDialog(Res.STR_MATCHMAKER_TOO_YOUNG);
+				return;
+			}
+			if (0 == Gmud.sPlayer.lasting_tasks[6]) {
+				UI.DrawDialog(Res.STR_MATCHMAKER_NEED_HOUSE);
+				return;
+			}
+			String str = "请选择下列选项: 结婚: 1.求婚 2.允婚 离婚: 3.分道 4.扬镳";
+			UI.DrawDialog(str);
+			return;
+		}
 			/*
 			你已有家室还来结婚？重婚是犯罪的!
 			你尚未婚配就来离婚，想拿老夫开涮吗？

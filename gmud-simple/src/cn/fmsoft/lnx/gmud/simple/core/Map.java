@@ -123,9 +123,9 @@ public class Map {
 	public Map() {
 		reset();
 
-		DOOR_X = 72; // 出口线起始X
-		DOOR_W = 20; // 出口线X间距
-		DOOR_H = 8; // 出口线Y长
+		DOOR_X = 71; // 出口线起始X
+		DOOR_W = 21; // 出口线X间距
+		DOOR_H = 9; // 出口线Y长
 		DOOR_Y = 71; // 出口线Y
 	}
 
@@ -642,7 +642,6 @@ public class Map {
 					Gmud.GmudDelay(200);
 					String str = GmudData.map_name[i];
 					UI.DrawMapTip(str);
-					Video.VideoUpdate();
 				}
 			}
 		}
@@ -660,7 +659,6 @@ public class Map {
 				str = doing.replaceAll("o", NPC.NPC_names[179]);
 			}
 			UI.DrawMapTip(str);
-			Video.VideoUpdate();
 		}
 			break;
 

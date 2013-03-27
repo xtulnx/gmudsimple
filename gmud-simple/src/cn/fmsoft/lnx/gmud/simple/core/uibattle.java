@@ -27,15 +27,21 @@ public class uibattle {
 
 	/**
 	 * 绘制内力菜单，只有  {加力} 和 {吸气}
-	 * @param i 当前选择
+	 * @param sel 当前选择
 	 */
-	static void DrawFPMenu(int i) {
-		Video.VideoClearRect(60, 50, 39, 28);
-		Video.VideoDrawRectangle(60, 50, 39, 28);
-		for (int i3 = 0; i3 < 2; i3++) {
-			Video.VideoDrawStringSingleLine(UI.fp_menu_words[i3 + 1], 72, 51 + 13 * i3);
-			if (i3 == i)
-				UI.DrawCursor(60 + 4, 52 + 12 * i3);
+	static void DrawFPMenu(int sel) {
+		final int x = 58;
+		final int y = 48;
+		final int w = Video.SMALL_LINE_H * 4;
+		final int h = Video.SMALL_LINE_H * 2;
+		Video.VideoClearRect(x, y, w, h);
+		Video.VideoDrawRectangle(x, y, w, h);
+		UI.DrawCursor(x + (Video.SMALL_LINE_H - UI.CURSOR_W) / 2, y
+				+ Video.SMALL_LINE_H * sel + (Video.SMALL_LINE_H - UI.CURSOR_H)
+				/ 2);
+		for (int i = 0; i < 2; i++) {
+			Video.VideoDrawStringSingleLine(UI.fp_menu_words[i + 1], x
+					+ Video.SMALL_FONT_SIZE, y + Video.SMALL_LINE_H * i);
 		}
 	}
 
@@ -258,36 +264,23 @@ public class uibattle {
 	 * @param y 
 	 * @param show_percent 是否输出数字，如  99/100
 	 */
-	static void DrawHPRect(int cur, int max, int full, int x, int y, boolean show_percent)
-	{
-		int length = Gmud.WQX_ORG_WIDTH / 4;
-		full *= 1000;
-		int per = full / length;
-		if (full % length > 0)
-			per++;
-		if (per <= 0)
-			per = 1;
-		
+	static void DrawHPRect(int cur, int max, int full, int x, int y,
+			boolean show_percent) {
+		final int length = 39;
 		int len;
-		
-		len = (cur*1000) / per;
+		len = cur * length/ full;
 		if (len > length)
 			len = length;
-		Video.VideoFillRectangle(x, y, len, 5);
-		
-		len = (max*1000) / per;
+		Video.VideoFillRectangle(x, y, len, 3);
+
+		len = max * length/ full;
 		if (len > length)
 			len = length;
-		Video.VideoFillRectangle(x, y + 7, len, 2);
+		Video.VideoDrawLine(x, y + 4, x + len, y + 4);
 		
-		if(show_percent)
-		{
-//			wchar_t num[8];
-//			wstring str(_itow(i / 1000, num, 10));
-//			str += "/";
-//			str += _itow(l / 1000, num, 10);
+		if (show_percent) {
 			String str = String.format("%d/%d", cur, max);
-			Video.VideoDrawNumberData(str, x + length + 2, y + 2);
+			Video.VideoDrawNumberData(str, x + length + 1, y);
 		}
 	}
 
@@ -296,61 +289,60 @@ public class uibattle {
 
 		final int id_player = Battle.sBattle.m_player_id;
 		final int id_rival = (id_player == 0) ? 1 : 0;
-		final int x = 4;
-		final int x_npc = (160 - 8) / 2 + 30;
+		final int x = 3;
+		final int x_npc = x + 100;
 		int y = 0;
 
 		// draw name
-		Video.VideoDrawStringSingleLine(Battle.sBattle.m_player_name, x, y);
+		Video.VideoDrawStringSingleLine(Battle.sBattle.m_player_name, x + 5, y);
 		Video.VideoDrawStringSingleLine(Battle.sBattle.m_npc_name, x_npc, y);
-		y += Video.SMALL_LINE_H + 1;
+		y += Video.SMALL_LINE_H + 2;
 
 		// draw image
-		Video.VideoDrawImage(hit_id == id_player ? hit_img : player_img,
-				x + 10, y);
-		Video.VideoDrawImage(hit_id == id_rival ? hit_img : NPC_img,
-				x_npc + 10, y);
+		Video.VideoDrawImage(hit_id == id_player ? hit_img : player_img, x + 6,
+				y);
+		Video.VideoDrawImage(hit_id == id_rival ? hit_img : NPC_img, x_npc + 3,
+				y);
 		hit_id = -1;
-		y += 19;
+		y += 18;
 
 		final int[] data_player = Battle.sBattle.fighter_data[id_player];
 		final int[] data_rival = Battle.sBattle.fighter_data[id_rival];
-		final int x_r = x + 20;
+		final int x_r = x + 12;
 
-		// draw HP
+		// draw HP y:33
 		Video.VideoDrawImage(hp_img, x, y);
-		DrawHPRect(data_player[1], data_player[2], data_player[3], x_r, y + 4,
+		DrawHPRect(data_player[1], data_player[2], data_player[3], x_r, y + 2,
 				true);
 		DrawHPRect(data_rival[1], data_rival[2], data_rival[3], x_npc + 2,
-				y + 4, false);
-		y += 16;
+				y + 2, false);
+		y += 9;
 
 		// draw FP
 		Video.VideoDrawImage(fp_img, x, y);
-		DrawHPRect(data_player[4], data_player[5], data_player[5], x_r, y + 4,
+		DrawHPRect(data_player[4], data_player[5], data_player[5], x_r, y + 2,
 				true);
 		DrawHPRect(data_rival[4], data_rival[5], data_rival[5], x_npc + 2,
-				y + 4, false);
-		y += 16;
+				y + 2, false);
+		y += 9;
 
 		// draw MP
 		if (data_player[42] != 255) {
 			Video.VideoDrawImage(mp_img, x, y);
 			DrawHPRect(data_player[6], data_player[7], data_player[7], x_r,
-					y + 4, true);
-			y += 16;
+					y + 2, true);
+			y += 9;
 		}
 
 		// u.a(0);
 
-		final int t_y = 61;
-		final int t_x = 50;
+		final int t_y = y + 1;
+		final int t_x = x_r + 36;
 		for (int i = 0; i < 6; i++) {
+			Video.VideoDrawRectangle(t_x + i * 8, t_y, 6, 6);
 			if (i == menu_id) {
-				Video.VideoFillRectangle(t_x + i * 8, t_y, 7, 7);
-				Video.VideoDrawStringSingleLine(menu_title[i], t_x - 2, t_y + 7);
-			} else {
-				Video.VideoDrawRectangle(t_x + i * 8, t_y, 6, 6);
+				Video.VideoFillRectangle(t_x + i * 8, t_y, 6, 6);
+				Video.VideoDrawStringSingleLine(menu_title[i], t_x - 4, t_y + 8);
 			}
 		}
 	}
@@ -494,11 +486,12 @@ public class uibattle {
 		} else {
 			h = Video.SMALL_LINE_H;
 		}
-		int x = 10;
-		int y = lineH * 3 + lineH / 2;
+		int x = 36;
+		int y = lineH * 3;
 		Video.VideoClearRect(x, y, w, h);
 		Video.VideoDrawRectangle(x, y, w, h);
-		UI.DrawCursor(x + (lineH - 7) / 2, y + sel * lineH + (lineH - 11) / 2);
+		UI.DrawCursor(x + (lineH - UI.CURSOR_W) / 2, y + sel * lineH
+				+ (lineH - UI.CURSOR_H) / 2);
 		x += lineH;
 		for (int i = 0; i < 2; i++) {
 			final int magic_id = data[top + i];

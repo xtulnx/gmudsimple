@@ -253,7 +253,7 @@ public class NPC {
 		{0, 0, 0, 0, 0}
 	};
 
-	// [180][8] 
+	/** size:[180][8] NPC的交易物品表， [0]size [i]ItemID */ 
 	static final int NPC_sell_list[][] = new int[][] {
 			{
 			2, 7, 4, 0
@@ -623,20 +623,17 @@ public class NPC {
 		int size;
 	}
 
-	
-	static int CopyItemList(int id)
-	{
-		int j1;
-		if ((j1 = NPC.NPC_sell_list[id][0]) == 255 || j1 <= 0)
+	static int CopyItemList(int id) {
+		final int[] data = NPC.NPC_sell_list[id];
+		int count = data[0];
+		if (count >= 255 || count <= 0)
 			return 0;
-		int k1 = 0;
-		for (int l1 = 0; l1 < j1; l1++)
-		{
-			GmudTemp.temp_array_32_2[k1][0] = (byte) NPC.NPC_sell_list[id][1 + l1];
-			GmudTemp.temp_array_32_2[k1++][1] = 0;
+		int top = 0;
+		for (int i = count; i > 0; i--, top++) {
+			GmudTemp.temp_array_32_2[top][0] = (byte) data[i];
+			GmudTemp.temp_array_32_2[top][1] = 0;
 		}
-
-		return j1;
+		return count;
 	}
 	
 	static void InitData()

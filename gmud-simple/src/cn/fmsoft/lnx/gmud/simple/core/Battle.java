@@ -73,7 +73,7 @@ class Battle {
 		if (weapon != 0)
 			attack += Items.item_attribs[weapon][2];
 
-		attack /= 20;
+		attack = attack / 20;
 		if (attack > 5)
 			attack = 5;
 		return attack;
