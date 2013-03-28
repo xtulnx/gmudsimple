@@ -619,7 +619,7 @@ public class Map {
 			// 此 NPC 已阵亡
 			if (NPC_flag[npc_id] == 1)
 				return;
-			
+
 			UI.npc_image_id = s_image_id;
 			final int type = read_NPC_menu_type(npc_id);
 			UI.NPCMainMenu(npc_id, type, s_event_x + 2);
@@ -756,11 +756,8 @@ public class Map {
 			} else {
 				String str = "如果您选择上吊自杀\n您的资料就永远删除了\n请务必考虑清楚！！" + task.yes_no;
 				int last_key = UI.DialogBx(str, 8, 4);
-				while (last_key != Input.kKeyEnt && last_key != Input.kKeyExit) {
-					last_key = Input.inputstatus;
-					Gmud.GmudDelay(100);
-				}
-				if (last_key == Input.kKeyEnt) {
+				last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+				if ((last_key & Input.kKeyEnt) != 0) {
 					/*
 					 * / fclose(fopen("Gmud.sav" , "w")); //exit exit(0);//
 					 */
@@ -845,13 +842,8 @@ public class Map {
 		String tip = UI.readDialogText(87);
 		tip += task.yes_no;
 		int last_key = UI.DialogBx(tip, 8, 8);
-		while (last_key != Input.kKeyEnt && last_key != Input.kKeyExit) {
-			last_key = Input.inputstatus;
-			Gmud.GmudDelay(100);
-		}
-		Gmud.GmudDelay(300);
-
-		if (last_key != Input.kKeyEnt)
+		last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+		if ((last_key & Input.kKeyEnt) == 0)
 			return;
 
 		if (Gmud.sPlayer.lasting_tasks[6] != 0) {
@@ -870,9 +862,7 @@ public class Map {
 		if (util.RandomBool(Gmud.sPlayer.GetAgility() * 2)) {
 			while (true) {
 				UI.ShowDialog2(80);
-				Input.ClearKeyStatus();
-				while (Input.inputstatus == 0)
-					Gmud.GmudDelay(100);
+				Gmud.GmudWaitAnyKey();
 				UI.ShowDialog2(197);
 				Gmud.GmudDelay(2000);
 				if (util.RandomBool(50)) {
@@ -889,9 +879,7 @@ public class Map {
 						// 大王挂了
 						if (NPC.NPC_attrib[147][11] <= 0) {
 							UI.ShowDialog2(86);
-							Input.ClearKeyStatus();
-							while (Input.inputstatus == 0)
-								Gmud.GmudDelay(100);
+							Gmud.GmudWaitAnyKey();
 							Gmud.sPlayer.lasting_tasks[6] = 1;
 							LoadMap(89);
 							SetPlayerLocation(0, CharOrientation.RIGHT);
@@ -914,35 +902,29 @@ public class Map {
 		Gmud.GmudDelay(200);
 
 		// 是否进入小游戏，只响应 Ent 和 Exit
-		String tip = UI.readDialogText(110);
-		tip += task.yes_no;
-		int last_key = UI.DialogBx(tip, 8, 8);
-		while (last_key != Input.kKeyEnt && last_key != Input.kKeyExit) {
-			last_key = Input.inputstatus;
-			Gmud.GmudDelay(100);
-		}
-
-		Gmud.GmudDelay(300);
-		if (last_key == Input.kKeyEnt) {
+		String tip = UI.readDialogText(110) + task.yes_no;
+		int last_key = UI.DialogBx(tip, UI.TITLE_X, 0);
+		last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+		if ((last_key & Input.kKeyEnt) != 0) {
 			// 选择小游戏类别
-			String s = UI.readDialogText(111);
-			int type = UI.DialogBx(s, 8, 8);
-			if (type == Input.kKeyLeft) {
+			String s = "这是方圆百里最有名的游戏厅,你想玩甚麽?\n左.跳舞毯\n右.投铅球\n";// UI.readDialogText(111);
+			last_key = UI.DialogBx(s, UI.TITLE_X, 0);
+			last_key = Gmud.GmudWaitKey(Input.kKeyLeft | Input.kKeyRight
+					| Input.kKeyExit);
+			if ((last_key & Input.kKeyLeft) != 0) {
 				if (Gmud.sPlayer.GetSkillLevel(7) > 0) {
 					mini_game_2.GameMain(); // dance
 					int grow = mini_game_2.score;
 					if (Gmud.sPlayer.GetSkillLevel(7) > 60)
 						grow = 0;
-					Gmud.GmudDelay(300);
 					game_return_to_map(7, grow); // 基本轻功
 				}
-			} else if (type == Input.kKeyRight) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (Gmud.sPlayer.GetSkillLevel(8) > 0) {
 					mini_game_1.GameMain(); // 投球
 					int grow = mini_game_1.score;
 					if (Gmud.sPlayer.GetSkillLevel(8) > 60)
 						grow = 0;
-					Gmud.GmudDelay(300);
 					game_return_to_map(8, grow); // 基本招架
 				}
 			}
@@ -973,11 +955,11 @@ public class Map {
 			}
 		}
 
-		String str = String.format("你的%s\n进步了:%d级！\n\n等级:%d\n点数:%d",
-				Skill.skill_name[skill_id], levels, skill_data[1],
-				skill_data[2]);
+		String str = String.format("你的%s\n进步了:%d级！\n%s\n等级:%d\n点数:%d",
+				Skill.skill_name[skill_id], levels, Skill.skill_name[skill_id],
+				skill_data[1], skill_data[2]);
 
-		UI.DialogBx(str, 8, 8);
+		UI.DialogBx(str, UI.TITLE_X, UI.SYSTEM_MENU_Y);
 	}
 
 	/** 获取一个地图元素(图片或空白区)的宽度 */

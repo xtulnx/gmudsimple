@@ -1,6 +1,8 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
 import java.util.Arrays;
+
+import android.R.color;
 import cn.fmsoft.lnx.gmud.simple.core.NPC.NPCSKILLINFO;
 
 public class task {
@@ -79,38 +81,54 @@ public class task {
 			return;
 		}
 
-		int talk_type = NPCINFO.NPC_attribute[npc_id][0];
-		
-		// 打哈哈的对话
+		final int talk_type = NPCINFO.NPC_attribute[npc_id][0];
 		if (talk_type == 0) {
+			// 打哈哈的对话
 			CommonDialog();
-			Input.ClearKeyStatus();
-			return;
-		}
-
-		// (特别点的)普通 NPC 对话
-		if (talk_type > 0) {
+		} else if (talk_type > 0) {
+			// (特别点的)普通 NPC 对话
 			Gmud.sMap.DrawMap(-1);
-			
 			final String s1 = UI.readDialogText(talk_type);
 			String s2 = s1.replaceAll("\\$o", UI.npc_name);
 			UI.DrawDialog(s2.replaceAll("\\$n", Gmud.sPlayer.player_name));
-			Input.ClearKeyStatus();
-			while (Input.inputstatus == 0)
-				Gmud.GmudDelay(100);
-			return;
-		}
-
-		// 任务型NPC
-		if (talk_type < 0) {
+		} else if (talk_type < 0) {
+			// 任务型NPC
 			Gmud.sMap.DrawMap(-1);
-			Gmud.GmudDelay(120);
 			SpecialDialog(npc_id);
-			Input.ClearKeyStatus();
 		}
 	}
 
 //	extern bool RandomBool(int);
+
+	/**
+	 * 检查物品型任务NPC
+	 * 
+	 * @param item_id
+	 *            任务物品ID
+	 * @param item_count
+	 *            物品个数
+	 * @param just_eq
+	 *            是否要求数量刚好，如果为TRUE则多了或少了都不行
+	 * @param tip_id
+	 *            任务对话文本ＩＤ
+	 * @return 是否成功提交任务，如果成功了则直接删除任务物品
+	 */
+	private final static boolean _check_task_npc_item(int item_id,
+			int item_count, boolean just_eq, int tip_id) {
+		final int index = Gmud.sPlayer.ExistItem(item_id, item_count);
+		if (index >= 0
+				&& (!just_eq || Gmud.sPlayer.item_package[index][2] == item_count)) {
+			String tip = UI.readDialogText(tip_id) + yes_no;
+			int last_key = UI.DialogBx(tip, UI.TITLE_X, 0);
+			last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+			if ((last_key & Input.kKeyEnt) != 0) {
+				// 失去物品
+				Gmud.sPlayer.LoseItem(index, item_count);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	static void SpecialDialog(int talk_type) {
 		
@@ -119,34 +137,16 @@ public class task {
 			break;
 		case 1: // 小顽童
 		{
-			// 刚好2个 "糖葫芦"
-			int index = Gmud.sPlayer.ExistItem(6, 2);
-			if (index >= 0 && Gmud.sPlayer.item_package[index][2] == 2) {
-				String tip = UI.readDialogText(28);
-				UI.DrawTalk(tip);
-				tip += yes_no;
-				Gmud.GmudDelay(80);
-				Input.ClearKeyStatus();
-				int last_key = UI.DialogBx(tip, 8, 8);
-				while (true) {
-					if (last_key == Input.kKeyEnt) {
-						// 获得 "老花镜"
-						Gmud.sPlayer.LoseItem(index, 2);
-						Gmud.sPlayer.GainOneItem(40);
-						break;
-					}
-					if (last_key == Input.kKeyExit)
-						break;
-					while (0 == (last_key = Input.inputstatus))
-						Gmud.GmudDelay(100);
-				}
-				break;
-			}
 			int tip_id = util.RandomBool(80) ? 26 : 27;
 			UI.ShowDialog(tip_id);
-			return;
+
+			// 刚好2个 "糖葫芦"，换老花镜
+			if (_check_task_npc_item(6, 2, true, 28)) {
+				Gmud.sPlayer.GainOneItem(40);
+			}
+			break;
 		}
-		
+
 		case 27: // 小书童
 		{
 			int tip_id = util.RandomInt(3) + 36;
@@ -157,86 +157,35 @@ public class task {
 		case 29: // 老裁缝
 		{
 			UI.ShowDialog(40);
-			int index = Gmud.sPlayer.ExistItem(40, 1);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(41);
-			tip += yes_no;
-			Input.ClearKeyStatus();
-			int last_key = UI.DialogBx(tip, 8, 8);
-			while (true) {
-				if (last_key == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(43);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(42);
-					break;
-				}
-				if (last_key == Input.kKeyExit)
-					break;
-				while (0 == (last_key = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			// 老花镜换精制布衣
+			if (_check_task_npc_item(40, 1, false, 41)) {
+				Gmud.sPlayer.GainOneItem(43);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(42);
 			}
-			return;
+			break;
 		}
-			
+
 		case 19: // 荷西
 		{
 			UI.ShowDialog(33);
-			int index = Gmud.sPlayer.ExistItem(74, 30);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(34);
-			UI.DrawTalk(tip);
-
-			Input.ClearKeyStatus();
-			tip += yes_no;
-			int i6 = UI.DialogBx(tip, 8, 8);
-			while (true) {
-				if (i6 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 30);
-					Gmud.sPlayer.GainOneItem(33);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(35);
-					break;
-				}
-				if (i6 == Input.kKeyExit)
-					break;
-				while (0 == (i6 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(74, 30, false, 34)) {
+				Gmud.sPlayer.GainOneItem(33);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(35);
 			}
-			return;
+			break;
 		}
-		
+
 		case 4: // 厨师
 		{
 			UI.ShowDialog(30);
 
 			// "猪肉"
-			int index = Gmud.sPlayer.ExistItem(5, 1);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(31);
-			UI.DrawTalk(tip);
-
-			Input.ClearKeyStatus();
-			tip += yes_no;
-			int j6 = UI.DialogBx(tip, 8, 8);
-			while (true) {
-				if (j6 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(12);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(32);
-					break;
-				}
-				if (j6 == Input.kKeyExit)
-					break;
-				while (0 == (j6 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(5, 1, false, 31)) {
+				Gmud.sPlayer.GainOneItem(12);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(32);
 			}
 			break;
 		}
@@ -246,31 +195,13 @@ public class task {
 			UI.ShowDialog(45);
 
 			// "海外仙丹"
-			int index = Gmud.sPlayer.ExistItem(10, 1);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(46);
-			UI.DrawTalk(tip);
-
-			Input.ClearKeyStatus();
-			tip += yes_no;
-			int last_key = UI.DialogBx(tip, 8, 8);
-			while (true) {
-				if (last_key == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(62);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(47);
-					break;
-				}
-				if (last_key == Input.kKeyExit)
-					break;
-				while (0 == (last_key = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(10, 1, false, 46)) {
+				Gmud.sPlayer.GainOneItem(62);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(47);
 			}
-		}
 			break;
+		}
 			
 		case 46: // 平阿四
 		{
@@ -278,26 +209,10 @@ public class task {
 			UI.ShowDialog(tip_id);
 
 			// "焦黄纸页"
-			int index = Gmud.sPlayer.ExistItem(69, 1);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(50);
-			UI.DrawTalk(tip);
-
-			int l6 = UI.DialogBx((tip += yes_no), 8, 8);
-			while (true) {
-				if (l6 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(68);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(51);
-					break;
-				}
-				if (l6 == Input.kKeyExit)
-					break;
-				while (0 == (l6 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(69, 1, false, 50)) {
+				Gmud.sPlayer.GainOneItem(68);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(51);
 			}
 		}
 			break;
@@ -308,26 +223,10 @@ public class task {
 			UI.ShowDialog(tip_id);
 
 			// "包子"
-			int index = Gmud.sPlayer.ExistItem(2, 10);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(62);
-			UI.DrawTalk(tip);
-
-			int k7 = UI.DialogBx((tip += yes_no), 8, 8);
-			while (true) {
-				if (k7 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 10);
-					Gmud.sPlayer.GainOneItem(70);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(63);
-					break;
-				}
-				if (k7 == Input.kKeyExit)
-					break;
-				while (0 == (k7 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(2, 10, false, 62)) {
+				Gmud.sPlayer.GainOneItem(70);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(63);
 			}
 		}
 			break;
@@ -338,26 +237,10 @@ public class task {
 			UI.ShowDialog(tip_id);
 
 			// "白玉萧"
-			int index = Gmud.sPlayer.ExistItem(29, 1);
-			if (index < 0)
-				break;
-
-			String tip = UI.readDialogText(56);
-			UI.DrawTalk(tip);
-
-			int l7 = UI.DialogBx((tip += yes_no), 8, 8);
-			while (true) {
-				if (l7 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(28);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(57);
-					break;
-				}
-				if (l7 == Input.kKeyExit)
-					break;
-				while (0 == (l7 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(29, 1, false, 56)) {
+				Gmud.sPlayer.GainOneItem(28);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(57);
 			}
 		}
 			break;
@@ -367,25 +250,10 @@ public class task {
 			final int tip_id = 64 + util.RandomInt(2);
 			UI.ShowDialog(tip_id);
 
-			int index = Gmud.sPlayer.ExistItem(72, 1);
-			if (index < 0)
-				break;
-
-			String s9 = UI.readDialogText(66);
-			UI.DrawTalk(s9);
-			int i8 = UI.DialogBx((s9 += yes_no), 8, 8);
-			while (true) {
-				if (i8 == Input.kKeyEnt) {
-					Gmud.sPlayer.LoseItem(index, 1);
-					Gmud.sPlayer.GainOneItem(71);
-					Gmud.sMap.DrawMap(-1);
-					UI.ShowDialog(67);
-					break;
-				}
-				if (i8 == Input.kKeyExit)
-					break;
-				while (0 == (i8 = Input.inputstatus))
-					Gmud.GmudDelay(100);
+			if (_check_task_npc_item(72, 1, false, 66)) {
+				Gmud.sPlayer.GainOneItem(71);
+				Gmud.sMap.DrawMap(-1);
+				UI.ShowDialog(67);
 			}
 		}
 			break;
@@ -393,7 +261,6 @@ public class task {
 		case 0: // 阿庆嫂
 		{
 			UI.ShowDialog(24 + util.RandomInt(2));
-			Input.ClearKeyStatus();
 		}
 			break;
 

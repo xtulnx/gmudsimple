@@ -34,6 +34,9 @@ public class Gmud {
 
 	/** 等待按键 */
 	static final int DELAY_WAITKEY = 50;
+	/** 1秒 */
+	static final int DELAY_1S = 1000;
+	static final int DELAY_TICK = 10;
 
 	static Map sMap;
 	static Player sPlayer;
@@ -128,26 +131,69 @@ public class Gmud {
 	}
 
 	/**
-	 * 等待按键，只要出现掩码中的按键，就返回
+	 * 等待按键，不清除旧的按键状态，只要出现掩码中的按键，就返回
 	 * 
 	 * @param keyFlag
 	 *            按键标记，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 * @return 返回按键扫描码，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
 	 */
-	static void GmudWaitKey(int keyFlag) {
+	static int GmudWaitKey(int keyFlag) {
 		while ((Input.inputstatus & keyFlag) == 0) {
 			Gmud.GmudDelay(DELAY_WAITKEY);
 			Input.ProcessMsg();
 		}
+		return Input.inputstatus;
 	}
 
-	static void GmudWaitNewKey(int keyFlag) {
-		Input.ClearKeyStatus();
-		GmudWaitKey(keyFlag);
+	/**
+	 * 等待按键，不清除旧的按键状态，只要出现掩码中的按键或超时，就返回
+	 * 
+	 * @param keyFlag
+	 *            按键标记，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 * @param timeOut
+	 *            超时，单位：毫秒，不一定精确
+	 * @return 返回按键扫描码，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt} ，超时返回0
+	 * @see #GmudWaitKey(int)
+	 */
+	static int GmudWaitKey(int keyFlag, int timeOut) {
+		final int delay;
+		if (timeOut > DELAY_WAITKEY * 3) {
+			delay = DELAY_WAITKEY;
+		} else {
+			delay = DELAY_TICK;
+		}
+		timeOut /= delay;
+		while ((Input.inputstatus & keyFlag) == 0) {
+			Gmud.GmudDelay(delay);
+			Input.ProcessMsg();
+			if (timeOut-- <= 0) {
+				return 0;
+			}
+		}
+		return Input.inputstatus;
 	}
 
-	static void GmudWaitAnyKey() {
+	/**
+	 * 等待新的按键，会清除旧的按键
+	 * 
+	 * @param keyFlag
+	 *            按键标记
+	 * @return 按键扫描码
+	 * @see #GmudWaitKey(int)
+	 */
+	static int GmudWaitNewKey(int keyFlag) {
 		Input.ClearKeyStatus();
-		GmudWaitKey(Input.kKeyAny);
+		return GmudWaitKey(keyFlag);
+	}
+
+	/**
+	 * 等待任意键，会清除旧的按键
+	 * 
+	 * @see #GmudWaitNewKey(int)
+	 */
+	static int GmudWaitAnyKey() {
+		Input.ClearKeyStatus();
+		return GmudWaitKey(Input.kKeyAny);
 	}
 
 	// 初始化一些静态数据

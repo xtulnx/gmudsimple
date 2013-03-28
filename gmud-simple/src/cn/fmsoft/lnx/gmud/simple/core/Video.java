@@ -278,8 +278,11 @@ class Video {
 			// clear
 			_drawPath(path, bgBrush);
 			_drawPath(path, fgPen);
+		} else if ((type & 4) == 0) {
+			_drawPath(path, fgBrush);
+			_drawPath(path, fgPen);
 		} else {
-			_drawPath(path, ((type & 4) == 0) ? fgBrush : bgBrush);
+			_drawPath(path, bgBrush);
 		}
 	}
 

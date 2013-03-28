@@ -23,8 +23,6 @@ public class UI {
 
 	static final int boss_map_id[] = new int[] { 23, 73, 59, 79, 31, 54, 64, 44 };
 
-	static final String old_award_words = "你被奖励了：20点实战经验 10点潜能 50金钱";
-
 	/** 主菜单文本 "查看", "物品", "技能", "功能" */
 	static final String main_menu_items[] = new String[] { "查看", "物品", "技能",
 			"功能" };
@@ -84,9 +82,7 @@ public class UI {
 		String str = String.format(Res.STR_BATTLE_WIN, money, ib.toString());
 		DialogBx(str, TITLE_X, SYSTEM_MENU_Y);
 		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		Gmud.GmudDelay(200);
-		Gmud.GmudWaitKey(Input.kKeyExit);
+		Gmud.GmudWaitNewKey(Input.kKeyExit);
 	}
 
 	/** 在屏幕下方绘制单行文本，如果有多行，则分多次输出 */
@@ -120,7 +116,7 @@ public class UI {
 		DrawDialog(readDialogText(tip_id));
 	}
 
-	/** 在顶端显示最多2行的文本，如果有更多行数，则分批输出 */
+	/** 在顶端显示最多2行的文本，如果有更多行数，则分批输出，等待任意键返回 */
 	static void DrawDialog(String s) {
 		final int lineH = Video.SMALL_LINE_H;
 		final int height = lineH * 2 + 1; // 输出区域的高度，2行
@@ -149,38 +145,44 @@ public class UI {
 	}
 
 	/**
-	 * 绘制一个向下闪烁的光标
+	 * 绘制一个向下闪烁的光标，直到有掩码中指定的按键按下，则返回
+	 * 
+	 * @param x
+	 * @param y
+	 * @param w
+	 * @param keyFlag
+	 *            按键掩码
+	 * @return 按键
+	 */
+	static int DrawFlashCursor(int x, int y, int w, int keyFlag) {
+		int key = 0;
+		final int h = w / 2 + 1;
+		boolean blink = false;
+		Input.ClearKeyStatus();
+		while (key == 0) {
+			if (!blink) {
+				Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 0);
+			} else {
+				Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 4);
+			}
+			Video.VideoUpdate();
+			blink = !blink;
+			key = Gmud.GmudWaitKey(keyFlag, 300);
+		}
+		return key;
+	}
+
+	/**
+	 * 绘制一个向下闪烁的光标，直到有任意键按下，则返回
 	 * 
 	 * @param x
 	 * @param y
 	 * @param w
 	 * @return
+	 * @see #DrawFlashCursor(int, int, int, int)
 	 */
 	static int DrawFlashCursor(int x, int y, int w) {
-		final int h = w / 2 + 1;
-		boolean blink = false;
-		int count = 0;
-		while (true) {
-			if (count == 0) {
-				if (!blink) {
-					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 0);
-				} else {
-					Video.VideoDrawArrow(x, y, w, h, 0 + 2 + 4);
-				}
-				Video.VideoUpdate();
-				count = 6;
-				blink = !blink;
-			} else {
-				count--;
-			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
-			Input.ProcessMsg();
-			if (Input.inputstatus != 0) {
-				break;
-			}
-		}
-		return Input.inputstatus;
+		return DrawFlashCursor(x, y, w, Input.kKeyAny);
 	}
 
 	/**
@@ -214,22 +216,21 @@ public class UI {
 	static void MainMenu() {
 		int menu_id = 0;
 		boolean update = true;
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+			if ((last_key & Input.kKeyLeft) != 0) {
 				if (menu_id > 0)
 					menu_id--;
 				else
 					menu_id = 3;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (menu_id < 3)
 					menu_id++;
 				else
 					menu_id = 0;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				if (menu_id == 0) {
 					ViewPlayer();
 				} else if (menu_id == 1) {
@@ -237,7 +238,6 @@ public class UI {
 				} else if (menu_id == 2) {
 					PlayerSkill();
 				} else if (menu_id == 3) {
-					Input.ClearKeyStatus();
 					if (SystemMenu() != 0) {
 						update = true;
 						break;
@@ -245,7 +245,7 @@ public class UI {
 				}
 				Gmud.sMap.DrawMap(-1);
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				update = true;
 				break;
 			}
@@ -255,8 +255,8 @@ public class UI {
 				DrawMainMenu(menu_id);
 				Video.VideoUpdate();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyLeft | Input.kKeyRight
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 
 		if (update) {
@@ -367,14 +367,13 @@ public class UI {
 	static void ExitMenu() {
 		final int y = Video.SMALL_FONT_SIZE + TITLE_X + SYSTEM_MENU_Y;
 		Input.ClearKeyStatus();
-		DialogBx(Res.STR_EXIT_QUERY, TITLE_X, y);
-		if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-			if (task.temp_tasks_data[30] > 3/* 60 */) {
-				Input.ClearKeyStatus();
+		int last_key = DialogBx(Res.STR_EXIT_QUERY, TITLE_X, y);
+		if ((last_key & Input.kKeyEnt) != 0) {
+			if (task.temp_tasks_data[30] > 360) {
 				DialogBx(Res.STR_EXIT_QUERY_SAVE, Video.SMALL_FONT_SIZE, y
 						+ Video.SMALL_FONT_SIZE);
-				Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
-				if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+				last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+				if ((last_key & Input.kKeyEnt) != 0) {
 					Gmud.WriteSave();
 				}
 			}
@@ -400,6 +399,14 @@ public class UI {
 		Gmud.GmudWaitNewKey(Input.kKeyExit);
 	}
 
+	/**
+	 * 在指定位置显示所有文本，等待任意键按下就返回
+	 * 
+	 * @param s
+	 * @param x
+	 * @param y
+	 * @return 按键值
+	 */
 	static int DialogBx(String s, int x, int y) {
 		final int lineH = Video.SMALL_LINE_H;
 		final int width = Gmud.WQX_ORG_WIDTH - 8 - x;
@@ -412,8 +419,7 @@ public class UI {
 			Video.VideoDrawStringSingleLine(as.get(i), x + 1, y + 1 + top);
 		}
 		Video.VideoUpdate();
-		Gmud.GmudWaitAnyKey();
-		return Input.inputstatus;
+		return Gmud.GmudWaitAnyKey();
 	}
 
 	static void DrawTip(String s1) {
@@ -431,10 +437,17 @@ public class UI {
 		Video.VideoDrawStringSingleLine(s1, x + 2, y + 2);
 	}
 
-	static void DrawStringFromY(String s, int i1) {
+	/**
+	 * 输出多行文本在[0,H/2]位置，并自动刷新，等待660毫秒
+	 * 
+	 * @param s
+	 */
+	static void DrawStringFromY(String s) {
 		final int y = Gmud.WQX_ORG_HEIGHT / 2 + 1;
 		Video.VideoClearRect(0, y, Gmud.WQX_ORG_WIDTH, Video.SMALL_LINE_H * 3);
 		Video.VideoDrawString(s, 0, y);
+		Video.VideoUpdate();
+		Gmud.GmudDelay(660);
 	}
 
 	/**
@@ -447,10 +460,12 @@ public class UI {
 	 * @param y
 	 */
 	static void DrawNumberBox(int cur, int max, int x, int y) {
-		final int num_w = 27; // 数字区的宽度
-		final int nw = 6; // 每个数字的宽度
-		final int h = Video.SMALL_LINE_H + 4; // 总高度，假定小号文本高度固定为 13
-		final int w = num_w + 4 + 10; // 总宽度
+		final int num_w = 32; // 数字区的宽度
+		final int arrow_w = 5;
+		final int arrow_h = 3;
+		final int nw = Video.SMALL_FONT_SIZE / 2; // 每个数字的宽度
+		final int h = Video.SMALL_LINE_H + 1; // 总高度，假定小号文本高度固定为 13
+		final int w = num_w + 5 + arrow_w; // 总宽度
 		if (cur > max)
 			cur = max;
 		if (cur < 0)
@@ -461,24 +476,21 @@ public class UI {
 		Video.VideoDrawRectangle(x, y, w, h);
 
 		// 分隔线
-		Video.VideoDrawLine(x + num_w + 3, y, x + num_w + 3, (y + h));
-		Video.VideoDrawLine(x + num_w + 3, y + h / 2, (x + w), y + h / 2);
+		Video.VideoDrawLine(x + num_w + 1, y, x + num_w + 1, (y + h));
+		Video.VideoDrawLine(x + num_w + 1, y + h / 2, (x + w), y + h / 2);
 
 		// 绘制上下箭头
-		final int arrow_w = w - 3 - num_w - 4;
-		final int arrow_h = h / 2 - 3;
-		Video.VideoDrawArrow(x + num_w + 5, (y + h / 2) - 2, arrow_w, -arrow_h,
+		Video.VideoDrawArrow(x + num_w + 3, (y + h / 2) - 2, arrow_w, -arrow_h,
 				cur > 0 ? 2 : 0);
-		Video.VideoDrawArrow(x + num_w + 5, (y + h / 2) + 2, arrow_w, arrow_h,
+		Video.VideoDrawArrow(x + num_w + 3, (y + h / 2) + 2, arrow_w, arrow_h,
 				cur < max ? 2 : 0);
 
 		// 右对齐绘制数字
-		x += 3 + 2 * (nw + 1);
-		y += 2;
+		x += num_w - nw - 1;
 		while (cur >= 10) {
 			Video.VideoDrawStringSingleLine(String.valueOf(cur % 10), x, y);
-			cur /= 10;
 			x -= nw + 1;
+			cur /= 10;
 		}
 		Video.VideoDrawStringSingleLine(String.valueOf(cur), x, y);
 	}
@@ -558,14 +570,14 @@ public class UI {
 			h = lineH * 3 + 2;
 		else
 			h = size * lineH + 2;
-		if (!drawLevel)
-			w = lineH * 6;
-		else
+		if (drawLevel)
 			w = lineH * 8 + 6;
+		else
+			w = lineH * 6;
 		Video.VideoClearRect(x, y, w, h);
 		Video.VideoDrawRectangle(x, y, w, h);
 
-		final int gap = (lineH - r - r) / 2;
+		final int gap = (lineH - r - r) / 2 + 1;
 		final int data[][] = GmudTemp.temp_array_20_2;
 		for (int i = 0; i < size && i < 3; i++, y += lineH) {
 			int skill_id = data[start + i][0];
@@ -610,7 +622,7 @@ public class UI {
 		int x = TITLE_X;
 		int y = SYSTEM_MENU_Y;
 		final int width = Gmud.WQX_ORG_WIDTH - x - SYSTEM_MENU_Y;
-		final int height = Gmud.WQX_ORG_HEIGHT - SYSTEM_MENU_Y - SYSTEM_MENU_Y;
+		final int height = Gmud.WQX_ORG_HEIGHT - y - SYSTEM_MENU_Y - 1;
 		Video.VideoClearRect(x - 1, y, width, height);
 		Video.VideoDrawRectangle(x - 1, y, width, height);
 		x += Video.SMALL_LINE_H + 2;
@@ -654,35 +666,34 @@ public class UI {
 
 		int menu_id = 0;
 		boolean update = true;
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+			if ((last_key & Input.kKeyLeft) != 0) {
 				if (menu_id > 0)
 					menu_id--;
 				else
 					menu_id = 3;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (menu_id < 3)
 					menu_id++;
 				else
 					menu_id = 0;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.GmudDelay(100);
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				break;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
-				Gmud.GmudDelay(100);
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				break;
 			}
+			Input.ClearKeyStatus();
 			if (update) {
 				update = false;
+				// !! 在后面的绘制中，可能会有按键响应，所以这里先 clear，然后直接进入下一按键判断
 				DrawViewPlayer(menu_id);
 				Video.VideoUpdate();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			last_key = Gmud.GmudWaitKey(Input.kKeyLeft | Input.kKeyRight
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 
 		if (Battle.sBattle != null) {
@@ -692,58 +703,51 @@ public class UI {
 
 	static void _draw_player_info(String[] desc, int size, int x) {
 		final int y = Video.SMALL_FONT_SIZE + SYSTEM_MENU_Y;
-		for (int j = 0; j < size; j++)
-			Video.VideoDrawStringSingleLine(desc[j], x, y + j
-					* Video.SMALL_FONT_SIZE);
+		for (int j = 0, ty = y; j < size; j++) {
+			if (j >= 5 && j % 5 == 0) {
+				Video.VideoUpdate();
+				final int last_key = DrawFlashCursor(147, 71, CURSOR_W,
+						Input.kKeyDown | Input.kKeyLeft | Input.kKeyRight
+								| Input.kKeyEnt | Input.kKeyExit);
+				if ((last_key & Input.kKeyDown) == 0) {
+					break;
+				} else {
+					ty = y;
+				}
+				final int width = Gmud.WQX_ORG_WIDTH - x - SYSTEM_MENU_Y - 2;
+				final int height = Gmud.WQX_ORG_HEIGHT - y - SYSTEM_MENU_Y - 2;
+				Video.VideoClearRect(x, y, width, height);
+			}
+			Video.VideoDrawStringSingleLine(desc[j], x, ty);
+			ty += Video.SMALL_FONT_SIZE;
+		}
 	}
 
 	static void DrawPlayerStatus() {
-		String as[] = new String[6];
+		final String as[] = new String[6];
 		int i = 0;
-		as[i] = String.format("食物:%d/%d", Gmud.sPlayer.food,
+		as[i++] = String.format("食物:%d/%d", Gmud.sPlayer.food,
 				Gmud.sPlayer.GetFoodMax());
-
-		if (Gmud.sPlayer.mp <= 0) {
-			i++;
-			as[i] = "";
-		} else {
-			as[i] += "  ";
-		}
-		as[i] += String.format("饮水:%d/%d", Gmud.sPlayer.water,
+		as[i++] = String.format("饮水:%d/%d", Gmud.sPlayer.water,
 				Gmud.sPlayer.GetWaterMax());
-		i++;
 
-		int hp = (Gmud.sPlayer.hp_max * 1000)
-				/ ((Gmud.sPlayer.hp_full * 1000) / 100);
-		if (hp >= 100 && Gmud.sPlayer.hp_max < Gmud.sPlayer.hp_full)
-			hp = 99;
-		as[i] = String.format("生命:%d/%d(%d%%)", Gmud.sPlayer.hp,
-				Gmud.sPlayer.hp_max, hp);
-		i++;
+		final int hp_percent;
+		if (Gmud.sPlayer.hp_full <= 0
+				|| Gmud.sPlayer.hp_max >= Gmud.sPlayer.hp_full)
+			hp_percent = 100;
+		else
+			hp_percent = Gmud.sPlayer.hp_max * 100 / Gmud.sPlayer.hp_full;
+		as[i++] = String.format("生命:%d/%d(%d%%)", Gmud.sPlayer.hp,
+				Gmud.sPlayer.hp_max, hp_percent);
 
-		as[i] = String.format("内力:%d/%d(+%d)", Gmud.sPlayer.fp,
+		as[i++] = String.format("内力:%d/%d(+%d)", Gmud.sPlayer.fp,
 				Gmud.sPlayer.fp_level, Gmud.sPlayer.fp_plus);
-		i++;
-
-		if (0 >= Gmud.sPlayer.mp) {
-			as[i] = String.format("经验:%d 潜能:%d", Gmud.sPlayer.exp,
-					Gmud.sPlayer.potential);
-			i++;
-
-			as[i] = "";
-		} else {
-			as[i] = String.format("法力:%d/%d(+%d)", Gmud.sPlayer.mp,
+		if (Gmud.sPlayer.mp > 0)
+			as[i++] = String.format("法力:%d/%d(+%d)", Gmud.sPlayer.mp,
 					Gmud.sPlayer.mp_level, Gmud.sPlayer.mp_plus);
-			i++;
-
-			as[i] = String.format("经验:%d 潜能:%d ", Gmud.sPlayer.exp,
-					Gmud.sPlayer.potential);
-			i++;
-
-			as[i] = "";
-		}
-
-		_draw_player_info(as, 6, TITLE_X);
+		as[i++] = String.format("经验:%d 潜能:%d", Gmud.sPlayer.exp,
+				Gmud.sPlayer.potential);
+		_draw_player_info(as, i, TITLE_X);
 	}
 
 	static void DrawPlayerDesc() {
@@ -804,16 +808,16 @@ public class UI {
 
 	private static int DrawDeleteItem() {
 		int ret = 0;
-		final int x = 16 + 26 + 26 + 6 + 10;
-		final int y = 5 + 26 + 16;
-		final int w = Video.SMALL_LINE_H * 4;
-		final int h = Video.SMALL_LINE_H;
+		final int x = 84;
+		final int y = 30;
+		final int w = 63;
+		final int h = Video.SMALL_LINE_H + 3;
 		Video.VideoClearRect(x, y, w, h);
 		Video.VideoDrawRectangle(x, y, w, h);
-		Video.VideoDrawStringSingleLine("删除吗？", x, y);
+		Video.VideoDrawStringSingleLine("删除吗?y/n", x, y);
 		Video.VideoUpdate();
-		Gmud.GmudWaitAnyKey();
-		if ((Input.getKeyCode() & Input.kKeyEnt) != 0) {
+		final int last_key = Gmud.GmudWaitAnyKey();
+		if ((last_key & Input.kKeyEnt) != 0) {
 			ret = 1;
 		}
 		return ret;
@@ -923,11 +927,9 @@ public class UI {
 		boolean update_group = true;
 		boolean update_item = false;
 		boolean update_desc = false;
-
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (type == 0) {
 					if (group_sel > 0)
 						group_sel--;
@@ -954,7 +956,7 @@ public class UI {
 					}
 					update_item = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (type == 0) {
 					if (group_sel < 4)
 						group_sel++;
@@ -975,13 +977,13 @@ public class UI {
 						item_top++;
 					update_item = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (type != 0 && item_desc_count > 1
 						&& item_desc_cur + 1 < item_desc_count) {
 					item_desc_cur++;
 					update_desc = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				if (type != 0) {
 					type = 0;
 					update_group = true;
@@ -989,7 +991,7 @@ public class UI {
 				} else {
 					break;
 				}
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				if (type == 0) {
 					if (item_count > 0) {
 						type = 1;
@@ -1047,19 +1049,16 @@ public class UI {
 			update_group = false;
 			update_item = false;
 			update_desc = false;
-			Gmud.GmudWaitNewKey(Input.kKeyUp | Input.kKeyDown | Input.kKeyEnt
-					| Input.kKeyExit | Input.kKeyLeft | Input.kKeyRight);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyUp | Input.kKeyDown
+					| Input.kKeyEnt | Input.kKeyExit | Input.kKeyLeft
+					| Input.kKeyRight);
 		}
 	}
 
 	/** 物品操作菜单 */
 	static void ItemMenu(final int top, final int sel) {
-		final int t_w = Video.SMALL_LINE_H * 2; // 文本2个字宽
-		final int x = 32 + (t_w + 6) + t_w;
-		final int w = t_w + 10;// 文本2个字宽
-		final int y = t_w + 5;
 		final int ret = UIUtils.ShowMenu(UIUtils.MENU_TYPE_BOX, 10,
-				useitem_menu_words, useitem_menu_words.length, 3, x, y, w,
+				useitem_menu_words, useitem_menu_words.length, 3, 96, 16, 38,
 				MENUID_ITEM) - 1;
 
 		final int item_id = GmudTemp.temp_array_32_2[top + sel][0];
@@ -1073,7 +1072,6 @@ public class UI {
 				Video.VideoDrawStringSingleLine(s, 2, Gmud.WQX_ORG_WIDTH / 2
 						- lineH);
 				Video.VideoUpdate();
-				Gmud.GmudDelay(100);
 				Gmud.GmudWaitAnyKey();
 			}
 		} else if (ret == 1) {
@@ -1098,9 +1096,9 @@ public class UI {
 		int count = 0;
 		boolean update_group = true;
 		boolean update_item = false;
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (type == 0) {
 					if (groupSel > 0)
 						groupSel--;
@@ -1125,7 +1123,7 @@ public class UI {
 					}
 					update_item = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (type == 0) {
 					if (groupSel < 4)
 						groupSel++;
@@ -1143,22 +1141,19 @@ public class UI {
 						top = sel = 0;
 					update_item = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				if (type != 0) {
 					type = 0;
 					update_group = true;
 					update_item = true;
 				} else {
-					Input.ClearKeyStatus();
-					Gmud.GmudDelay(200);
-					return;
+					break;
 				}
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				if (type == 0 && count > 0) {
 					type = 1;
 					update_item = true;
 				} else if (type != 0) {
-					Gmud.GmudDelay(200);
 					final int skillType = groupTop + groupSel;
 					final int index = top + sel;
 					int id = Gmud.sPlayer.skills[GmudTemp.temp_array_32_2[index][0]][0];
@@ -1208,18 +1203,14 @@ public class UI {
 				update_group = false;
 				update_item = false;
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(50);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyUp | Input.kKeyDown
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 	}
 
 	static void FPMenu() {
-		final int w = Video.SMALL_LINE_H * 3;
-		int x = 8 + 3 * (16 + 40);
-		if (x + w + 3 >= Gmud.WQX_ORG_WIDTH)
-			x = Gmud.WQX_ORG_WIDTH - w - 3;
 		Gmud.sMap.DrawMap(-1);
-		UIUtils.ShowMenu(fp_menu_words, fp_menu_words.length, 4, x, 15, w,
+		UIUtils.ShowMenu(fp_menu_words, fp_menu_words.length, 4, 115, 11, 44,
 				MENUID_FP);
 	}
 
@@ -1232,106 +1223,101 @@ public class UI {
 				return 1;
 		} else if (sel == 2) {
 			String s = Gmud.sPlayer.Breathing();
-			DrawStringFromY(s, 660);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(1500);
+			DrawStringFromY(s);
 		} else if (sel == 3) {
 			String s = Gmud.sPlayer.Recovery();
-			if (s.substring(0, 3) == "你摧动") {
-				String str = "你全身放松，坐下来开始运功疗伤！";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Gmud.GmudDelay(1500);
-				DrawStringFromY(s, 660);
-				Video.VideoUpdate();
-				Gmud.GmudDelay(1500);
+			if (s == Res.STR_RECOVER_SUCCESS) {
+				DrawStringFromY(Res.STR_RECOVER_START);
 			}
-			DrawStringFromY(s, 660);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(1500);
+			DrawStringFromY(s);
 		}
 		Gmud.sMap.DrawMap(-1);
 		return 0;
 	}
 
-	static int RecoverFP() {
-		Gmud.GmudDelay(100);
-		int j1 = Gmud.sPlayer.GetFPSpeed(); // get speed
-		int k1 = 0;
-		while (k1 != 3) {
-			Input.ProcessMsg();
-			while (true) {
-				Input.ProcessMsg();
-				DrawProgressBox(Gmud.sPlayer.fp_level * 2, Gmud.sPlayer.fp,
-						Gmud.sPlayer.fp, Gmud.sPlayer.fp_level);
-				Video.VideoUpdate();
-				if ((Input.inputstatus & Input.kKeyExit) != 0) {
-					Gmud.GmudDelay(150);
-					return 0;
-				}
-				if ((k1 = Gmud.sPlayer.Meditation()) != 0)
-					break;
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(600 / j1);
-			}
-			if (k1 == 1) {
-				String str = Res.STR_NO_INNER_KONGFU_STRING;
-				DrawStringFromY(str, 660);
-				Input.ClearKeyStatus();
-				Video.VideoUpdate();
-				Gmud.GmudDelay(1500);
-				return 0;
-			}
-			if (k1 == 2) {
-				String str = "你的内功等级不够";
-				DrawStringFromY(str, 660);
-				Input.ClearKeyStatus();
-				Video.VideoUpdate();
-				Gmud.GmudDelay(1500);
-				return 0;
-			}
-		}
-		String str = "你的内功等级不够";
-		DrawStringFromY(str, 660);
+	/**
+	 * 打坐　或　冥想,
+	 * 
+	 * @param isFP
+	 * @return 0:正常中止 1:没有选择 2:基本功不够 3:已达到上限
+	 * @see Player#Think()
+	 * @see Player#Meditation()
+	 */
+	static int _recover_fp_mp(boolean isFP) {
+		int err = 0;
+		// 控制在 [60,180]之间
+		final int speed = 180 - 2 * (isFP ? Gmud.sPlayer.GetFPSpeed()
+				: Gmud.sPlayer.GetMPSpeed());
 		Input.ClearKeyStatus();
-		Video.VideoUpdate();
-		Gmud.GmudDelay(1500);
+		do {
+			final int max, cur;
+			if (isFP) {
+				max = Gmud.sPlayer.fp_level;
+				cur = Gmud.sPlayer.fp;
+			} else {
+				max = Gmud.sPlayer.mp_level;
+				cur = Gmud.sPlayer.mp;
+			}
+			DrawProgressBox(max * 2, cur, cur, max);
+			Video.VideoUpdate();
+			if (Gmud.GmudWaitKey(Input.kKeyExit, speed) != 0) {
+				break;
+			}
+			if (isFP)
+				err = Gmud.sPlayer.Meditation();
+			else
+				err = Gmud.sPlayer.Think();
+		} while (err == 0);
+		return err;
+	}
+
+	/** 打坐 */
+	static int RecoverFP() {
+		final int err = _recover_fp_mp(true);
+		final String str;
+		if (err == 1) {
+			// 1:没有选择
+			str = Res.STR_NO_INNER_KONGFU_STRING;
+		} else if (err == 2) {
+			// 2:基本功不够
+			str = Res.STR_INNER_KONGFU_TOO_LOW;
+		} else if (err == 3) {
+			// 3:已达到上限
+			str = Res.STR_INNER_KONGFU_TOO_LOW;
+		} else {
+			return 0;
+		}
+		DrawStringFromY(str);
 		return 0;
 	}
 
-	/** 加力菜单 */
-	static int FPPlusMenu() {
-		if (255 == Gmud.sPlayer.select_skills[3]) {
-			DrawStringFromY(Res.STR_NO_INNER_KONGFU_STRING, 660);
-			Video.VideoUpdate();
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(1500);
-			return 0;
-		}
-		final int max = Gmud.sPlayer.GetPlusFPMax();
-		final int last = Gmud.sPlayer.fp_plus;
-		final int x = (8 + 3 * (16 + Video.SMALL_LINE_H * 2))
-				- (Video.SMALL_LINE_H * 2) - 14 - 32;
-
+	/**
+	 * 在指定位置 (x,y) 使用加点框
+	 * 
+	 * @param max
+	 * @param last
+	 * @param x
+	 * @param y
+	 * @return 最终的点数，如果是按下 EXIT 键，则返回原始的点数
+	 */
+	static int _fp_mp_plush_menu(final int max, final int last, int x, int y) {
 		int cur = last > max ? max : last;
 		boolean update = true;
-
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (true) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (cur > 0) {
 					cur--;
 					update = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+			} else if ((last_key & Input.kKeyLeft) != 0) {
 				if (cur < max) {
 					cur += 10;
 					if (cur > max)
 						cur = max;
 					update = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (cur > 0) {
 					if (cur > 10)
 						cur -= 10;
@@ -1339,157 +1325,95 @@ public class UI {
 						cur = 0;
 					update = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (cur < max) {
 					cur++;
 					update = true;
 				}
-			}
-			if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.sPlayer.fp_plus = cur;
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				break;
-			}
-			if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				cur = last;
 				break;
 			}
 			if (update) {
-				DrawNumberBox(cur, max, x, 60);
+				DrawNumberBox(cur, max, x, y);
 				Video.VideoUpdate();
 				update = false;
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyLeft | Input.kKeyRight
+					| Input.kKeyUp | Input.kKeyDown | Input.kKeyEnt
+					| Input.kKeyExit);
 		}
-		if (cur == max) {
-			String str = String.format(Res.STR_FP_PLUS_LIMIT_STRING, max);
-			DrawStringFromY(str, 660);
-			Input.ClearKeyStatus();
-			Video.VideoUpdate();
-			Gmud.GmudDelay(1500);
+		return cur;
+	}
+
+	/** 加力菜单 */
+	static int FPPlusMenu() {
+		final String str;
+		if (255 == Gmud.sPlayer.select_skills[3]) {
+			str = Res.STR_NO_INNER_KONGFU_STRING;
+		} else {
+			final int max = Gmud.sPlayer.GetPlusFPMax();
+			final int last = Gmud.sPlayer.fp_plus;
+			final int cur = _fp_mp_plush_menu(max, last, 53, 44);
+			if (cur != last)
+				Gmud.sPlayer.fp_plus = cur;
+			if (cur == max) {
+				str = String.format(Res.STR_FP_PLUS_LIMIT_STRING, max);
+			} else
+				str = null;
+		}
+		if (str != null) {
+			DrawStringFromY(str);
 		}
 		return 0;
 	}
 
 	static int RecoverMP() {
-		Gmud.GmudDelay(100);
-		int j1 = Gmud.sPlayer.GetMPSpeed(); // get speed
-		int k1 = 0;
-		while (k1 != 3) {
-			Input.ProcessMsg();
-			while (true) {
-				Input.ProcessMsg();
-				DrawProgressBox(Gmud.sPlayer.mp_level * 2, Gmud.sPlayer.mp,
-						Gmud.sPlayer.mp, Gmud.sPlayer.mp_level);
-				Video.VideoUpdate();
-				Input.ProcessMsg();
-				if ((Input.inputstatus & Input.kKeyExit) != 0)
-					return 0;
-				if ((k1 = Gmud.sPlayer.Think()) != 0)
-					break;
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(600 / j1);
-			}
-			if (k1 == 1) {
-				String str = "你必须选择你要用的法术";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 0;
-			}
-			if (k1 == 2) {
-				String str = "你的法术等级不够";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 0;
-			}
+		final int err = _recover_fp_mp(false);
+		final String str;
+		if (err == 1) {
+			// 1:没有选择
+			str = Res.STR_NO_FASHU_STRING;
+		} else if (err == 2) {
+			// 2:基本功不够
+			str = Res.STR_FASHU_TOO_LOW;
+		} else if (err == 3) {
+			// 3:已达到上限
+			str = Res.STR_FASHU_TOO_LOW;
+		} else {
+			return 0;
 		}
-		String str = "你的法术等级不够";
-		DrawStringFromY(str, 660);
-		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		Gmud.GmudDelay(1500);
+		DrawStringFromY(str);
 		return 0;
 	}
 
 	static int MPPlusMenu() {
+		final String str;
 		if (255 == Gmud.sPlayer.select_skills[6]) {
-			String str = "你必须选择你要用的法术";
-			DrawStringFromY(str, 660);
-			Video.VideoUpdate();
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(1500);
-			return 0;
-		}
-		final int max = Gmud.sPlayer.GetPlusMPMax();
-		final int last = Gmud.sPlayer.mp_plus;
-		final int x = (8 + 3 * (16 + 26)) - 26 - 14 - 32;
-		int cur = last;
-		Input.ClearKeyStatus();
-		boolean update = true;
-		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
-				if (cur > 0) {
-					cur--;
-					update = true;
-				}
-			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) {
-				if (cur < max) {
-					cur += 10;
-					if (cur > max)
-						cur = max;
-					update = true;
-				}
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
-				if (cur > 0) {
-					if (cur > 10)
-						cur -= 10;
-					else
-						cur = 0;
-					update = true;
-				}
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
-				if (cur < max) {
-					cur++;
-					update = true;
-				}
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.sPlayer.mp_plus = cur;
-				break;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
-				cur = last;
-				break;
-			}
-			if (update) {
-				update = false;
-				DrawNumberBox(cur, max, x, 60);
-				Video.VideoUpdate();
-			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
-		}
-		if (cur == max) {
-			String str = String.format("你目前的法点上限为%d", max);
-			DrawStringFromY(str, 660);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(1500);
+			str = Res.STR_NO_FASHU_STRING;
 		} else {
-			Gmud.GmudDelay(50);
+			final int max = Gmud.sPlayer.GetPlusMPMax();
+			final int last = Gmud.sPlayer.mp_plus;
+			final int cur = _fp_mp_plush_menu(max, last, 53, 44);
+			if (cur != last)
+				Gmud.sPlayer.mp_plus = cur;
+			if (cur == max) {
+				str = String.format(Res.STR_MP_PLUS_LIMIT_STRING, max);
+			} else {
+				str = null;
+			}
+		}
+		if (str != null) {
+			DrawStringFromY(str);
 		}
 		return 0;
 	}
 
 	static void MPMenu() {
-		final int w = Video.SMALL_LINE_H * 3;
-		int x = 8 + 3 * (11 + 40);
-		if (x + w + w > Gmud.WQX_ORG_WIDTH)
-			x = Gmud.WQX_ORG_WIDTH - w - 2;
 		Gmud.sMap.DrawMap(-1);
-		UIUtils.ShowMenu(mp_menu_words, mp_menu_words.length, 2, x, 22, w,
+		UIUtils.ShowMenu(mp_menu_words, mp_menu_words.length, 2, 115, 11, 44,
 				MENUID_MP);
 	}
 
@@ -1512,16 +1436,13 @@ public class UI {
 		final int size = Gmud.sPlayer.GetPracticeSkillNumber();
 		if (size == 0)
 			return;
-		final int y = 11;
-		final int x = 78;
 		Gmud.sMap.DrawMap(-1);
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		boolean update = true;
 		int top = 0;
 		int sel = 0;
 		while (true) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (sel > 0)
 					sel--;
 				else if (top > 0) {
@@ -1534,7 +1455,7 @@ public class UI {
 					sel = size - 1;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (top + sel + 1 >= size) {
 					top = 0;
 					sel = 0;
@@ -1544,32 +1465,73 @@ public class UI {
 					top++;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.GmudDelay(100);
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				final int pos = top + sel;
 				final int skill_id = GmudTemp.temp_array_20_2[pos][0];
 				final int index = Gmud.sPlayer.SetNewSkill(skill_id);
 				if (index == -1)
 					break;
-				m_auto_confirm = 0;
-				int k3 = 0;
+				int err = 0;
 				do {
-					k3 = DrawPractice(index);
+					err = DrawPractice(index);
 					Gmud.sMap.DrawMap(-1);
-				} while (k3 == 0);
+				} while (err == 0);
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				break;
 			}
 			if (update) {
 				update = false;
-				DrawSkillList(x, y, size, top, sel, false);
+				DrawSkillList(78, 11, size, top, sel, false);
 				Video.VideoUpdate();
 			}
-			Gmud.GmudWaitNewKey(Input.kKeyDown | Input.kKeyUp | Input.kKeyEnt
-					| Input.kKeyExit);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyDown | Input.kKeyUp
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 		Input.ClearKeyStatus();
+	}
+
+	/**
+	 * 练功，如果中途连续多次按下 ENTER 键，则自动调整 {@link #m_auto_confirm}
+	 * 
+	 * @param index
+	 *            玩家技能表中的索引
+	 * @return <br/>
+	 *         0正常学习 1很难提高，需要向师傅请教 2需要提升内功 3打坐不够 4没有趁手兵器 5有伤 6升级 7基本功没有 <br/>
+	 *         0正常 1经验不足 2潜能不足 3钱不足 4等级超过 5升级
+	 * @see Player#PracticeSkill(int)
+	 * @see Player#StudySkill(int, int)
+	 * @see #m_auto_confirm
+	 */
+	static int _draw_study_practice(int index, boolean isPractice, int maxLevel) {
+		int err = 0;
+		// 控制在 [60,180]之间
+		final int speed = 180 - 2 * (isPractice ? Gmud.sPlayer
+				.GetPracticeSpeed(index) : Gmud.sPlayer.GetStudySpeed());
+		final int[] skill_data = Gmud.sPlayer.skills[index];
+		Input.ClearKeyStatus();
+		do {
+			DrawProgressBox(skill_data[4], skill_data[2], skill_data[2],
+					skill_data[1]);
+			Video.VideoUpdate();
+			// 等待 ENTER 或 EXIT 按键，或超时
+			final int last_key = Gmud.GmudWaitKey(Input.kKeyEnt
+					| Input.kKeyExit, speed);
+			if ((last_key & Input.kKeyExit) != 0) {
+				break;
+			}
+			if (last_key != 0) {
+				if (m_auto_confirm > 0 && (last_key & Input.kKeyEnt) != 0) {
+					--m_auto_confirm;
+				}
+				Input.ClearKeyStatus();
+			}
+			if (isPractice)
+				err = Gmud.sPlayer.PracticeSkill(index);
+			else
+				err = Gmud.sPlayer.StudySkill(index, maxLevel);
+		} while (err == 0);
+		return err;
 	}
 
 	/**
@@ -1580,97 +1542,29 @@ public class UI {
 	 * @return 0升级 1按下Exit键 3不能继续（如经验不足、基本功等级不够、受伤等）
 	 */
 	static int DrawPractice(int index) {
-		Gmud.GmudDelay(100);
-		int speed = Gmud.sPlayer.GetPracticeSpeed(index);
-		int err = 0;
-		String str;
-		// */
-		while (err != 6) {
-			do {
-				Input.ProcessMsg();
-				DrawProgressBox(Gmud.sPlayer.skills[index][4],
-						Gmud.sPlayer.skills[index][2],
-						Gmud.sPlayer.skills[index][2],
-						Gmud.sPlayer.skills[index][1]); // draw
-				Video.VideoUpdate();
-				if ((Input.inputstatus & Input.kKeyExit) != 0)
-					return 1;
-				if (m_auto_confirm > 0
-						&& (Input.inputstatus & Input.kKeyEnt) != 0) {
-					--m_auto_confirm;
-				}
-				err = Gmud.sPlayer.PracticeSkill(index);
-				Gmud.GmudDelay(960 / speed);
-			} while (err == 0);
-			if (err == 1) {
-				str = "你的功夫很难再有所提高了,还是向师傅请教一下吧";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 3;
-			}
-			if (err == 2) {
-				str = "你的内功等级不够";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 3;
-			}
-			if (err == 3) {
-				str = "你的内力修为不足,要勤修内功!";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 3;
-			}
-			if (err == 4) {
-				str = "趁手的兵器都没有一把,瞎比划什么!";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 3;
-			}
-			if (err == 5) {
-				str = "你受伤了,还是先治疗要紧.";
-				DrawStringFromY(str, 660);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(1500);
-				return 3;
-			}
-			if (err != 6)
-				continue;
-			str = "你的功夫进步了!";
-			DrawStringFromY(str, 660);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(1500);
-			Gmud.sMap.DrawMap(-1);
-
-			if (m_auto_confirm == 0) {
-				return 0;
-			}
-
-			int i2;
-			str = "继续练功吗？\n([输入]确认 [跳出]放弃)";
-			while ((i2 = DialogBx(str, 16, (Gmud.WQX_ORG_WIDTH / 2 / 3) * 2)) != Input.kKeyExit)
-				if ((i2 & Input.kKeyEnt) != 0) {
-					Input.ClearKeyStatus();
-					Gmud.sMap.DrawMap(-1);
-					return 0;
-				}
-			Input.ClearKeyStatus();
-			return 3;
+		final int err = _draw_study_practice(index, true, 0);
+		final String str;
+		if (err == 1) {
+			str = Res.STR_PRACTICE_NEED_MASTER;
+		} else if (err == 2) {
+			str = Res.STR_INNER_KONGFU_TOO_LOW;
+		} else if (err == 3) {
+			str = Res.STR_PRACTICE_NEED_FP_LEVEL;
+		} else if (err == 4) {
+			str = Res.STR_PRACTICE_NEED_WEAPON;
+		} else if (err == 5) {
+			str = Res.STR_PRACTICE_NEED_HEALTHFUL;
+		} else if (err == 6) {
+			str = Res.STR_STUDY_YOUR_SKILL_PROGRESS;
+		} else if (err == 7) {
+			str = Res.STR_PRACTICE_NO_BASE_SKILL;
+		} else {
+			return 1;
 		}
-		str = "你的武学经验不足,无法领会更深的功夫!";
-		DrawStringFromY(str, 660);
-		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-		Gmud.GmudDelay(1500);
-		return 3;
+		DrawStringFromY(str);
+		if (err != 6)
+			return 3;
+		return 0;
 	}
 
 	// ********** UI-NPC **********//
@@ -1715,14 +1609,13 @@ public class UI {
 	}
 
 	static void Trade(int id) {
-		if (NPC.NPC_sell_list[id][0] == 0) // 卖
-		{
+		if (NPC.NPC_sell_list[id][0] == 0) { // 卖
 			int size = Gmud.sPlayer.CopyItemList();
 			TradeWithNPC(true, size);
 			return;
-		} else {
-			int k1 = NPC.CopyItemList(id); // 买
-			TradeWithNPC(false, k1);
+		} else { // 买
+			int size = NPC.CopyItemList(id);
+			TradeWithNPC(false, size);
 			return;
 		}
 	}
@@ -1740,15 +1633,17 @@ public class UI {
 			return;
 		Gmud.sMap.DrawMap(-1);
 		DrawTalk(readDialogText(6 + (sell ? 1 : 0)));
+
 		final int x = TITLE_X + TITLE_X;
 		final int y = Video.SMALL_FONT_SIZE + SYSTEM_MENU_Y;
 		int top = 0;
 		int sel = 0;
 		Input.ClearKeyStatus();
 		boolean update = true;
+		int last_key = 0;
 		while (true) {
 			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (sel > 0) {
 					sel--;
 				} else if (top > 0) {
@@ -1761,7 +1656,7 @@ public class UI {
 					sel = size - 1;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (top + sel + 1 >= size) {
 					top = 0;
 					sel = 0;
@@ -1770,17 +1665,10 @@ public class UI {
 				else
 					top++;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				final int pos = top + sel;
 				final int id = GmudTemp.temp_array_32_2[pos][0];
-				if (!sell) {
-					int limit_money = Items.item_attribs[id][6];
-					if (Gmud.sPlayer.money >= limit_money
-							&& Gmud.sPlayer.GainOneItem(id)) {
-						Gmud.sPlayer.money -= Items.item_attribs[id][6];
-						break;
-					}
-				} else {
+				if (sell) {
 					// TODO: 用 序号 代替 ID
 					// Gmud.sPlayer.LoseItem(i3, 1);
 					int index = Gmud.sPlayer.ExistItem(id, 1);
@@ -1789,8 +1677,15 @@ public class UI {
 						Gmud.sPlayer.money += (Items.item_attribs[id][6] * 7) / 10;
 						break;
 					}
+				} else {
+					int limit_money = Items.item_attribs[id][6];
+					if (Gmud.sPlayer.money >= limit_money
+							&& Gmud.sPlayer.GainOneItem(id)) {
+						Gmud.sPlayer.money -= Items.item_attribs[id][6];
+						break;
+					}
 				}
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				break;
 			}
 			if (update) {
@@ -1798,8 +1693,8 @@ public class UI {
 				DrawItemList(x, y, size, top, sel, sell);
 				Video.VideoUpdate();
 			}
-			Gmud.GmudWaitNewKey(Input.kKeyExit | Input.kKeyEnt | Input.kKeyDown
-					| Input.kKeyUp);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyExit | Input.kKeyEnt
+					| Input.kKeyDown | Input.kKeyUp);
 		}
 		return;
 	}
@@ -2231,77 +2126,42 @@ public class UI {
 	/**
 	 * 学技能
 	 * 
+	 * @param skill_index
+	 * @param maxLevel
+	 * @return 0正常 -1按下EXIT 其它问题（等级太高、经验不足、无潜能、没钱）
 	 * @see Player#StudySkill(int, int)
-	 * @param skill_id
-	 * @param skill_level
-	 * @return 0正常 1经验不足 2潜能不足 3钱不足 4等级超过 5升级
 	 */
-	static int DrawConsult(int skill_id, int skill_level) {
-		Gmud.GmudDelay(100);
-		final int speed = Gmud.sPlayer.GetStudySpeed();
-		final int delay = 600 / speed;
-		final int[] data = Gmud.sPlayer.skills[skill_id];
-
-		int ret = 0;
-		while (ret == 0) {
-			Input.ClearKeyStatus();
-			Input.ProcessMsg();
-			DrawProgressBox(data[4], data[2], data[2], data[1]);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(delay);
-
-			if ((Input.inputstatus & Input.kKeyExit) != 0)
-				break;
-
-			if (m_auto_confirm > 0 && (Input.inputstatus & Input.kKeyEnt) != 0)
-				--m_auto_confirm;
-
-			ret = Gmud.sPlayer.StudySkill(skill_id, skill_level);
-		}
-
-		if (ret == 0)
-			return 1;
-
-		String str;
-		if (ret == 1) {
+	static int DrawConsult(int skill_index, int maxLevel) {
+		final int err = _draw_study_practice(skill_index, false, maxLevel);
+		final String str;
+		if (err == 1) {
 			str = Res.STR_STUDY_NEED_MORE_EXPERIENCE;
-		} else if (ret == 2) {
+		} else if (err == 2) {
 			str = Res.STR_STUDY_NEED_MORE_PONTENTIAL;
-		} else if (ret == 3) {
+		} else if (err == 3) {
 			str = Res.STR_STUDY_NEED_MORE_MONEY;
-		} else if (ret == 4) {
+		} else if (err == 4) {
 			str = Res.STR_STUDY_YOU_ARE_MASTER;
-		} else {
+		} else if (err == 5) {
 			str = Res.STR_STUDY_YOUR_SKILL_PROGRESS;
+		} else {
+			return -1;
 		}
-		DrawStringFromY(str, 660);
-		Video.VideoUpdate();
-		Gmud.GmudDelay(1500);
-
-		if (ret != 5)
-			return ret;
-
-		Input.ClearKeyStatus();
-		Gmud.sMap.DrawMap(-1);
+		DrawStringFromY(str);
+		if (err != 5)
+			return err;
 
 		if (m_auto_confirm == 0)
 			return 0;
 
-		str = Res.STR_STUDY_QUERY_CONTINUE;
-		int key = DialogBx(str, TITLE_X, Video.SMALL_FONT_SIZE * 3);
-		while ((Input.inputstatus & Input.kKeyExit) == 0) {
-			if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.sMap.DrawMap(-1);
-				return 0;
-			}
-
-			do {
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(100);
-			} while (Input.inputstatus == 0);
+		Gmud.sMap.DrawMap(-1);
+		int last_key = DialogBx(Res.STR_STUDY_QUERY_CONTINUE, TITLE_X,
+				Video.SMALL_FONT_SIZE * 3);
+		last_key = Gmud.GmudWaitKey(Input.kKeyEnt | Input.kKeyExit);
+		if ((last_key & Input.kKeyEnt) != 0) {
+			return 0;
 		}
-		Gmud.GmudDelay(120);
-		return 5;
+		return -1;
 	}
 
 	static void ConsultWithNPC(int size) {
@@ -2319,12 +2179,9 @@ public class UI {
 			max = 0;
 
 		boolean update = true;
-		UI.DrawSkillList(x, y, size, top, sel, true);
-		Video.VideoUpdate();
-		Gmud.GmudDelay(200);
-		while (true) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+		int last_key = 0;
+		while (Input.Running) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (sel > 0)
 					sel--;
 				else if (top > 0) {
@@ -2337,7 +2194,7 @@ public class UI {
 						sel = 2;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (sel < 2 && sel < size - 1)
 					sel++;
 				else if (top < size - 3) {
@@ -2346,29 +2203,27 @@ public class UI {
 					top = 0;
 					sel = 0;
 				}
-				UI.DrawSkillList(x, y, size, top, sel, true);
-				Video.VideoUpdate();
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
-				Gmud.GmudDelay(100);
+				update = true;
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				int index = top + sel;
 				int skill_id = GmudTemp.temp_array_20_2[index][0];
 				int skill_level = GmudTemp.temp_array_20_2[index][1];
 				int skill_index = Gmud.sPlayer.SetNewSkill(skill_id);
 				if (skill_index >= 0) {
 					m_auto_confirm = 3;
-					int k3 = 0;
-					while (k3 == 0) {
+					int err;
+					do {
+						err = DrawConsult(skill_index, skill_level);
+						Gmud.sMap.DrawMap(-1);
+					} while (err == 0);
+					if (err == 2) {
 						// == 2 没有潜能，不能学
-						if ((k3 = DrawConsult(skill_index, skill_level)) == 2)
-							return;
+						break;
 					}
-					Gmud.sMap.DrawMap(-1);
-					DrawSkillList(x, y, size, top, sel, true);
-					Video.VideoUpdate();
+					update = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
-				Gmud.GmudDelay(100);
-				return;
+			} else if ((last_key & Input.kKeyExit) != 0) {
+				break;
 			}
 
 			if (update) {
@@ -2376,8 +2231,8 @@ public class UI {
 				DrawSkillList(x, y, size, top, sel, true);
 				Video.VideoUpdate();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(80);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyDown | Input.kKeyUp
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 	}
 
@@ -2435,7 +2290,6 @@ public class UI {
 				else if (npc_type == 6)
 					Consult(npc_id); // 请教
 			}
-			Gmud.GmudDelay(100);
 		}
 	}
 
@@ -2481,8 +2335,8 @@ public class UI {
 		}
 		final String items = b.toString();
 		final String desc = NPC.GetNPCDesc(npcId);
-		String str = String.format("%s看起来约%d多岁\n武艺看起来%s\n出手似乎%s\n带着:%s\n%s",
-				npc_name, age, GmudData.level_name[level],
+		String str = String.format(Res.STR_NPC_DESC, npc_name, age,
+				GmudData.level_name[level],
 				GmudData.attack_level_name[attack_level], items, desc);
 		final int x = TITLE_X;
 		final int y = SYSTEM_MENU_Y + 2;
@@ -2499,22 +2353,15 @@ public class UI {
 				Video.VideoDrawStringSingleLine(as.get(t), x, y + j
 						* Video.SMALL_FONT_SIZE);
 			Video.VideoUpdate();
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(120);
 			if (++i < pages) {
-				while ((Input.inputstatus & Input.kKeyDown) == 0) {
-					UI.DrawFlashCursor(Gmud.WQX_ORG_WIDTH - 16, y + 2, CURSOR_W);
-					if ((Input.inputstatus & Input.kKeyExit) != 0) {
-						Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
-						return;
-					}
+				int last_key = DrawFlashCursor(147, y + 2, CURSOR_W,
+						Input.kKeyDown | Input.kKeyExit);
+				if ((last_key & Input.kKeyExit) != 0) {
+					break;
 				}
 			} else {
-				while ((Input.inputstatus & Input.kKeyExit) == 0)
-					Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
-				Input.ClearKeyStatus();
-				Gmud.GmudDelay(100);
-				return;
+				Gmud.GmudWaitAnyKey();
+				break;
 			}
 		}
 	}

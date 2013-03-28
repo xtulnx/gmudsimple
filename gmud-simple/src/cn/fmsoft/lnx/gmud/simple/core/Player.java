@@ -612,7 +612,11 @@ public class Player {
 		return (attack) / 20;
 	}
 
-	// 打坐速度
+	/**
+	 * 打坐速度
+	 * 
+	 * @return [1,60]
+	 */
 	int GetFPSpeed() {
 		final int base_level = GetSkillLevel(0);
 		final int skill_level = GetSkillLevel(select_skills[3]);
@@ -626,7 +630,11 @@ public class Player {
 		return speed;
 	}
 
-	// 冥思速度
+	/**
+	 * 冥思速度
+	 * 
+	 * @return [1,60]
+	 */
 	int GetMPSpeed() {
 		final int base_level = GetSkillLevel(4);
 		final int skill_level = GetSkillLevel(select_skills[6]);
@@ -640,7 +648,7 @@ public class Player {
 		return speed;
 	}
 
-	/** 学习速度 */
+	/** 学习速度 [1,60] */
 	int GetStudySpeed() {
 		// 后天悟性 / 2
 		int speed = GetSavvy() / 2;
@@ -651,7 +659,7 @@ public class Player {
 		return speed;
 	}
 
-	/** 练功速度 */
+	/** 练功速度 [1,60] */
 	int GetPracticeSpeed(int index) {
 		final int skill_id = skills[index][0];
 		final int skill_level;
@@ -1196,7 +1204,7 @@ public class Player {
 	 * 
 	 * @param index
 	 *            技能的序号
-	 * @return 0 正常学习 1 很难提高，需要向师傅请教 2 需要提升内功 3 打坐不够 4 没有趁手兵器 5 有伤 6 升级
+	 * @return 0 正常学习 1 很难提高，需要向师傅请教 2 需要提升内功 3 打坐不够 4 没有趁手兵器 5 有伤 6 升级 7基本功没有
 	 */
 	int PracticeSkill(int index) {
 
@@ -1232,6 +1240,10 @@ public class Player {
 				}
 			}
 		}
+
+		// 没有基本功
+		if (base_level == 0)
+			return 7;
 
 		// 已超过基本功
 		int skill_level = skills[index][1];

@@ -1020,8 +1020,6 @@ class Battle {
 			count = 1;
 		for (int i = 0; i < count; i++) {
 			uibattle.PhyAttack(attack_type, desc_start + i);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(900);
 		}
 	}
 
