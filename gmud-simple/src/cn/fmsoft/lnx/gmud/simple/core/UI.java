@@ -2036,11 +2036,7 @@ public class UI {
 			break;
 
 		case 126: // 北海鳄神
-			if (Gmud.sPlayer.pre_savvy > 18) {
-				ApprenticeWords(151);
-				return;
-			}
-			if (GetSkillTypeLevel(40, 7) < 90) {
+			if (GetSkillTypeLevel(40, 255) < 60) {
 				ApprenticeWords(152);
 				return;
 			}
@@ -2051,11 +2047,7 @@ public class UI {
 			break;
 
 		case 129: // 娜可露露
-			if (Gmud.sPlayer.pre_savvy > 18) {
-				ApprenticeWords(151);
-				return;
-			}
-			if (GetSkillTypeLevel(40, 7) < 165) {
+			if (GetSkillTypeLevel(40, 255) < 110) {
 				ApprenticeWords(153);
 				return;
 			}
