@@ -913,8 +913,7 @@ public class Map {
 					| Input.kKeyExit);
 			if ((last_key & Input.kKeyLeft) != 0) {
 				if (Gmud.sPlayer.GetSkillLevel(7) > 0) {
-					mini_game_2.GameMain(); // dance
-					int grow = mini_game_2.score;
+					int grow = mini_game_2.GameMain(); // dance
 					if (Gmud.sPlayer.GetSkillLevel(7) > 60)
 						grow = 0;
 					game_return_to_map(7, grow); // 基本轻功
