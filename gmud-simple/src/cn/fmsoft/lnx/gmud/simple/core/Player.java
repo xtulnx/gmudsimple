@@ -16,7 +16,8 @@ public class Player {
 		return sInstance;
 	}
 
-	static final int AGE_TIME = 240;
+	/** 年龄：暂定１年为现实１天 */
+	public static final int AGE_TIME = 24 * 60;
 
 	/** 物品列表的最多数量 */
 	static final int MAX_ITEM_SIZE = 32;
@@ -1162,7 +1163,7 @@ public class Player {
 	int StudySkill(int skill_index, int maxlevel) {
 		int skill_id = skills[skill_index][0];
 		int skill_level = skills[skill_index][1];
-		if (skill_level >= maxlevel)
+		if (skill_level > maxlevel)
 			return 4;
 
 		if (exp < skill_level * 2 * (skill_level * 2))

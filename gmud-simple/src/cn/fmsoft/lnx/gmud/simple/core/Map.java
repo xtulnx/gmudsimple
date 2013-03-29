@@ -50,7 +50,7 @@ public class Map {
 	private Bitmap[] m_player_image = new Bitmap[6];
 
 	/** 图元表，成员解析：&0x8000000!=0 为空白区，其宽度为 &0xffff，否则为图片ID，范围[0,244) */
-	static MapInfo.MAPINFO map_image_data = new MapInfo.MAPINFO();
+	protected final MapInfo.MAPINFO map_image_data = new MapInfo.MAPINFO();
 
 	/**
 	 * 地图事件
@@ -65,7 +65,7 @@ public class Map {
 	 * <li>-65535回到地图0</li>
 	 * </ol>
 	 */
-	static MapInfo.MAPINFO map_event_data = new MapInfo.MAPINFO(); // event data
+	protected final MapInfo.MAPINFO map_event_data = new MapInfo.MAPINFO(); // event data
 
 	static byte NPC_flag[] = new byte[185];
 

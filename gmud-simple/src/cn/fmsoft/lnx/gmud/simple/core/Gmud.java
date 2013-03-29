@@ -271,6 +271,8 @@ public class Gmud {
 	public static interface ICallback {
 		/** 弹出框输入名字，不可为空，完成后需调用 {@link Gmud#SetNewName(String)}， 0玩家名 1武器名 */
 		public void EnterNewName(int type);
+
+		public void UpdateTime(long minutes, int seconds);
 	}
 
 	public static void SetCallback(ICallback callback) {
@@ -350,5 +352,12 @@ public class Gmud {
 			GmudDelay(1);
 		}
 		return s_tmp_new_name;
+	}
+
+	/** 更新显示游戏时间 */
+	protected static void UpdatePlayTime(long minutes, int seconds) {
+		if (sCallback != null) {
+			sCallback.UpdateTime(minutes, seconds);
+		}
 	}
 }

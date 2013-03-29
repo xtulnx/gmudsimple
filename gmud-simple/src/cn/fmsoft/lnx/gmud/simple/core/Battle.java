@@ -524,7 +524,7 @@ class Battle {
 
 		fighter_data[id][67] = Gmud.sPlayer.money; // money
 		fighter_data[id][68] = Gmud.sPlayer.sex; // sex
-		fighter_data[id][69] = (int) (Gmud.sPlayer.played_time / Player.AGE_TIME); // age
+		fighter_data[id][69] = Gmud.sPlayer.GetAge(); // age
 
 		// reset skill
 		for (int i = 0; i < 8; i++) {

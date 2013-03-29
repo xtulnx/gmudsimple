@@ -267,10 +267,10 @@ class Video {
 		path.moveTo(x, y);
 		if ((type & 1) == 0) {
 			path.lineTo(x + w, y);
-			path.lineTo(x + w / 2, y + h);
+			path.lineTo(x + (float) w / 2, y + h);
 		} else {
 			path.lineTo(x, y + h);
-			path.lineTo(x + w, y + h / 2);
+			path.lineTo(x + w, y + (float) h / 2);
 		}
 		path.close();
 
