@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -320,6 +321,18 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	}
 
 	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (Input.Running) {
+			if (KeyEvent.KEYCODE_ENTER == keyCode
+					|| (KeyEvent.KEYCODE_0 <= keyCode && keyCode <= KeyEvent.KEYCODE_Z)) {
+				Input.onKey(keyCode, event);
+				return true;
+			}
+		}
+		return super.onKeyUp(keyCode, event);
+	}
+
+	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (Input.Running) {
@@ -370,6 +383,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				// Set an EditText view to get user input
 				final EditText input = new EditText(ctx);
 				input.setHint("[无名]");
+				input.setFilters(new InputFilter[] { new InputFilter.LengthFilter(
+						12) });
 				input.setSingleLine(true);
 				input.setOnKeyListener(new View.OnKeyListener() {
 					@Override
@@ -382,6 +397,12 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 					}
 				});
 				alert.setView(input);
+				alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface dialog) {
+						setNewName(input.getText().toString());
+					}
+				});
 
 				alert.setPositiveButton("Ok",
 						new DialogInterface.OnClickListener() {
