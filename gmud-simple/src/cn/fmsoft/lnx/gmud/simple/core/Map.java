@@ -920,8 +920,7 @@ public class Map {
 				}
 			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (Gmud.sPlayer.GetSkillLevel(8) > 0) {
-					mini_game_1.GameMain(); // 投球
-					int grow = mini_game_1.score;
+					int grow = mini_game_1.GameMain(); // 投球
 					if (Gmud.sPlayer.GetSkillLevel(8) > 60)
 						grow = 0;
 					game_return_to_map(8, grow); // 基本招架
