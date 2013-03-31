@@ -1156,17 +1156,24 @@ public class UI {
 				} else if (type != 0) {
 					final int skillType = groupTop + groupSel;
 					final int index = top + sel;
-					int id = Gmud.sPlayer.skills[GmudTemp.temp_array_32_2[index][0]][0];
-					int isSel = GmudTemp.temp_array_32_2[index][1];
-					if (isSel == 0)
-						Gmud.sPlayer.SelectSkill(id, skillType);
-					else
-						Gmud.sPlayer.UnselectSkill(skillType);
-					update_group = true;
-					update_item = true;
-					type = 0;
-					if (Battle.sBattle != null)
-						Battle.sBattle.CopyPlayerSelectSkills();
+					int skill_id = Gmud.sPlayer.skills[GmudTemp.temp_array_32_2[index][0]][0];
+					if (skill_id < 10) {
+						// 基本功，不做任何处理
+					} else {
+						if (skillType != 5) {
+							// 知识类技能不可选
+							int isSel = GmudTemp.temp_array_32_2[index][1];
+							if (isSel == 0)
+								Gmud.sPlayer.SelectSkill(skill_id, skillType);
+							else
+								Gmud.sPlayer.UnselectSkill(skillType);
+							if (Battle.sBattle != null)
+								Battle.sBattle.CopyPlayerSelectSkills();
+							update_group = true;
+						}
+						update_item = true;
+						type = 0;
+					}
 				}
 			}
 

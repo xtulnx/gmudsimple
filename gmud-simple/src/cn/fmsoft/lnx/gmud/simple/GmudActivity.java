@@ -181,6 +181,10 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 			else
 				setTitle(BASE_TITLE);
 		}
+
+		boolean image_smooth = p.getBoolean(
+				getString(R.string.key_image_smooth), false);
+		Gmud.setImageSmooth(image_smooth);
 	}
 
 	private void show_time() {

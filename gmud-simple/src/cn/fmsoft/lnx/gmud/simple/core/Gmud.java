@@ -360,4 +360,8 @@ public class Gmud {
 			sCallback.UpdateTime(minutes, seconds);
 		}
 	}
+
+	public static void setImageSmooth(boolean smooth) {
+		Video.setImageSmooth(smooth);
+	}
 }

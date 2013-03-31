@@ -13,6 +13,9 @@
     <string name="title_show_time">显示时间</string>
     <string name="key_show_time">key_show_time</string>
     <string name="summary_show_time">在标题中显示游戏时间和年龄</string>
+    <string name="title_image_smooth">平滑图像</string>
+    <string name="key_image_smooth">key_image_smooth</string>
+    <string name="summary_image_smooth">如果不习惯原版的点阵图，可通过程序平滑图像，会有模糊感</string>
     <string name="title_store">存档</string>
     <string name="key_backup">key_backup</string>
     <string name="title_backup">备份存档</string>
