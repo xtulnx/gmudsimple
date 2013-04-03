@@ -360,4 +360,23 @@ public class Gmud {
 			sCallback.UpdateTime(minutes, seconds);
 		}
 	}
+
+	/** 取玩家的名字 */
+	public static String GetPlayerName() {
+		if (sPlayer != null)
+			return sPlayer.player_name;
+		return null;
+	}
+
+	/** 性别 0男 1女 */
+	public static int GetPlayerSex() {
+		if (sPlayer != null) {
+			return sPlayer.sex;
+		}
+		return -1;
+	}
+
+	public static String GetPlayerClass() {
+		return GmudData.class_name[sPlayer == null ? 0 : sPlayer.class_id];
+	}
 }
