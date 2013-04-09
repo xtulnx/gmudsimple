@@ -742,9 +742,11 @@ public class UI {
 
 		as[i++] = String.format("内力:%d/%d(+%d)", Gmud.sPlayer.fp,
 				Gmud.sPlayer.fp_level, Gmud.sPlayer.fp_plus);
-		if (Gmud.sPlayer.mp > 0)
+		if (Gmud.sPlayer.class_id == 8) {
+			// 只有茅山派才显示法力
 			as[i++] = String.format("法力:%d/%d(+%d)", Gmud.sPlayer.mp,
 					Gmud.sPlayer.mp_level, Gmud.sPlayer.mp_plus);
+		}
 		as[i++] = String.format("经验:%d 潜能:%d", Gmud.sPlayer.exp,
 				Gmud.sPlayer.potential);
 		_draw_player_info(as, i, TITLE_X);

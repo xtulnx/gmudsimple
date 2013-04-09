@@ -252,7 +252,7 @@ public class uibattle {
 		y += 9;
 
 		// draw MP
-		if (data_player[42] != 255) {
+		if (data_player[42] != 255 && data_player[66] == 8) {
 			Video.VideoDrawImage(mp_img, x, y);
 			DrawHPRect(data_player[6], data_player[7], data_player[7], x_r,
 					y + 2, true);
