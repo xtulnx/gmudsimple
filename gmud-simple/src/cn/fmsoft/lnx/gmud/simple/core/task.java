@@ -2,7 +2,7 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 import java.util.Arrays;
 
-import android.R.color;
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
 import cn.fmsoft.lnx.gmud.simple.core.NPC.NPCSKILLINFO;
 
 public class task {
@@ -268,7 +268,7 @@ public class task {
 		{
 			// "王蛇胆"
 			int index = Gmud.sPlayer.ExistItem(88, 1);
-			if (index >= 0 && Gmud.sPlayer.class_id == 6) {
+			if (index >= 0 && Gmud.sPlayer.isClass(ClassID.XueShan)) {
 				// "雪山剑法" 的级别 >= 150 "基本剑术">60
 				if (Gmud.sPlayer.GetSkillLevel(38) >= 150
 						&& Gmud.sPlayer.GetSkillLevel(2) > 60) {
@@ -412,7 +412,7 @@ public class task {
 
 		case 156:    //月下老人
 		{
-			if (8 == Gmud.sPlayer.class_id) {
+			if (Gmud.sPlayer.isClass(ClassID.MaoShan)) {
 				UI.DrawDialog(Res.STR_MATCHMAKER_MAOSHAN);
 				return;
 			}

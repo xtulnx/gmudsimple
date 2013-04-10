@@ -111,6 +111,8 @@ public final class Configure {
 		VIDEO_PAINT = TITLE_PAINT = null;
 		for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
 			sRcKeys[i] = null;
+		}
+		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			IMG_TITLE[i] = null;
 		}
 	}

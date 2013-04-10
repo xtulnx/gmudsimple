@@ -50,6 +50,9 @@ public class Gmud {
 
 	private static int sRunStatus = RS_UNINITIALIZED;
 
+	/** 是否已经开启了游戏主线程 */
+	public static boolean PLAYING = false;
+
 	static Context sContext;
 
 	static Activity sActivity = null;
