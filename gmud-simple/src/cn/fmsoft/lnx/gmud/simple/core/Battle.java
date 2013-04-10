@@ -160,8 +160,8 @@ class Battle {
 	int PhyAttack(boolean flag) {
 		int ai[] = new int[2];
 
-		// 随机一个攻击部位
-		b_int_array1d_static[3] = util.RandomInt(16);
+		// 随机一个攻击部位 见 GmudData#hit_point_name
+		b_int_array1d_static[3] = util.RandomInt(GmudData.hit_point_name.length);
 
 		ai[0] = ai[1] = 0;
 		int id = m_active_id;

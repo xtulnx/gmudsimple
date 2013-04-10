@@ -38,7 +38,7 @@ import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 import cn.fmsoft.lnx.gmud.simple.core.Player;
 
-public class GmudActivity extends Activity implements Gmud.ICallback {
+public class GmudActivity extends Activity {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
@@ -49,8 +49,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 	private Show mShow;
 
-	private final int _MSG_USER_ = 0x1000;
-	private final int MSG_UPDATE_PLAY_TIME = _MSG_USER_ + 1;
+	private static final int _MSG_USER_ = 0x1000;
+	private static final int MSG_UPDATE_PLAY_TIME = _MSG_USER_ + 1;
 
 	private Handler mHandler = new Handler() {
 		@Override
@@ -74,6 +74,9 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	private String BASE_TITLE;
 	private String SHOW_TIME_FORMART = "%s   %.2f'%4d:%d";
 
+	private Intent INTENT_GUARD_SERVER;
+	private boolean bEnableGuard = false;
+
 	protected static PendingIntent getPendingIntent(Context ctx) {
 		if (sMainIntent != null)
 			return sMainIntent;
@@ -90,6 +93,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.main);
+
+		INTENT_GUARD_SERVER = new Intent(getBaseContext(), GuardServer.class);
 
 		BASE_TITLE = getTitle().toString();
 
@@ -121,7 +126,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		});
 
 		// new Gmud(this);
-		Gmud.SetCallback(this);
+		((GmudApp) getApplication()).BindGmudActivity(this);
 		Gmud.Start();
 	}
 
@@ -129,7 +134,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		Gmud.SetCallback(null);
+		((GmudApp) getApplication()).UnbindGmudActivity(this);
 
 		Configure.recycle();
 
@@ -143,6 +148,18 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		check_guard();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		stopService(INTENT_GUARD_SERVER);
 	}
 
 	@Override
@@ -187,6 +204,19 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		boolean image_smooth = p.getBoolean(
 				getString(R.string.key_image_smooth), false);
 		Gmud.setImageSmooth(image_smooth);
+
+		boolean enableGuardServer = p.getBoolean(
+				getString(R.string.key_enable_guard), bEnableGuard);
+		if (enableGuardServer != bEnableGuard)
+			bEnableGuard = enableGuardServer;
+	}
+
+	private void check_guard() {
+		// check background server
+		if (bEnableGuard)
+			startService(INTENT_GUARD_SERVER);
+		else
+			stopService(INTENT_GUARD_SERVER);
 	}
 
 	private void show_time() {
@@ -375,7 +405,6 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		// }
 	}
 
-	@Override
 	public void EnterNewName(final int type) {
 		mHandler.post(new Runnable() {
 			@Override
@@ -443,7 +472,6 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		}
 	}
 
-	@Override
 	public void UpdateTime(long minutes, int seconds) {
 		mMinutes = minutes;
 		mSeconds = seconds;

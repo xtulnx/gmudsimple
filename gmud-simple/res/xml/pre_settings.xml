@@ -31,6 +31,10 @@
             android:key="@string/key_image_smooth"
             android:summary="@string/summary_image_smooth"
             android:title="@string/title_image_smooth" />
+        <CheckBoxPreference
+            android:key="@string/key_enable_guard"
+            android:summary="@string/summary_enable_guard"
+            android:title="@string/title_enable_guard" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -16,6 +16,9 @@
     <string name="title_image_smooth">平滑图像</string>
     <string name="key_image_smooth">key_image_smooth</string>
     <string name="summary_image_smooth">如果不习惯原版的点阵图，可通过程序平滑图像，会有模糊感</string>
+    <string name="title_enable_guard">允许后台挂机</string>
+    <string name="key_enable_guard">key_enable_guard</string>
+    <string name="summary_enable_guard">允许创建后台服务来挂机</string>
     <string name="title_store">存档</string>
     <string name="key_backup">key_backup</string>
     <string name="title_backup">备份存档</string>

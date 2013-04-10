@@ -7,6 +7,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple.core;
 
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -366,5 +367,25 @@ public class Gmud {
 
 	public static void setImageSmooth(boolean smooth) {
 		Video.setImageSmooth(smooth);
+	}
+
+	/** 取玩家的名字 */
+	public static String GetPlayerName() {
+		if (sPlayer != null)
+			return sPlayer.player_name;
+		return null;
+	}
+
+	/** 性别 0男 1女 */
+	public static int GetPlayerSex() {
+		if (sPlayer != null) {
+			return sPlayer.sex;
+		}
+		return -1;
+	}
+
+	public static String GetPlayerClass() {
+		return GmudData.class_name[sPlayer == null ? ClassID.None : sPlayer
+				.GetClassID()];
 	}
 }
