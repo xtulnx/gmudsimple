@@ -13,7 +13,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -24,7 +23,7 @@ import android.view.ViewConfiguration;
  * @author nxliao
  * 
  */
-public class CustomSoftKeySizeDialog extends Dialog {
+class CustomSoftKeySizeDialog extends Dialog {
 	final static boolean DEBUG = true;
 	final static String DBG_TAG = CustomSoftKeySizeDialog.class.getName();
 
@@ -72,6 +71,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 			mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 			mPaint.setStyle(Paint.Style.STROKE);
 			mPaint.setStrokeWidth(1);
+			mPaint.setColor(Color.MAGENTA);
 			mPaint.setPathEffect(new DashPathEffect(new float[] { 3, 4, 2, 3 },
 					1));
 		}
@@ -137,7 +137,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 			}
 		};
 		setContentView(new AdjustButtonView(getContext(), listener, mDrawables));
-		setTitle("Custom Button");
+		setTitle(R.string.custom_key_dialog);
 		setCanceledOnTouchOutside(true);
 		// View v = getWindow().findViewById(android.R.id.title);
 		// if (v != null && v instanceof TextView) {
@@ -174,14 +174,17 @@ public class CustomSoftKeySizeDialog extends Dialog {
 				* (ITEM_MAX + 1))
 				/ ITEM_MAX;
 
+		/* 提示语位置 */
+		private static final int DEF_TIP_TOP = DEF_CENTER_Y * 2 - DEF_BT_HEIGHT
+				- DEF_BT_PADDING_TOP;
+
 		/* 目标物件的尺寸限制 */
 		private static final int DEF_SHOW_TOP = DEF_BT_PADDING_TOP
 				+ DEF_BT_HEIGHT + 6;
 		private static final int DEF_SIZE_W_MIN = 16;
 		private static final int DEF_SIZE_W_MAX = DEF_CENTER_X * 2 - 16;
 		private static final int DEF_SIZE_H_MIN = 16;
-		private static final int DEF_SIZE_H_MAX = DEF_CENTER_Y * 2
-				- DEF_SHOW_TOP - DEF_BT_PADDING_TOP;
+		private static final int DEF_SIZE_H_MAX = DEF_TIP_TOP - DEF_SHOW_TOP;
 		private static final int DEF_SHOW_CX = DEF_CENTER_X;
 		private static final int DEF_SHOW_CY = DEF_SHOW_TOP
 				+ (DEF_SIZE_H_MAX / 2);
@@ -192,6 +195,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 		private int BT_PADDING_HORIZONTAL;
 		private int BT_HEIGHT;
 		private int BT_WIDTH;
+		private int TIP_TOP;
 		private int SHOW_TOP;
 		private int SHOW_CX;
 		private int SHOW_CY;
@@ -257,11 +261,6 @@ public class CustomSoftKeySizeDialog extends Dialog {
 			// TODO: 调整各区域的偏移，使整体的中心与View的中心吻合，限制无效区域
 			for (int i = 0, cx = rc.centerX(), cy = rc.centerY(); i < ITEM_MAX; i++) {
 				mRcBounds[i].offset(-cx, -cy);
-				if (DEBUG) {
-					Log.d(DBG_TAG, "adjust bounds "
-							+ drawables[i].getBounds().toShortString()
-							+ " ==> " + mRcBounds[i].toShortString());
-				}
 				drawables[i].setBounds(mRcBounds[i]);
 			}
 
@@ -274,6 +273,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 			BT_PADDING_HORIZONTAL = (int) (DEF_BT_PADDING_HORIZONTAL * density);
 			BT_HEIGHT = (int) (DEF_BT_HEIGHT * density);
 			BT_WIDTH = (int) (DEF_BT_WIDTH * density);
+			TIP_TOP = (int) (DEF_TIP_TOP * density);
 			SHOW_TOP = (int) (DEF_SHOW_TOP * density);
 			SHOW_CX = (int) (DEF_SHOW_CX * density);
 			SHOW_CY = (int) (DEF_SHOW_CY * density);
@@ -328,7 +328,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 			p.getTextBounds(tip, 0, tip.length(), rc);
 			p.setShadowLayer(3, 2, 1, COLOR_TIP[1]);
 			canvas.drawText(tip, CENTER_X - rc.centerX(),
-					CENTER_Y * 2 - rc.height(), p);
+					TIP_TOP + rc.height(), p);
 			p.setShadowLayer(0, 0, 0, 0);
 
 			// draw focus
@@ -486,8 +486,7 @@ public class CustomSoftKeySizeDialog extends Dialog {
 				d.setLevel(level);
 
 				// 当前选择的组件或未选择任何组件
-				final int alpha = (selId == i || selId == ITEM_NONE) ? 255
-						: 128;
+				final int alpha = (selId == i || selId == ITEM_NONE) ? 255 : 96;
 				d.setAlpha(alpha);
 			}
 		}
@@ -542,10 +541,6 @@ public class CustomSoftKeySizeDialog extends Dialog {
 		private void _onClick() {
 			final long tick = SystemClock.elapsedRealtime();
 			if (mDoubleTapTimeout > tick - mLastClickTick) {
-				if (DEBUG) {
-					Log.d(DBG_TAG, "click space area");
-				}
-
 				mListener.onCustomSoftKeyApply(mRcBounds[ITEM_FOCUSE],
 						mRcBounds[ITEM_BG], mRcBounds[ITEM_TITLE]);
 			}

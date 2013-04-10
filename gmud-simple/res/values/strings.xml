@@ -47,6 +47,7 @@
     <string name="menu_reset">恢复默认</string>
 
     <!-- 虚拟按键自定义设计 -->
+    <string name="custom_key_dialog">Custom Key</string>
     <string name="custom_key_summary_apply">『双击』空白区应用设计！</string>
     <string name="custom_key_hithot">热点</string>
     <string name="custom_key_summary_hithot">“虚拟按键”的响应区域</string>

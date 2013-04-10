@@ -288,17 +288,7 @@ public class GmudActivity extends Activity {
 			break;
 
 		case R.id.item_about:
-			Dialog dialog = new AlertDialog.Builder(this)
-					.setIcon(android.R.drawable.btn_star)
-					.setTitle(R.string.title).setMessage(R.string.about)
-					.setPositiveButton("OK", new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-						}
-					}).create();
-			dialog.setCancelable(true);
-			dialog.setCanceledOnTouchOutside(true);
-			dialog.show();
+			about();
 			break;
 
 		// case R.id.item_backup:
@@ -313,6 +303,22 @@ public class GmudActivity extends Activity {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void about() {
+		Dialog dialog = new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.btn_star_big_on)
+				.setTitle(R.string.title).setMessage(R.string.about)
+				.setPositiveButton("OK", new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				}).create();
+		dialog.setCancelable(true);
+		dialog.setCanceledOnTouchOutside(true);
+		dialog.show();
+		View v = dialog.getWindow().getDecorView();
+		v = v.findViewById(android.R.id.title);
 	}
 
 	@Override

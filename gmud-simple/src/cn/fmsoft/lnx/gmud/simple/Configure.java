@@ -140,6 +140,7 @@ public final class Configure {
 		TITLE_PAINT.setFilterBitmap(true);
 		TITLE_PAINT.setFakeBoldText(true);
 		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
+		TITLE_PAINT.setShadowLayer(3, 1, 2, Color.BLACK);
 
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			sRcKeys[i] = new Rect();

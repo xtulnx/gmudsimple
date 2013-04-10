@@ -18,7 +18,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
