@@ -28,7 +28,7 @@ import android.graphics.Rect;
 class Video {
 
 	/** 默认背景色 */
-	static final int COLOR_BG = 0xff94b252;
+	static final int COLOR_BG = 0xff90b057;
 	static final int COLOR_FG = Color.BLACK;
 
 	static final int LARGE_FONT_SIZE = 16;
@@ -61,6 +61,8 @@ class Video {
 	/** 输出区域，不一定与[160x80]成比例 */
 	private static Rect sDirtyRect;
 	private static int sWidth, sHeight;
+
+	private static boolean sConfig_ImageSmooth = false;
 
 	public static void SetCallback(Gmud.IVideoCallback callback) {
 		sCallback = callback;
@@ -111,12 +113,26 @@ class Video {
 		}
 	}
 
+	static void setImageSmooth(boolean smooth) {
+		if (sConfig_ImageSmooth != smooth) {
+			sConfig_ImageSmooth = smooth;
+			update_config_image_smooth();
+		}
+	}
+
+	private static void update_config_image_smooth() {
+		if (sPaint != null) {
+			boolean smooth = sConfig_ImageSmooth;
+			sPaint.setAntiAlias(smooth);
+			sPaint.setFilterBitmap(smooth);
+		}
+	}
+
 	static boolean VideoInit() {
 		sDirtyRect = new Rect();
 
 		sPaint = new Paint();
-		sPaint.setAntiAlias(false);
-//		sPaint.setFilterBitmap(true);
+		update_config_image_smooth();
 
 		lpmem = new Canvas();
 

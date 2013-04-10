@@ -7,6 +7,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple.core;
 
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -49,6 +50,9 @@ public class Gmud {
 	public final static int RS_STOP = 3;
 
 	private static int sRunStatus = RS_UNINITIALIZED;
+
+	/** 是否已经开启了游戏主线程 */
+	public static boolean PLAYING = false;
 
 	static Context sContext;
 
@@ -361,6 +365,10 @@ public class Gmud {
 		}
 	}
 
+	public static void setImageSmooth(boolean smooth) {
+		Video.setImageSmooth(smooth);
+	}
+
 	/** 取玩家的名字 */
 	public static String GetPlayerName() {
 		if (sPlayer != null)
@@ -377,6 +385,7 @@ public class Gmud {
 	}
 
 	public static String GetPlayerClass() {
-		return GmudData.class_name[sPlayer == null ? 0 : sPlayer.class_id];
+		return GmudData.class_name[sPlayer == null ? ClassID.None : sPlayer
+				.GetClassID()];
 	}
 }

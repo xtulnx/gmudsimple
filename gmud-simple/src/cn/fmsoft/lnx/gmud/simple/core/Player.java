@@ -3,6 +3,7 @@ package cn.fmsoft.lnx.gmud.simple.core;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
 
 public class Player {
 
@@ -36,7 +37,7 @@ public class Player {
 	int pre_savvy; // 先天悟性
 	int pre_aptitude; // 先天根骨
 	int face_level; // 外貌
-	int class_id; // 门派
+	private int class_id; // 门派
 	int teacher_id; // 师傅
 	int bliss; // 福缘
 	int married; // 婚姻
@@ -311,8 +312,16 @@ public class Player {
 	}
 
 	// 门派id
-	int GetPlayerClassID() {
-		return (class_id > 9) ? 0 : class_id;
+	int GetClassID() {
+		return (class_id > ClassID._MAX_) ? 0 : class_id;
+	}
+
+	void SetClassID(int classId) {
+		class_id = classId;
+	}
+
+	boolean isClass(int classId) {
+		return class_id == classId;
 	}
 
 	/**

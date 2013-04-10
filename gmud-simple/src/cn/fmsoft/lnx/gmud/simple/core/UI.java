@@ -2,6 +2,8 @@ package cn.fmsoft.lnx.gmud.simple.core;
 
 import java.util.ArrayList;
 
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
+
 public class UI {
 	public static final int TITLE_X = 6;
 	public static final int SYSTEM_MENU_Y = 2;
@@ -246,7 +248,6 @@ public class UI {
 				Gmud.sMap.DrawMap(-1);
 				update = true;
 			} else if ((last_key & Input.kKeyExit) != 0) {
-				update = true;
 				break;
 			}
 
@@ -257,12 +258,6 @@ public class UI {
 			}
 			last_key = Gmud.GmudWaitNewKey(Input.kKeyLeft | Input.kKeyRight
 					| Input.kKeyEnt | Input.kKeyExit);
-		}
-
-		if (update) {
-			Gmud.sMap.DrawMap(-1);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
 		}
 	}
 
@@ -742,9 +737,11 @@ public class UI {
 
 		as[i++] = String.format("内力:%d/%d(+%d)", Gmud.sPlayer.fp,
 				Gmud.sPlayer.fp_level, Gmud.sPlayer.fp_plus);
-		if (Gmud.sPlayer.mp > 0)
+		if (Gmud.sPlayer.isClass(ClassID.MaoShan)) {
+			// 只有茅山派才显示法力
 			as[i++] = String.format("法力:%d/%d(+%d)", Gmud.sPlayer.mp,
 					Gmud.sPlayer.mp_level, Gmud.sPlayer.mp_plus);
+		}
 		as[i++] = String.format("经验:%d 潜能:%d", Gmud.sPlayer.exp,
 				Gmud.sPlayer.potential);
 		_draw_player_info(as, i, TITLE_X);
@@ -753,7 +750,7 @@ public class UI {
 	static void DrawPlayerDesc() {
 		String as[] = new String[5];
 		as[0] = String.format("[%s]%s",
-				GmudData.class_name[Gmud.sPlayer.class_id],
+				GmudData.class_name[Gmud.sPlayer.GetClassID()],
 				Gmud.sPlayer.player_name);
 
 		int sex = Gmud.sPlayer.sex;
@@ -1156,17 +1153,24 @@ public class UI {
 				} else if (type != 0) {
 					final int skillType = groupTop + groupSel;
 					final int index = top + sel;
-					int id = Gmud.sPlayer.skills[GmudTemp.temp_array_32_2[index][0]][0];
-					int isSel = GmudTemp.temp_array_32_2[index][1];
-					if (isSel == 0)
-						Gmud.sPlayer.SelectSkill(id, skillType);
-					else
-						Gmud.sPlayer.UnselectSkill(skillType);
-					update_group = true;
-					update_item = true;
-					type = 0;
-					if (Battle.sBattle != null)
-						Battle.sBattle.CopyPlayerSelectSkills();
+					int skill_id = Gmud.sPlayer.skills[GmudTemp.temp_array_32_2[index][0]][0];
+					if (skill_id < 10) {
+						// 基本功，不做任何处理
+					} else {
+						if (skillType != 5) {
+							// 知识类技能不可选
+							int isSel = GmudTemp.temp_array_32_2[index][1];
+							if (isSel == 0)
+								Gmud.sPlayer.SelectSkill(skill_id, skillType);
+							else
+								Gmud.sPlayer.UnselectSkill(skillType);
+							if (Battle.sBattle != null)
+								Battle.sBattle.CopyPlayerSelectSkills();
+							update_group = true;
+						}
+						update_item = true;
+						type = 0;
+					}
 				}
 			}
 
@@ -1783,8 +1787,8 @@ public class UI {
 	}
 
 	static void Apprentice(int id) {
-		if (Gmud.sPlayer.class_id != 0
-				&& Gmud.sPlayer.class_id != NPCINFO.NPC_attribute[id][1]) {
+		if (!Gmud.sPlayer.isClass(ClassID.None)
+				&& !Gmud.sPlayer.isClass(NPCINFO.NPC_attribute[id][1])) {
 			Gmud.sMap.DrawMap(-1);
 			DrawDialog(readDialogText(9));
 			return;
@@ -1794,13 +1798,13 @@ public class UI {
 		case 96: // 谷虚道长
 			ApprenticeWords(182);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 5;
+			Gmud.sPlayer.isClass(ClassID.WuDang);
 			break;
 
 		case 97: // 古松道长
 			ApprenticeWords(182);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 5;
+			Gmud.sPlayer.isClass(ClassID.WuDang);
 			break;
 
 		case 101: // 清虚道长
@@ -1823,7 +1827,7 @@ public class UI {
 			ApprenticeWords(187);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 5;
+			Gmud.sPlayer.SetClassID(ClassID.WuDang);
 			break;
 
 		case 122: // 雪山教头
@@ -1834,7 +1838,7 @@ public class UI {
 			ApprenticeWords(189);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 6;
+			Gmud.sPlayer.SetClassID(ClassID.XueShan);
 			break;
 
 		case 118: // 封万剑
@@ -1849,7 +1853,7 @@ public class UI {
 			ApprenticeWords(192);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 6;
+			Gmud.sPlayer.isClass(ClassID.XueShan);
 			break;
 
 		case 110: // 白瑞德
@@ -1864,14 +1868,14 @@ public class UI {
 			ApprenticeWords(194);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 6;
+			Gmud.sPlayer.isClass(ClassID.XueShan);
 			break;
 
 		case 38: // 商宝震
 			ApprenticeWords(163);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 1;
+			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
 			break;
 
 		case 43: // 商剑鸣
@@ -1890,7 +1894,7 @@ public class UI {
 			ApprenticeWords(162);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 1;
+			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
 			break;
 
 		case 47: // 王维扬
@@ -1909,14 +1913,14 @@ public class UI {
 			ApprenticeWords(165);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 1;
+			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
 			break;
 
 		case 90: // 腾王丸
 			ApprenticeWords(181);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 4;
+			Gmud.sPlayer.isClass(ClassID.YiHeGu);
 			break;
 
 		case 87: // 花十郎
@@ -1927,7 +1931,7 @@ public class UI {
 			ApprenticeWords(181);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 4;
+			Gmud.sPlayer.isClass(ClassID.YiHeGu);
 			break;
 
 		case 94: // 和仲阳
@@ -1942,14 +1946,14 @@ public class UI {
 			ApprenticeWords(179);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 4;
+			Gmud.sPlayer.isClass(ClassID.YiHeGu);
 			break;
 
 		case 73: // 方长老
 			ApprenticeWords(174);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 3;
+			Gmud.sPlayer.isClass(ClassID.HongLianJiao);
 			break;
 
 		case 80: // 余鸿儒
@@ -1964,7 +1968,7 @@ public class UI {
 			ApprenticeWords(174);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 3;
+			Gmud.sPlayer.isClass(ClassID.HongLianJiao);
 			break;
 
 		case 56: // 平婆婆
@@ -1975,7 +1979,7 @@ public class UI {
 			ApprenticeWords(171);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 2;
+			Gmud.sPlayer.isClass(ClassID.HuaJian);
 			break;
 
 		case 57: // 桑轻虹
@@ -1990,7 +1994,7 @@ public class UI {
 			ApprenticeWords(171);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 2;
+			Gmud.sPlayer.isClass(ClassID.HuaJian);
 			break;
 
 		case 66: // 唐晚词
@@ -2004,7 +2008,7 @@ public class UI {
 			}
 			ApprenticeWords(171);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 2;
+			Gmud.sPlayer.isClass(ClassID.HuaJian);
 			// fall through
 
 		case 58: // 李青照
@@ -2022,7 +2026,7 @@ public class UI {
 			}
 			ApprenticeWords(170);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 2;
+			Gmud.sPlayer.isClass(ClassID.HuaJian);
 			break;
 
 		case 127: // 华佗
@@ -2032,7 +2036,7 @@ public class UI {
 			}
 			ApprenticeWords(150);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 7;
+			Gmud.sPlayer.isClass(ClassID.ShouWang);
 			break;
 
 		case 126: // 北海鳄神
@@ -2043,7 +2047,7 @@ public class UI {
 			ApprenticeWords(149);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 7;
+			Gmud.sPlayer.isClass(ClassID.ShouWang);
 			break;
 
 		case 129: // 娜可露露
@@ -2066,7 +2070,7 @@ public class UI {
 			ApprenticeWords(148);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 7;
+			Gmud.sPlayer.isClass(ClassID.ShouWang);
 			break;
 
 		case 135: // 葛洪
@@ -2077,7 +2081,7 @@ public class UI {
 			ApprenticeWords(145);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 8;
+			Gmud.sPlayer.isClass(ClassID.MaoShan);
 			break;
 
 		case 138: // 留孙真人
@@ -2092,7 +2096,7 @@ public class UI {
 			ApprenticeWords(147);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.class_id = 8;
+			Gmud.sPlayer.isClass(ClassID.MaoShan);
 			break;
 
 		case 141: // 茅盈
@@ -2106,7 +2110,7 @@ public class UI {
 			}
 			ApprenticeWords(146);
 			ApprenticeWords(10);
-			Gmud.sPlayer.class_id = 8;
+			Gmud.sPlayer.isClass(ClassID.MaoShan);
 			break;
 
 		default:

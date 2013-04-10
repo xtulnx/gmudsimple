@@ -117,8 +117,8 @@ public class GmudActivity extends Activity {
 				if (mDesignIng) {
 					return mDetector.onTouchEvent(event);
 				} else {
-					if (!bHideSoftKey && Configure.HitTest(event)) {
-						((Show) v).KeyPostUpdate();
+					if (!bHideSoftKey) {
+						((Show) v).HitTest(event);
 					}
 					return true;
 				}
@@ -135,6 +135,8 @@ public class GmudActivity extends Activity {
 		super.onDestroy();
 
 		((GmudApp) getApplication()).UnbindGmudActivity(this);
+
+		Configure.recycle();
 
 		// Gmud.Exit();
 		try {
@@ -198,6 +200,10 @@ public class GmudActivity extends Activity {
 			else
 				setTitle(BASE_TITLE);
 		}
+
+		boolean image_smooth = p.getBoolean(
+				getString(R.string.key_image_smooth), false);
+		Gmud.setImageSmooth(image_smooth);
 
 		boolean enableGuardServer = p.getBoolean(
 				getString(R.string.key_enable_guard), bEnableGuard);

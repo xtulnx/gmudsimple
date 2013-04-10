@@ -7,6 +7,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple.core;
 
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.LastTask;
 import android.content.Context;
 
 public class GmudMain extends Thread {
@@ -51,7 +52,7 @@ public class GmudMain extends Thread {
 				@Override
 				public void run() {
 					while (Input.Running) {
-						if (Gmud.IsRunning()) {
+						if (Gmud.IsRunning() && Gmud.PLAYING) {
 							GmudTemp.TimerFunc();
 							try {
 								sleep(5000);
@@ -160,8 +161,8 @@ public class GmudMain extends Thread {
 			NewGame();
 		}
 
-		if (1 == player.lasting_tasks[4]) // new 自制武器
-		{
+		// new 自制武器
+		if (1 == player.lasting_tasks[LastTask.NEW_WEAPON]) {
 			// enter name
 			player.weapon_name = Gmud.WaitForNewName(1);
 
@@ -177,18 +178,17 @@ public class GmudMain extends Thread {
 			player.lasting_tasks[8] = k1;
 			player.lasting_tasks[9] = 1;
 			// WriteSave(); // savedata
-			Input.ClearKeyStatus();
 			Video.VideoClear();
 			Video.VideoDrawString("您的武器铸造成功！", 20, 35);
 			Video.VideoUpdate();
-			while (Input.inputstatus == 0)
-				Gmud.GmudDelay(100);
+			Gmud.GmudWaitAnyKey();
 		}
 		if (player.lasting_tasks[9] == 1)
 			SetWeapon(player); // 自制武器调整
-		if (player.lasting_tasks[1] > 0 && player.lasting_tasks[1] < 8) {
+		if (player.lasting_tasks[LastTask.PK_GANG] > 0
+				&& player.lasting_tasks[LastTask.PK_GANG] < 8) {
 			// 如果正在打坛，须防止玩家丢了地图
-			final int item_id = 79 + player.lasting_tasks[1];
+			final int item_id = 79 + player.lasting_tasks[LastTask.PK_GANG];
 			if (player.ExistItem(item_id, 1) < 0)
 				player.GainOneItem(item_id);
 		}
@@ -211,89 +211,80 @@ public class GmudMain extends Thread {
 
 		Input.ClearKeyStatus();
 
+		int last_key = 0;
+
+		Gmud.PLAYING = true;
+
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) // press up
-			{
-				Input.ClearKeyStatus();
+			if ((last_key & Input.kKeyEnt) != 0) {
+				map.KeyEnter();
+				map.DrawMap(-1);
+			} else if ((last_key & Input.kKeyExit) != 0) {
+				UI.MainMenu();
+				map.DrawMap(-1);
+			} else if ((last_key & Input.kKeyFly) != 0) {
+				UI.Fly();
+				map.DrawMap(-1);
+			} else if ((last_key & Input.kKeyUp) != 0) {
 				if (map.GetCurOrientation() == Map.CharOrientation.UP) {
 					map.DirUp();
 				} else {
 					map.SetPlayerLocation(-1, 0);
 					map.DrawMap(-1);
 				}
-				Video.VideoUpdate();
-				Gmud.GmudDelay(100);
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) // press down
-			{
-				Input.ClearKeyStatus();
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (map.GetCurOrientation() == Map.CharOrientation.DOWN) {
 					map.DirDown();
 				} else {
 					map.SetPlayerLocation(-1, 1);
 					map.DrawMap(-1);
 				}
-				Video.VideoUpdate();
-				Gmud.GmudDelay(100);
-			} else if ((Input.inputstatus & Input.kKeyPgUp) != 0) // left++
-			{
+			} else if ((last_key & Input.kKeyPgUp) != 0) {
 				Input.ClearKeyStatus();
-				while ((Input.inputstatus & Input.kKeyPgUp) != 0
-						|| Input.inputstatus == 0) {
-					Input.ProcessMsg();
+				do {
 					map.DirLeft(4);
 					Video.VideoUpdate();
 					Gmud.GmudDelay(60);
-				}
-				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-			} else if ((Input.inputstatus & Input.kKeyPgDn) != 0) // right++
-			{
+					last_key = Input.getScanCode();
+				} while ((last_key == Input.kKeyPgUp) || last_key == 0);
+				continue;
+			} else if ((last_key & Input.kKeyPgDn) != 0) {
 				Input.ClearKeyStatus();
-				while ((Input.inputstatus & Input.kKeyPgDn) != 0
-						|| Input.inputstatus == 0) {
-					Input.ProcessMsg();
+				while ((last_key & Input.kKeyPgDn) != 0 || last_key == 0) {
 					map.DirRight(4);
 					Video.VideoUpdate();
 					Gmud.GmudDelay(60);
+					last_key = Input.getScanCode();
 				}
-				Video.VideoUpdate();
-				Gmud.GmudDelay(50);
-			} else if ((Input.getScanCode() & Input.kKeyLeft) != 0) // press left
-			{
+				continue;
+			} else if ((last_key & Input.kKeyLeft) != 0) {
 				Input.ClearKeyStatus();
-				map.DirLeft(4);
-				Video.VideoUpdate();
-			} else if ((Input.getScanCode() & Input.kKeyRight) != 0) // press
-																	// right
-			{
+				do {
+					map.DirLeft(4);
+					Video.VideoUpdate();
+					Gmud.GmudDelay(60);
+					last_key = Input.getScanCode();
+				} while (last_key == Input.kKeyLeft);
+				continue;
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				Input.ClearKeyStatus();
-				map.DirRight(4);
-				Video.VideoUpdate();
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) // press enter
-			{
-				Input.ClearKeyStatus();
-				map.KeyEnter();
-				map.DrawMap(-1);
-				Video.VideoUpdate();
-				Input.ClearKeyStatus();
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) // press Esc
-			{
-				Input.ClearKeyStatus();
-				UI.MainMenu(); // main menu
-			} else if ((Input.inputstatus & Input.kKeyFly) != 0) // press fly
-			{
-				Input.ClearKeyStatus();
-				UI.Fly();
-				map.DrawMap(-1);
-				Video.VideoUpdate();
+				do {
+					map.DirRight(4);
+					Video.VideoUpdate();
+					Gmud.GmudDelay(60);
+					last_key = Input.getScanCode();
+				} while (last_key == Input.kKeyRight);
+				continue;
 			}
-			Gmud.GmudDelay(60);
+			Video.VideoUpdate();
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyAny);
 		}
 		// CloseHandle(GmudTemp.timer_thread_handle);
 		// if(glpBattle)
 		// delete glpBattle;
 		// delete glPlayer;
 		// delete sMap;
+
+		Gmud.PLAYING = false;
 	}
 }

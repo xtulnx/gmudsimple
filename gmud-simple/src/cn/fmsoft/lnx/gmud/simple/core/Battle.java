@@ -506,7 +506,7 @@ class Battle {
 		for (int i = 0; i < 128; i++)
 			fighter_data[id][i] = 0;
 
-		fighter_data[id][66] = Gmud.sPlayer.class_id; // class id
+		fighter_data[id][66] = Gmud.sPlayer.GetClassID(); // class id
 		fighter_data[id][0] = Gmud.sPlayer.fp_plus; // 加力
 		fighter_data[id][1] = Gmud.sPlayer.hp; // hp
 		fighter_data[id][2] = Gmud.sPlayer.hp_max; // hp-max
