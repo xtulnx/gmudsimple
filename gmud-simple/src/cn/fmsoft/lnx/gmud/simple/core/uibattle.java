@@ -1,7 +1,5 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
-import java.util.ArrayList;
-
 import android.graphics.Bitmap;
 
 public class uibattle {
@@ -17,8 +15,7 @@ public class uibattle {
 	static final String menu_title[] = new String[] { "普通攻击", "绝招攻击", "使用内力",
 			"使用物品", "调整招式", "逃跑" };
 
-	// vector<wstring> desc_words;
-	static ArrayList<String> desc_words;
+	static final String[] desc_words = new String[] { "N反手握刀纵声长啸，霎时间，天地为之变色，这一刀之势虽然平平，却威力惊人。" };
 
 	/** 双方的武器，用于显示招式时输出 */
 	static int weapon_id[] = new int[2];
@@ -309,19 +306,19 @@ public class uibattle {
 			else {
 				s = "";
 			}
-			str_desc = util.ReplaceStr(str_desc, "SP", s/* .c_str() */);
+			str_desc = util.ReplaceStr(str_desc, "SP", s);
 			break;
 		case 1: {
 			str_desc = Magic.GetMagicDesc(attack_desc);
 			int k2 = Battle.sBattle.a_int_array1d_static[13];
 			if (id_active == id_player) {
 				str_desc = util.ReplaceStr(str_desc, "SB",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SW",
 						Items.item_names[weapon_id[id_active]]);
 			} else {
 				str_desc = util.ReplaceStr(str_desc, "你",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 				str_desc = util.ReplaceStr(str_desc, "SW",
 						Items.item_names[weapon_id[id_active]]);
@@ -335,46 +332,37 @@ public class uibattle {
 			int j3 = attack_desc & 0xff;
 			str_desc = Skill.GetHitDesc(j3);
 			int k3 = attack_desc / 256;
-			// wstring s2("");
 			String s2 = "";
 			if (k3 > 36)
 				s2 = Skill.GetHitDesc(k3);
 			if (id_active == id_player) {
 				str_desc = util.ReplaceStr(str_desc, "SB",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 				if (j3 != 36) {
-					str_desc += "(";
-					str_desc += Battle.sBattle.m_npc_name;
-					str_desc += s2/* .c_str() */;
-					str_desc += ")";
+					str_desc += "(" + Battle.sBattle.m_npc_name + s2 + ")";
 				}
 				break;
 			}
 			str_desc = util
-					.ReplaceStr(str_desc, "你", Battle.sBattle.m_npc_name/*
-																		 * .c_str
-																		 * ()
-																		 */);
+					.ReplaceStr(str_desc, "你", Battle.sBattle.m_npc_name);
 			str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			if (j3 != 36) {
-				str_desc += "(你";
-				str_desc += s2/* .c_str() */;
-				str_desc += ")";
+				str_desc += "(你" + s2 + ")";
 			}
 			break;
 		}
-		case 3: // ？？？
-			// s1 = desc_words[l];
-			// XXX: 不支持
-			Gmud.exit();
-			str_desc = desc_words.get(attack_desc);
+		case 3: // ？？？ 特殊描述用于替换资源文件的内容？
+			if (attack_desc < desc_words.length)
+				str_desc = desc_words[attack_desc];
+			else
+				str_desc = "";
 			if (id_active == id_player) {
 				str_desc = util.ReplaceStr(str_desc, "N", "你");
 				str_desc = util.ReplaceStr(str_desc, "SB",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 			} else {
 				str_desc = util.ReplaceStr(str_desc, "N",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
 			break;
@@ -383,10 +371,10 @@ public class uibattle {
 			str_desc = Skill.GetHitDesc(attack_desc);
 			if (id_active == id_player) {
 				str_desc = util.ReplaceStr(str_desc, "SB",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 			} else {
 				str_desc = util.ReplaceStr(str_desc, "你",
-						Battle.sBattle.m_npc_name/* .c_str() */);
+						Battle.sBattle.m_npc_name);
 				str_desc = util.ReplaceStr(str_desc, "SB", "你");
 			}
 			break;
