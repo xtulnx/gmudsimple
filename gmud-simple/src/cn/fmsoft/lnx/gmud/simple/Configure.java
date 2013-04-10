@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -19,11 +20,13 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import cn.fmsoft.lnx.gmud.simple.ColorPickerDialog.OnColorChangedListener;
+import cn.fmsoft.lnx.gmud.simple.CustomSoftKeySizeDialog.OnCustomSoftKeyListener;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
 
 /**
- * 管理各部件位置区域及显示，响应按键点击
+ * 管理各部件位置区域及显示，响应按键点击，<br/>
+ * <b>NOTE: 仅提供给 {@link Show} 和 {@link ConfigInfo} 使用</b>
  * 
  * @author nxliao
  * 
@@ -42,26 +45,50 @@ public final class Configure {
 	public static final int KEY_PgDn = 7;
 	public static final int KEY_Fly = 8;
 	public static final int KEY_HELP = 9;
-	public static final int _KEY_MAX_ = 9;
+	public static final int _KEY_MAX_ = KEY_Fly + 1;
+	/** 游戏区 */
+	public static final int _KEY_INDEX_VIDEO = _KEY_MAX_ + 0;
+	/** 背板 */
+	public static final int _KEY_INDEX_BG = _KEY_MAX_ + 1;
+	/** 标题文本 */
+	public static final int _KEY_INDEX_TITLE = _KEY_MAX_ + 2;
+	public static final int _KEY_INDEX_MAX = _KEY_INDEX_TITLE + 1;
 
 	public static final int _KEY_MASK_CLEAR_ = -1 << _KEY_MAX_;
 	public static final int _KEY_MASK_ = ~_KEY_MASK_CLEAR_;
 
+	/** 临时对象 */
+	private static final Rect TMP_RECT = new Rect();
+	/** 剪切区，每次绘制前重新获取 */
+	private static final Rect sTmpRcClip = new Rect();
+
 	/** 视频输出区域 */
 	protected static final Rect sRcVideo = new Rect();
-	/** 各按键区 */
-	protected static final Rect sRcKeys[] = new Rect[_KEY_MAX_ + 1];
-	/** 剪切区，每次绘制前重新获取 */
-	private static final Rect sＴmpRcClip = new Rect();
+	/** 各按键区，用于点击判断及绘制虚拟按键 */
+	protected static final Rect sRcKeys[] = new Rect[_KEY_INDEX_MAX];
+	/** 虚拟按键的背板显示区域，相对于 {@link #sRcKeys} */
+	protected static final Rect sRcKeyBg = new Rect();
+	/** 虚拟按键的外包框 */
+	protected static final Rect sRcKeyBorder = new Rect();
+	/** 虚拟按键的标题显示区域，相对于 {@link #sRcKeys}，同 {@link #sRcKeyBg} */
+	protected static final Rect sRcKeyTitle = new Rect();
 	/** 按下状态 */
 	private static int sPressMask = 0;
 	/** 按下或弹起的变化 */
 	private static int sPressDirty = 0;
-	private static Drawable BG_NORMAL;
-	private static Drawable BG_FOCUS;
+
+	/** 虚拟按键的背板图（共用） */
+	private static Drawable IMG_BG;
+	/** 虚拟按键的前景图 */
+	private static final Drawable IMG_TITLE[] = new Drawable[_KEY_MAX_];
+	/** 游戏区的盖子，模拟NC1020的LOGO */
 	private static Drawable VIDEO_COVER;
-	private static Rect sRcVideoCoverPadding = new Rect();
+	/** 游戏区的盖子的边框大小 */
+	private static final Rect sRcVideoCoverPadding = new Rect();
+	/** 虚拟按键的默认标题画笔 */
 	private static Paint TITLE_PAINT;
+	private static Paint VIDEO_PAINT;
+	/** 虚拟按键的默认标题文本 */
 	private static String TITLE[];
 	public static float CUR_DENSITY = 1.0f;
 
@@ -70,12 +97,23 @@ public final class Configure {
 	private static ConfigInfo sDefConfigLand, sDefConfigPort;
 	private static ConfigInfo sCurConfigInfo;
 	private static int sWidth, sHeight;
-	private static Rect sBound = new Rect();
+	private static final Rect sBound = new Rect();
 	/** 背景色 */
 	private static int sBackground;
 	private static boolean sIsLandscape;
 
 	private static Context sContext;
+
+	protected static void recycle() {
+		sContext = null;
+		IMG_BG = VIDEO_COVER = null;
+		TITLE = null;
+		VIDEO_PAINT = TITLE_PAINT = null;
+		for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
+			sRcKeys[i] = null;
+			IMG_TITLE[i] = null;
+		}
+	}
 
 	/** 初始化 */
 	protected static void init(Context ctx) {
@@ -85,46 +123,48 @@ public final class Configure {
 		final DisplayMetrics dm = res.getDisplayMetrics();
 		CUR_DENSITY = dm.density;
 
-		BG_NORMAL = res.getDrawable(R.drawable.bg_normal);
-		BG_FOCUS = res.getDrawable(R.drawable.bg_focus);
+		IMG_BG = new DEF_DRAWABLE_BG(res);
 		VIDEO_COVER = res.getDrawable(R.drawable.nc1020);
 		TITLE = res.getStringArray(R.array.soft_key);
 		if (VIDEO_COVER != null)
 			VIDEO_COVER.getPadding(sRcVideoCoverPadding);
 
+		VIDEO_PAINT = new Paint();
+		VIDEO_PAINT.setAntiAlias(true);
+		VIDEO_PAINT.setFilterBitmap(true);
+
 		TITLE_PAINT = new Paint();
 		TITLE_PAINT.setAntiAlias(true);
 		TITLE_PAINT.setFilterBitmap(true);
 		TITLE_PAINT.setFakeBoldText(true);
-		TITLE_PAINT.setTextSize(ConfigInfo.DEF_BT_TITLE_SIZE * CUR_DENSITY);
 		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
 
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
 			sRcKeys[i] = new Rect();
+			IMG_TITLE[i] = new DEF_DRAWABLE_TITLE(TITLE[i]);
 		}
-		sRcKeys[_KEY_MAX_] = sRcVideo;
+		sRcKeys[_KEY_INDEX_VIDEO] = sRcVideo;
+		sRcKeys[_KEY_INDEX_BG] = sRcKeyBg;
+		sRcKeys[_KEY_INDEX_TITLE] = sRcKeyTitle;
 	}
 
 	/** 绘制单个软键 */
 	private static void _draw_key(Canvas canvas, int id, Rect rc) {
 		final int flag = (1 << id);
-		final Drawable d;
-		if ((sPressMask & flag) == 0) {
-			// no press
-			d = BG_NORMAL;
-			TITLE_PAINT.setColor(Color.GREEN);
-		} else {
-			d = BG_FOCUS;
-			TITLE_PAINT.setColor(Color.YELLOW);
-		}
-		d.setBounds(rc);
+		final int ox = rc.left, oy = rc.top;
+		final int level = ((sPressMask & flag) == 0 ? 0 : 1);// no press
+
+		Drawable d = IMG_BG;
+		Rect r = sRcKeyBg;
+		d.setBounds(r.left + ox, r.top + oy, r.right + ox, r.bottom + oy);
+		d.setLevel(level);
 		d.draw(canvas);
 
-		String title = TITLE[id];
-		Rect bounds = new Rect();
-		TITLE_PAINT.getTextBounds(title, 0, title.length(), bounds);
-		canvas.drawText(TITLE[id], rc.centerX() - bounds.centerX(),
-				rc.centerY() - bounds.centerY(), TITLE_PAINT);
+		d = IMG_TITLE[id];
+		r = sRcKeyTitle;
+		d.setBounds(r.left + ox, r.top + oy, r.right + ox, r.bottom + oy);
+		d.setLevel(level);
+		d.draw(canvas);
 
 		if ((sPressDirty & flag) != 0)
 			sPressDirty &= ~(flag);
@@ -190,9 +230,12 @@ public final class Configure {
 	 */
 	private static void applyConfig(ConfigInfo info) {
 		sCurConfigInfo = new ConfigInfo(info);
-		for (int i = 0, c = _KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
 			sRcKeys[i].set(info.mRcKeys[i]);
 		}
+		sRcKeyBorder.set(0, 0, sRcKeys[0].width(), sRcKeys[0].height());
+		sRcKeyBorder.union(sRcKeyBg);
+		sRcKeyBorder.union(sRcKeyTitle);
 		sBackground = info.mBackgroundColor;
 
 		// 重置缩放比例
@@ -201,7 +244,7 @@ public final class Configure {
 
 	/** 将当前使用的配置，转存到 ConfigInfo 结构中 */
 	private static void dumpConfig(ConfigInfo info) {
-		for (int i = 0, c = _KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
 			info.mRcKeys[i].set(sRcKeys[i]);
 		}
 		info.mBackgroundColor = sBackground;
@@ -257,11 +300,39 @@ public final class Configure {
 		return false;
 	}
 
+	private static Rect _unionKeyBound(int id) {
+		final Rect bound = TMP_RECT;
+		bound.setEmpty();
+		return _unionKeyBound(bound, id);
+	}
+
+	private static Rect _unionKeyBound(Rect bound, int id) {
+		Rect r = sRcKeys[id];
+		final int ox = r.left, oy = r.top;
+		r = sRcKeyBorder;
+		bound.union(r.left + ox, r.top + oy, r.right + ox, r.bottom + oy);
+		return bound;
+	}
+
+	// private static Rect _gainKeyBound(Rect base) {
+	// Rect bound = TMP_RECT;
+	// bound.setEmpty();
+	// return _gainKeyBound(bound, base);
+	// }
+
+	private static Rect _gainKeyBound(Rect bound, Rect base) {
+		final int ox = base.left, oy = base.top;
+		final Rect r = sRcKeyBorder;
+		bound.union(r.left + ox, r.top + oy, r.right + ox, r.bottom + oy);
+		return bound;
+	}
+
 	/** 合并（普通）“脏”区域 */
 	protected static void UnionInvalidateRect(Rect bound) {
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-			if ((sPressDirty & (1 << i)) != 0)
-				bound.union(sRcKeys[i]);
+			if ((sPressDirty & (1 << i)) != 0) {
+				_unionKeyBound(bound, i);
+			}
 		}
 	}
 
@@ -279,14 +350,13 @@ public final class Configure {
 	/** 绘制软键 */
 	private static void drawKeypad(Canvas canvas) {
 		/* 剪切区 */
-		final Rect clip = sＴmpRcClip;
+		final Rect clip = sTmpRcClip;
 		canvas.getClipBounds(clip);
 		final Rect rcKeys[] = sRcKeys;
-		TITLE_PAINT.setTextSize(sRcKeys[0].height() * 0.6f);
 		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-			final Rect rc = rcKeys[i];
+			final Rect rc = _unionKeyBound(i);
 			if (Rect.intersects(clip, rc))
-				_draw_key(canvas, i, rc);
+				_draw_key(canvas, i, rcKeys[i]);
 		}
 	}
 
@@ -306,7 +376,7 @@ public final class Configure {
 			VIDEO_COVER.draw(canvas);
 		}
 		if (video != null && !video.isRecycled())
-			canvas.drawBitmap(video, null, sRcVideo, TITLE_PAINT);
+			canvas.drawBitmap(video, null, sRcVideo, VIDEO_PAINT);
 	}
 
 	private static void drawBackground(Canvas canvas) {
@@ -334,7 +404,7 @@ public final class Configure {
 			for (int i = 0, c = count; i < c; i++) {
 				final int x = (int) event.getX(i);
 				final int y = (int) event.getY(i);
-				tmp |= Configure.HitTestFlag(x, y);
+				tmp |= HitTestFlag(x, y);
 			}
 			flag = tmp;
 		}
@@ -419,7 +489,7 @@ public final class Configure {
 	 * @version 0.1.20130219.1454
 	 */
 	public static class Design extends GestureDetector.SimpleOnGestureListener
-			implements OnColorChangedListener {
+			implements OnColorChangedListener, OnCustomSoftKeyListener {
 
 		public static final int DESIGN_START = 0;
 		public static final int DESIGN_APPLY = 1;
@@ -437,7 +507,7 @@ public final class Configure {
 		private boolean mDirty = false;
 
 		/** 目标位置（即 ACTION_UP 后元素应放下的位置） */
-		private Rect mRcTarget;
+		private Rect mRcTarget, mRcTmp = new Rect();
 
 		ConfigInfo mConfigInfo;
 
@@ -541,12 +611,16 @@ public final class Configure {
 				bound.union(sBound);
 				mRedraw = false;
 			} else if (mHitId >= 0 && mDirty) {
-				final Rect rc = mRcTarget;
-
-				if (mHitId < _KEY_MAX_)
+				final Rect rc;
+				if (mHitId < _KEY_MAX_) {
+					rc = mRcTmp;
+					rc.setEmpty();
+					_gainKeyBound(rc, mRcTarget);
 					bound.union(rc);
-				else
+				} else {
+					rc = mRcTarget;
 					bound.union(_addVideoCoverPadding(rc));
+				}
 
 				// 检查边界吸附
 				if (!checkAdsorbH(rc.left - sBound.left, FLAG_ADSORB_LEFT)) {
@@ -555,7 +629,11 @@ public final class Configure {
 				if (!checkAdsorbV(rc.top - sBound.top, FLAG_ADSORB_TOP)) {
 					checkAdsorbV(rc.bottom - sBound.bottom, FLAG_ADSORB_BOTTOM);
 				}
+
 				rc.offset((int) mCurX, (int) mCurY);
+				if (rc != mRcTarget) {
+					mRcTarget.offset((int) mCurX, (int) mCurY);
+				}
 
 				if (mHitId < _KEY_MAX_)
 					bound.union(rc);
@@ -577,7 +655,7 @@ public final class Configure {
 		/** 返回位置所在的最顶层元素ID */
 		private int _hitTestId(int x, int y) {
 			final Rect[] rc = sRcKeys;
-			for (int i = Configure._KEY_MAX_; i >= 0; i--) {
+			for (int i = _KEY_MAX_; i >= 0; i--) {
 				if (rc[i].contains(x, y))
 					return i;
 			}
@@ -591,28 +669,32 @@ public final class Configure {
 		}
 
 		private void _tryScale(int id) {
+			final Context context = mShow.getContext();
 			if (id < 0) {
 				// 空白区
-				mDialog = new ColorPickerDialog(mShow.getContext(), this,
-						sBackground);
+				mDialog = new ColorPickerDialog(context, this, sBackground);
 				mDialog.show();
 			} else if (id < _KEY_MAX_) {
 				// 按钮
-				final int BW = (int) (CUR_DENSITY * ConfigInfo.DEF_BT_WIDTH);
-				final int BH = (int) (CUR_DENSITY * ConfigInfo.DEF_BT_HEIGHT);
-				int w = sRcKeys[id].width();
-				float scale = (float) w / BW;
-				if (scale < 1.5f) {
-					scale += 0.1f;
-				} else {
-					scale = 0.7f;
-				}
-				int nw = (int) (BW * scale);
-				int nh = (int) (BH * scale);
-				for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-					resetRectSize(sRcKeys[i], nw, nh);
-				}
-				mRedraw = true;
+				Rect rc = sRcKeys[id], r;
+				final int ox = rc.left, oy = rc.top;
+
+				Drawable bg = new DEF_DRAWABLE_BG(context.getResources());
+				r = sRcKeyBg;
+				bg.setBounds(r.left + ox, r.top + oy, r.right + ox, r.bottom
+						+ oy);
+
+				Drawable title = new DEF_DRAWABLE_TITLE(TITLE[id], true);
+				r = sRcKeyTitle;
+				title.setBounds(r.left + ox, r.top + oy, r.right + ox, r.bottom
+						+ oy);
+				mDialog = new CustomSoftKeySizeDialog(context, this, rc, bg,
+						title);
+				mDialog.show();
+				// for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+				// resetRectSize(sRcKeys[i], nw, nh);
+				// }
+				// mRedraw = true;
 			} else if (id == _KEY_MAX_) {
 				// 游戏区按标准大小的整数倍增加
 				final int BW = Gmud.WQX_ORG_WIDTH, BH = Gmud.WQX_ORG_HEIGHT;
@@ -767,5 +849,161 @@ public final class Configure {
 			resetDesign();
 			clear();
 		}
+
+		@Override
+		public void onCustomSoftKeyApply(Rect rcFocuse, Rect rcBg, Rect rcTitle) {
+			final int nw = rcFocuse.width();
+			final int nh = rcFocuse.height();
+			final int ox = rcFocuse.left, oy = rcFocuse.top;
+			final Rect rc = TMP_RECT;
+			rc.set(rcBg);
+			rc.offset(-ox, -oy);
+			sRcKeyBg.set(rc);
+			rc.set(rcTitle);
+			rc.offset(-ox, -oy);
+			sRcKeyTitle.set(rc);
+			for (int i = 0; i < _KEY_MAX_; i++) {
+				resetRectSize(sRcKeys[i], nw, nh);
+			}
+
+			sRcKeyBorder.set(0, 0, nw, nh);
+			sRcKeyBorder.union(sRcKeyBg);
+			sRcKeyBorder.union(sRcKeyTitle);
+
+			mRedraw = true;
+		}
 	}
+
+	/** 默认背板绘制 */
+	private static final class DEF_DRAWABLE_BG extends Drawable {
+		private static Drawable sNormal, sFocus;
+
+		private int mAlpha;
+
+		public DEF_DRAWABLE_BG(Resources res) {
+			if (sNormal == null)
+				sNormal = res.getDrawable(R.drawable.bg_normal);
+			if (sFocus == null)
+				sFocus = res.getDrawable(R.drawable.bg_focus);
+			mAlpha = 255;
+		}
+
+		private Drawable getCurDrawable() {
+			return getLevel() == 0 ? sNormal : sFocus;
+		}
+
+		@Override
+		public void draw(Canvas canvas) {
+			Drawable d = getCurDrawable();
+			if (d != null) {
+				if (mAlpha != 255)
+					d.setAlpha(mAlpha);
+				d.setBounds(getBounds());
+				d.draw(canvas);
+				if (mAlpha != 255)
+					d.setAlpha(255);
+			}
+		}
+
+		@Override
+		public void setAlpha(int alpha) {
+			mAlpha = alpha;
+		}
+
+		@Override
+		public void setColorFilter(ColorFilter cf) {
+		}
+
+		@Override
+		public int getOpacity() {
+			return 0;
+		}
+
+		@Override
+		protected boolean onLevelChange(int level) {
+			if (sFocus != null && sNormal != null)
+				return true;
+			return super.onLevelChange(level);
+		}
+	};
+
+	/** 默认标题绘制 */
+	private static final class DEF_DRAWABLE_TITLE extends Drawable {
+		private String mTitle;
+		// private boolean mCustom;
+		private float mTextSize, mTextScale;
+		private int mAlpha;
+		private int mWidth, mHeight;
+		private Paint mPaint;
+
+		public DEF_DRAWABLE_TITLE(String title) {
+			this(title, false);
+		}
+
+		public DEF_DRAWABLE_TITLE(String title, boolean custom) {
+			mTitle = title;
+			// mCustom = custom;
+
+			mTextSize = mTextScale = 1;
+			mWidth = mHeight = 0;
+			mAlpha = 255;
+			mPaint = TITLE_PAINT;
+		}
+
+		@Override
+		public void draw(Canvas canvas) {
+			final Paint p = mPaint;
+			p.setColor(getLevel() == 0 ? Color.GREEN : Color.YELLOW);
+			p.setTextSize(mTextSize);
+			p.setTextScaleX(mTextScale);
+			p.setAlpha(mAlpha);
+			String title = mTitle;
+			Rect bounds = new Rect();
+			p.getTextBounds(title, 0, title.length(), bounds);
+			Rect rc = getBounds();
+			canvas.drawText(title, rc.centerX() - bounds.centerX(),
+					rc.centerY() - bounds.centerY(), p);
+		}
+
+		@Override
+		public void setAlpha(int alpha) {
+			mAlpha = alpha;
+		}
+
+		@Override
+		public void setColorFilter(ColorFilter cf) {
+		}
+
+		@Override
+		public int getOpacity() {
+			return 0;
+		}
+
+		@Override
+		protected boolean onLevelChange(int level) {
+			return super.onLevelChange(level);
+		}
+
+		@Override
+		protected void onBoundsChange(Rect bounds) {
+			final int w = bounds.width();
+			final int h = bounds.height();
+			if (w == mWidth && h == mHeight)
+				return;
+
+			mWidth = w;
+			mHeight = h;
+
+			final Paint p = mPaint;
+			float scale = 1, size = (float) h * 5 / 6;
+			p.setTextSize(size);
+			p.setTextScaleX(scale);
+			float textW = p.measureText(mTitle);
+			if (textW > w) {
+				scale = w / textW;
+			}
+			mTextSize = size;
+			mTextScale = scale;
+		}
+	};
 }

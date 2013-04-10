@@ -43,4 +43,13 @@
     <string name="menu_cancel">取消</string>
     <string name="menu_reset">恢复默认</string>
 
+    <!-- 虚拟按键自定义设计 -->
+    <string name="custom_key_summary_apply">『双击』空白区应用设计！</string>
+    <string name="custom_key_hithot">热点</string>
+    <string name="custom_key_summary_hithot">“虚拟按键”的响应区域</string>
+    <string name="custom_key_bg">背板</string>
+    <string name="custom_key_summary_bg">“虚拟按键”的背板</string>
+    <string name="custom_key_title">标题</string>
+    <string name="custom_key_summary_title">标题显示区域</string>
+
 </resources>

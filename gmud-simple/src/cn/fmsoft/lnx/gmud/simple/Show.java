@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
@@ -244,6 +245,12 @@ public class Show extends SurfaceView implements SurfaceHolder.Callback,
 		Configure.hidekeypad(hideSoftKey);
 		synchronized (LOCK) {
 			mUpdateStatus |= UPDATE_ALL;
+		}
+	}
+
+	protected void HitTest(MotionEvent event) {
+		if (Configure.HitTest(event)) {
+			KeyPostUpdate();
 		}
 	}
 }

@@ -112,8 +112,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				if (mDesignIng) {
 					return mDetector.onTouchEvent(event);
 				} else {
-					if (!bHideSoftKey && Configure.HitTest(event)) {
-						((Show) v).KeyPostUpdate();
+					if (!bHideSoftKey) {
+						((Show) v).HitTest(event);
 					}
 					return true;
 				}
@@ -130,6 +130,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		super.onDestroy();
 
 		Gmud.SetCallback(null);
+
+		Configure.recycle();
 
 		// Gmud.Exit();
 		try {
