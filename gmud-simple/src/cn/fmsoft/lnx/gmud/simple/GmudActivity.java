@@ -5,6 +5,8 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
+import org.coolnx.lib.LLengthFilter;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -424,8 +426,8 @@ public class GmudActivity extends Activity {
 				// Set an EditText view to get user input
 				final EditText input = new EditText(ctx);
 				input.setHint("[无名]");
-				input.setFilters(new InputFilter[] { new InputFilter.LengthFilter(
-						12) });
+				input.setFilters(new InputFilter[] { new LLengthFilter(
+						type == 0 ? 12 : 8) });
 				input.setSingleLine(true);
 				input.setOnKeyListener(new View.OnKeyListener() {
 					@Override

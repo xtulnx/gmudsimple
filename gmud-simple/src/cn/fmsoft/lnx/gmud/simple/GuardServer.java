@@ -2,13 +2,16 @@ package cn.fmsoft.lnx.gmud.simple;
 
 import org.coolnx.lib.ServiceCompat;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.SystemClock;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Player;
 
@@ -23,6 +26,8 @@ public class GuardServer extends ServiceCompat {
 
 	private static final int _MSG_USER_ = 0x1000;
 	private static final int MSG_UPDATE_PLAY_TIME = _MSG_USER_ + 1;
+	
+	private PendingIntent mAlarmPendingIntent;
 
 	private final class MyHandler extends Handler {
 		@Override
@@ -80,8 +85,9 @@ public class GuardServer extends ServiceCompat {
 
 	@Override
 	protected void onStart(Intent paramIntent) {
-		// TODO Auto-generated method stub
-
+		if (!Gmud.PLAYING) {
+			stopSelf();
+		}
 	}
 
 	@Override
@@ -99,6 +105,12 @@ public class GuardServer extends ServiceCompat {
 		((GmudApp) getApplication()).BindGuardServer(this);
 
 		TryStartForeground(NOTIFY_ID, getNotification());
+		
+		mAlarmPendingIntent = PendingIntent.getService(this, 0, new Intent(
+				this, GuardServer.class), 0);
+		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+				SystemClock.elapsedRealtime(), 1000 * 20, mAlarmPendingIntent);
 	}
 
 	@Override
@@ -111,6 +123,9 @@ public class GuardServer extends ServiceCompat {
 		// Process.killProcess(Process.myPid());
 		// }
 		// }, 500L);
+
+		AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+		am.cancel(mAlarmPendingIntent);
 	}
 
 	private Notification getNotification() {

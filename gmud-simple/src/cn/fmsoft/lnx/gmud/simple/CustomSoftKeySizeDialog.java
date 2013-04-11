@@ -70,9 +70,9 @@ class CustomSoftKeySizeDialog extends Dialog {
 			super();
 			mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 			mPaint.setStyle(Paint.Style.STROKE);
-			mPaint.setStrokeWidth(1);
+			mPaint.setStrokeWidth(1.5f);
 			mPaint.setColor(Color.MAGENTA);
-			mPaint.setPathEffect(new DashPathEffect(new float[] { 3, 4, 2, 3 },
+			mPaint.setPathEffect(new DashPathEffect(new float[] { 8, 5, 6, 4, 3, 9 },
 					1));
 		}
 
