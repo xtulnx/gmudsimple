@@ -1,7 +1,28 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
 public class NPCINFO {
-	// [180][18]
+	/**
+	 * size:[180][18]
+	 * <ol>
+	 * <li>[0]-对话模式 0打哈哈 >0(特别点的)普通NPC对话 <0任务型NPC</li>
+	 * <li>[1]-门派 0平民 255交易</li>
+	 * <li>[2]-年龄</li>
+	 * <li>[3]-经验值</li>
+	 * <li>[4]-加力</li>
+	 * <li>[5]-膂力</li>
+	 * <li>[6]-敏捷</li>
+	 * <li>[7]-悟性</li>
+	 * <li>[8]-根骨</li>
+	 * <li>[9]-命中</li>
+	 * <li>[10]-闪避</li>
+	 * <li>[11]-hp</li>
+	 * <li>[12]-hp-max</li>
+	 * <li>[13]-mp=fp</li>
+	 * <li>[14]-mp-level=fp-level</li>
+	 * <li>[15]-hp-full</li>
+	 * <li>[16]-金钱</li>
+	 * </ol>
+	 */
 	static final int NPC_attribute[][] = new int[][] {
 			{
 				-1, 255, 37, 5000, 10, 16, 24, 25, 21, 27, 

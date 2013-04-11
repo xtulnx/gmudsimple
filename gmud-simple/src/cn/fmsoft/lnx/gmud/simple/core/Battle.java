@@ -73,7 +73,7 @@ class Battle {
 		if (weapon != 0)
 			attack += Items.item_attribs[weapon][2];
 
-		attack /= 20;
+		attack = attack / 20;
 		if (attack > 5)
 			attack = 5;
 		return attack;
@@ -160,8 +160,8 @@ class Battle {
 	int PhyAttack(boolean flag) {
 		int ai[] = new int[2];
 
-		// 随机一个攻击部位
-		b_int_array1d_static[3] = util.RandomInt(16);
+		// 随机一个攻击部位 见 GmudData#hit_point_name
+		b_int_array1d_static[3] = util.RandomInt(GmudData.hit_point_name.length);
 
 		ai[0] = ai[1] = 0;
 		int id = m_active_id;
@@ -506,7 +506,7 @@ class Battle {
 		for (int i = 0; i < 128; i++)
 			fighter_data[id][i] = 0;
 
-		fighter_data[id][66] = Gmud.sPlayer.class_id; // class id
+		fighter_data[id][66] = Gmud.sPlayer.GetClassID(); // class id
 		fighter_data[id][0] = Gmud.sPlayer.fp_plus; // 加力
 		fighter_data[id][1] = Gmud.sPlayer.hp; // hp
 		fighter_data[id][2] = Gmud.sPlayer.hp_max; // hp-max
@@ -524,7 +524,7 @@ class Battle {
 
 		fighter_data[id][67] = Gmud.sPlayer.money; // money
 		fighter_data[id][68] = Gmud.sPlayer.sex; // sex
-		fighter_data[id][69] = (int) (Gmud.sPlayer.played_time / Player.AGE_TIME); // age
+		fighter_data[id][69] = Gmud.sPlayer.GetAge(); // age
 
 		// reset skill
 		for (int i = 0; i < 8; i++) {
@@ -648,6 +648,7 @@ class Battle {
 			fighter_data[1][46 + i * 2 + 1] = NPC.GetNPCSkillLevel(npc_id,
 					skill_id);
 		}
+		CalcFighterLevel(1);
 	}
 
 	/**
@@ -1019,8 +1020,6 @@ class Battle {
 			count = 1;
 		for (int i = 0; i < count; i++) {
 			uibattle.PhyAttack(attack_type, desc_start + i);
-			Video.VideoUpdate();
-			Gmud.GmudDelay(900);
 		}
 	}
 
@@ -1170,7 +1169,7 @@ class Battle {
 		int level_gap = data[62] - data_rival[62];
 
 		int gap = agility_gap + 50 + level_gap + exp_gap;
-		if (gap < 1) {
+		if (gap < 10) {
 			gap = 10;
 		} else if (gap > 95) {
 			gap = 95;

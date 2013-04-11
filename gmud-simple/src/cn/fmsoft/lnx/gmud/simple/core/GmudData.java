@@ -1,6 +1,69 @@
 package cn.fmsoft.lnx.gmud.simple.core;
 
-public class GmudData {
+class GmudData {
+	
+	static final class ClassID {
+		final static int None = 0;
+		final static int BaGuaMen = 1;
+		final static int HuaJian = 2;
+		final static int HongLianJiao = 3;
+		final static int YiHeGu = 4;
+		final static int WuDang = 5;
+		final static int XueShan = 6;
+		final static int ShouWang = 7;
+		final static int MaoShan = 8;
+		final static int _MAX_ = 9;
+	}
+	
+	/** size: 40 */
+	static final class LastTask {
+		/** 雪花六出？ */
+		final static int UNKNOW0 = 0;
+		/** 打坛进度 0无 [1,8] */
+		final static int PK_GANG = 1;
+		/** 开放铸剑谷 */
+		final static int OPEN_ChouJianGu = 2;
+		/** 上次铸武器时玩家的经验？ */
+		final static int LAST_WEAPON_EXP = 3;
+		/** 自制武器中 */
+		final static int NEW_WEAPON = 4;
+		final static int UNKNOW5 = 5;
+		/** 开放桃花园 */
+		final static int OPEN_TaoHuaYuan = 6;
+		final static int UNKNOW7 = 7;
+		final static int UNKNOW8 = 8;
+		final static int UNKNOW9 = 9;
+		final static int UNKNOW10 = 10;
+		final static int UNKNOW11 = 11;
+		final static int UNKNOW12 = 12;
+		final static int UNKNOW13 = 13;
+		final static int UNKNOW14 = 14;
+		final static int UNKNOW15 = 15;
+		final static int UNKNOW16 = 16;
+		final static int UNKNOW17 = 17;
+		final static int UNKNOW18 = 18;
+		final static int UNKNOW19 = 19;
+		final static int UNKNOW20 = 20;
+		final static int UNKNOW21 = 21;
+		final static int UNKNOW22 = 22;
+		final static int UNKNOW23 = 23;
+		final static int UNKNOW24 = 24;
+		final static int UNKNOW25 = 25;
+		final static int UNKNOW26 = 26;
+		final static int UNKNOW27 = 27;
+		final static int UNKNOW28 = 28;
+		final static int UNKNOW29 = 29;
+		final static int UNKNOW30 = 30;
+		final static int UNKNOW31 = 31;
+		final static int UNKNOW32 = 32;
+		final static int UNKNOW33 = 33;
+		final static int UNKNOW34 = 34;
+		final static int UNKNOW35 = 35;
+		final static int UNKNOW36 = 36;
+		final static int UNKNOW37 = 37;
+		final static int UNKNOW38 = 38;
+		final static int UNKNOW39 = 39;
+	}
 	
 	static final String boss_map_name[] = new String[] {
 			"青龙坛", "地罡坛", "朱雀坛", "山岚坛", "玄武坛", "紫煞坛", "天微坛", "白虎坛"

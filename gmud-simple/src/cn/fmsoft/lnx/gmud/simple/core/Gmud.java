@@ -7,6 +7,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple.core;
 
+import cn.fmsoft.lnx.gmud.simple.core.GmudData.ClassID;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,6 +33,12 @@ public class Gmud {
 	public final static int WQX_ORG_HEIGHT = 80;
 	static final int FRAME_TIME = 1000 / 60;
 
+	/** 等待按键 */
+	static final int DELAY_WAITKEY = 50;
+	/** 1秒 */
+	static final int DELAY_1S = 1000;
+	static final int DELAY_TICK = 10;
+
 	static Map sMap;
 	static Player sPlayer;
 
@@ -43,6 +50,9 @@ public class Gmud {
 	public final static int RS_STOP = 3;
 
 	private static int sRunStatus = RS_UNINITIALIZED;
+
+	/** 是否已经开启了游戏主线程 */
+	public static boolean PLAYING = false;
 
 	static Context sContext;
 
@@ -78,14 +88,14 @@ public class Gmud {
 	static boolean LoadSave() {
 		return sPlayer.load(sContext);
 	}
-	
+
 	static void tryWait() throws InterruptedException {
 		SYNC.wait();
 	}
-	
+
 	static void tryNotify() {
 		try {
-			SYNC.notifyAll();	
+			SYNC.notifyAll();
 		} catch (IllegalMonitorStateException e) {
 			e.printStackTrace();
 		}
@@ -122,6 +132,72 @@ public class Gmud {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(END_TAG);
 		}
+	}
+
+	/**
+	 * 等待按键，不清除旧的按键状态，只要出现掩码中的按键，就返回
+	 * 
+	 * @param keyFlag
+	 *            按键标记，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 * @return 返回按键扫描码，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 */
+	static int GmudWaitKey(int keyFlag) {
+		while ((Input.inputstatus & keyFlag) == 0) {
+			Gmud.GmudDelay(DELAY_WAITKEY);
+			Input.ProcessMsg();
+		}
+		return Input.inputstatus;
+	}
+
+	/**
+	 * 等待按键，不清除旧的按键状态，只要出现掩码中的按键或超时，就返回
+	 * 
+	 * @param keyFlag
+	 *            按键标记，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt}
+	 * @param timeOut
+	 *            超时，单位：毫秒，不一定精确
+	 * @return 返回按键扫描码，如 {@link Input#kKeyExit} | {@link Input#kKeyEnt} ，超时返回0
+	 * @see #GmudWaitKey(int)
+	 */
+	static int GmudWaitKey(int keyFlag, int timeOut) {
+		final int delay;
+		if (timeOut > DELAY_WAITKEY * 3) {
+			delay = DELAY_WAITKEY;
+		} else {
+			delay = DELAY_TICK;
+		}
+		timeOut /= delay;
+		while ((Input.inputstatus & keyFlag) == 0) {
+			Gmud.GmudDelay(delay);
+			Input.ProcessMsg();
+			if (timeOut-- <= 0) {
+				return 0;
+			}
+		}
+		return Input.inputstatus;
+	}
+
+	/**
+	 * 等待新的按键，会清除旧的按键
+	 * 
+	 * @param keyFlag
+	 *            按键标记
+	 * @return 按键扫描码
+	 * @see #GmudWaitKey(int)
+	 */
+	static int GmudWaitNewKey(int keyFlag) {
+		Input.ClearKeyStatus();
+		return GmudWaitKey(keyFlag);
+	}
+
+	/**
+	 * 等待任意键，会清除旧的按键
+	 * 
+	 * @see #GmudWaitNewKey(int)
+	 */
+	static int GmudWaitAnyKey() {
+		Input.ClearKeyStatus();
+		return GmudWaitKey(Input.kKeyAny);
 	}
 
 	// 初始化一些静态数据
@@ -199,6 +275,8 @@ public class Gmud {
 	public static interface ICallback {
 		/** 弹出框输入名字，不可为空，完成后需调用 {@link Gmud#SetNewName(String)}， 0玩家名 1武器名 */
 		public void EnterNewName(int type);
+
+		public void UpdateTime(long minutes, int seconds);
 	}
 
 	public static void SetCallback(ICallback callback) {
@@ -213,11 +291,11 @@ public class Gmud {
 	public static void SetVideoCallback(IVideoCallback callback) {
 		Video.SetCallback(callback);
 	}
-	
+
 	public static void ResetVideoLayout(Rect rect) {
 		Video.ResetLayout(rect);
 	}
-	
+
 	public static boolean IsRunning() {
 		synchronized (SYNC) {
 			return sRunStatus == RS_RUNNING;
@@ -278,5 +356,36 @@ public class Gmud {
 			GmudDelay(1);
 		}
 		return s_tmp_new_name;
+	}
+
+	/** 更新显示游戏时间 */
+	protected static void UpdatePlayTime(long minutes, int seconds) {
+		if (sCallback != null) {
+			sCallback.UpdateTime(minutes, seconds);
+		}
+	}
+
+	public static void setImageSmooth(boolean smooth) {
+		Video.setImageSmooth(smooth);
+	}
+
+	/** 取玩家的名字 */
+	public static String GetPlayerName() {
+		if (sPlayer != null)
+			return sPlayer.player_name;
+		return null;
+	}
+
+	/** 性别 0男 1女 */
+	public static int GetPlayerSex() {
+		if (sPlayer != null) {
+			return sPlayer.sex;
+		}
+		return -1;
+	}
+
+	public static String GetPlayerClass() {
+		return GmudData.class_name[sPlayer == null ? ClassID.None : sPlayer
+				.GetClassID()];
 	}
 }
