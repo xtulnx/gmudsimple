@@ -28,7 +28,7 @@ import android.graphics.Rect;
 class Video {
 
 	/** 默认背景色 */
-	static final int COLOR_BG = 0xff94b252;
+	static final int COLOR_BG = 0xff90b057;
 	static final int COLOR_FG = Color.BLACK;
 
 	static final int LARGE_FONT_SIZE = 16;
@@ -61,6 +61,8 @@ class Video {
 	/** 输出区域，不一定与[160x80]成比例 */
 	private static Rect sDirtyRect;
 	private static int sWidth, sHeight;
+
+	private static boolean sConfig_ImageSmooth = false;
 
 	public static void SetCallback(Gmud.IVideoCallback callback) {
 		sCallback = callback;
@@ -111,12 +113,26 @@ class Video {
 		}
 	}
 
+	static void setImageSmooth(boolean smooth) {
+		if (sConfig_ImageSmooth != smooth) {
+			sConfig_ImageSmooth = smooth;
+			update_config_image_smooth();
+		}
+	}
+
+	private static void update_config_image_smooth() {
+		if (sPaint != null) {
+			boolean smooth = sConfig_ImageSmooth;
+			sPaint.setAntiAlias(smooth);
+			sPaint.setFilterBitmap(smooth);
+		}
+	}
+
 	static boolean VideoInit() {
 		sDirtyRect = new Rect();
 
 		sPaint = new Paint();
-		sPaint.setAntiAlias(false);
-//		sPaint.setFilterBitmap(true);
+		update_config_image_smooth();
 
 		lpmem = new Canvas();
 
@@ -267,10 +283,10 @@ class Video {
 		path.moveTo(x, y);
 		if ((type & 1) == 0) {
 			path.lineTo(x + w, y);
-			path.lineTo(x + w / 2, y + h);
+			path.lineTo(x + (float) w / 2, y + h);
 		} else {
 			path.lineTo(x, y + h);
-			path.lineTo(x + w, y + h / 2);
+			path.lineTo(x + w, y + (float) h / 2);
 		}
 		path.close();
 
@@ -278,8 +294,11 @@ class Video {
 			// clear
 			_drawPath(path, bgBrush);
 			_drawPath(path, fgPen);
+		} else if ((type & 4) == 0) {
+			_drawPath(path, fgBrush);
+			_drawPath(path, fgPen);
 		} else {
-			_drawPath(path, ((type & 4) == 0) ? fgBrush : bgBrush);
+			_drawPath(path, bgBrush);
 		}
 	}
 

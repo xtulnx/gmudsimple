@@ -4,11 +4,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.graphics.Color;
 import android.graphics.Rect;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 
-/** 布局配置 */
+/**
+ * 布局配置<br/>
+ * <b>NOTE: 仅提供给 {@link Show} 和 {@link Configure} 使用</b>
+ * 
+ * @author nxliao(xtulnx@126.com)
+ */
 class ConfigInfo {
 	/** 默认：背景色 */
 	public final static int DEF_BACKGROUND_COLOR = 0xffb6c2c2;
@@ -27,6 +31,8 @@ class ConfigInfo {
 	final static int DEF_BT_ROW_LAND = 5;
 	final static int DEF_BT_TITLE_SIZE = 10;
 
+	final static int KEY_INDEX_MAX = Configure._KEY_INDEX_MAX;
+
 	/** 默认：竖屏：软键配置 */
 	private final static int[][] DEF_SOFTKEY_PORT = new int[][] { { 0, 0 },
 			{ 2, 0 }, { 1, 3 }, { 0, 3 }, { 1, 2 }, { 2, 3 }, { 0, 1 },
@@ -37,7 +43,7 @@ class ConfigInfo {
 			{ 0, 3 }, { 0, 1 } };
 
 	/** 各按键区 */
-	protected final Rect mRcKeys[] = new Rect[Configure._KEY_MAX_ + 1];
+	protected final Rect mRcKeys[] = new Rect[KEY_INDEX_MAX];
 	/** 该配置应用的宽高 */
 	protected int mWidth, mHeight;
 	/** 背景颜色 */
@@ -95,8 +101,10 @@ class ConfigInfo {
 			final int y = top + (bh + bpv) * softkey[i][1];
 			rcKeys[i] = new Rect(x, y, x + bw, y + bh);
 		}
-		rcKeys[Configure._KEY_MAX_] = new Rect((w - vw) / 2, (h - vh) / 2,
-				(vw + w) / 2, (h + vh) / 2);
+		rcKeys[Configure._KEY_INDEX_VIDEO] = new Rect((w - vw) / 2,
+				(h - vh) / 2, (vw + w) / 2, (h + vh) / 2);
+		rcKeys[Configure._KEY_INDEX_BG] = new Rect(0, 0, bw, bh);
+		rcKeys[Configure._KEY_INDEX_TITLE] = new Rect(0, 0, bw, bh);
 
 		return info;
 	}
@@ -130,8 +138,10 @@ class ConfigInfo {
 			final int y = top + (bh + bpv) * softkey[i][1];
 			rcKeys[i] = new Rect(x, y, x + bw, y + bh);
 		}
-		rcKeys[Configure._KEY_MAX_] = new Rect((w - vw) / 2, 0, (vw + w) / 2,
-				vh);
+		rcKeys[Configure._KEY_INDEX_VIDEO] = new Rect((w - vw) / 2, 0,
+				(vw + w) / 2, vh);
+		rcKeys[Configure._KEY_INDEX_BG] = new Rect(0, 0, bw, bh);
+		rcKeys[Configure._KEY_INDEX_TITLE] = new Rect(0, 0, bw, bh);
 
 		return info;
 	}
@@ -140,7 +150,7 @@ class ConfigInfo {
 		mWidth = w;
 		mHeight = h;
 		mBackgroundColor = DEF_BACKGROUND_COLOR;
-		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = KEY_INDEX_MAX; i < c; i++) {
 			mRcKeys[i] = new Rect();
 		}
 	}
@@ -153,7 +163,7 @@ class ConfigInfo {
 		mWidth = info.mWidth;
 		mHeight = info.mHeight;
 		mBackgroundColor = info.mBackgroundColor;
-		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = KEY_INDEX_MAX; i < c; i++) {
 			mRcKeys[i] = new Rect(info.mRcKeys[i]);
 		}
 	}
@@ -166,7 +176,7 @@ class ConfigInfo {
 
 		JSONArray joKeys = new JSONArray();
 		final Rect[] rects = info.mRcKeys;
-		for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+		for (int i = 0, c = KEY_INDEX_MAX; i < c; i++) {
 			final Rect rc = rects[i];
 			JSONArray jo = new JSONArray();
 			jo.put(rc.left);
@@ -187,9 +197,9 @@ class ConfigInfo {
 		info.mBackgroundColor = joRoot.getInt("bg");
 
 		JSONArray keys = joRoot.getJSONArray("keys");
-		if (keys != null && keys.length() == Configure._KEY_MAX_ + 1) {
+		if (keys != null && keys.length() == KEY_INDEX_MAX) {
 			final Rect[] rects = info.mRcKeys;
-			for (int i = 0, c = Configure._KEY_MAX_ + 1; i < c; i++) {
+			for (int i = 0, c = KEY_INDEX_MAX; i < c; i++) {
 				JSONArray jo = keys.getJSONArray(i);
 				rects[i].set(jo.getInt(0), jo.getInt(1), jo.getInt(2),
 						jo.getInt(3));

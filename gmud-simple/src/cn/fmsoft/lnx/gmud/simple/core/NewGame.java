@@ -18,11 +18,11 @@ public class NewGame {
 			"根骨", "悟性" };
 
 	void ShowStory() {
+		final int max_line = PROLOGUE.length;
 		int y = 5 * 16;
 		int top_line = 0;
-		final int max_line = PROLOGUE.length;
-		Input.ClearKeyStatus();
-		while (Input.Running && Input.inputstatus == 0) {
+		int last_key = 0;
+		while (Input.Running && last_key == 0) {
 			Input.ProcessMsg();
 			if (--y == 0) {
 				y = 16;
@@ -43,7 +43,7 @@ public class NewGame {
 			Video.VideoClearRect(0, 0, 160, 16);
 			Video.VideoDrawStringSingleLine(Title, 0, 0, 1);
 			Video.VideoUpdate();
-			Gmud.GmudDelay(100);
+			last_key = Gmud.GmudWaitKey(Input.kKeyAny, 100);
 		}
 		Video.VideoClear();
 		Video.VideoUpdate();
@@ -54,30 +54,29 @@ public class NewGame {
 		charactor[0] = Res.loadimage(75);
 		charactor[1] = Res.loadimage(81);
 		charactor[2] = Res.loadimage(87);
-
 		int id = 0;
-		DrawChar(charactor, id);
-		Video.VideoUpdate();
-		Input.ClearKeyStatus();
-
-		while (Input.Running && (Input.inputstatus & Input.kKeyEnt) == 0) {
+		boolean update = true;
+		int last_key = 0;
+		while (Input.Running) {
 			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyLeft) != 0) {
-				if (id > 0) {
+			if ((last_key & Input.kKeyLeft) != 0) {
+				if (id > 0)
 					id--;
-					DrawChar(charactor, id);
-					Video.VideoUpdate();
-				}
-				Input.ClearKeyStatus();
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
-				if (id < 2) {
+				update = true;
+			} else if ((last_key & Input.kKeyRight) != 0) {
+				if (id < 2)
 					id++;
-					DrawChar(charactor, id);
-					Video.VideoUpdate();
-				}
-				Input.ClearKeyStatus();
+				update = true;
+			} else if ((last_key & Input.kKeyEnt) != 0) {
+				break;
 			}
-			Gmud.GmudDelay(Gmud.FRAME_TIME);
+			if (update) {
+				update = false;
+				DrawChar(charactor, id);
+				Video.VideoUpdate();
+			}
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyLeft | Input.kKeyRight
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 		charactor[0].recycle();
 		charactor[2].recycle();
@@ -120,10 +119,9 @@ public class NewGame {
 		boolean update = true;
 		int Remaining = 0;
 		int id = 0;
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			if ((last_key & Input.kKeyEnt) != 0) {
 				if (Remaining == 0) {
 					pl.pre_force = points[0];
 					pl.pre_agility = points[1];
@@ -131,19 +129,19 @@ public class NewGame {
 					pl.pre_savvy = points[3];
 					break;
 				}
-			} else if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			} else if ((last_key & Input.kKeyUp) != 0) {
 				id = id <= 0 ? 3 : (id - 1);
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				id = id < 3 ? (id + 1) : 0;
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyLeft) != 0) {
+			} else if ((last_key & Input.kKeyLeft) != 0) {
 				if (points[id] > 10) {
 					points[id]--;
 					Remaining++;
 					update = true;
 				}
-			} else if ((Input.inputstatus & Input.kKeyRight) != 0) {
+			} else if ((last_key & Input.kKeyRight) != 0) {
 				if (Remaining > 0 && points[id] < 30) {
 					Remaining--;
 					points[id]++;
@@ -155,35 +153,9 @@ public class NewGame {
 				DrawAlloc(points, Remaining, id);
 				Video.VideoUpdate();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(Gmud.FRAME_TIME);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyLeft | Input.kKeyUp
+					| Input.kKeyRight | Input.kKeyDown | Input.kKeyEnt
+					| Input.kKeyExit);
 		}
 	}
-
-	// int WINAPI NameDlgProc(HWND hwndDlg,UINT uMsg,WPARAM wParam,LPARAM
-	// lParam)
-	// {
-	// switch(uMsg)
-	// {
-	// case WM_INITDIALOG:
-	// return (INT_PTR)TRUE;
-	// case WM_COMMAND:
-	// if(1005 == LOWORD(wParam))
-	// {
-	// HWND hedit = GetDlgItem(hwndDlg, 1004);
-	// GetWindowTextW(hedit, glPlayer->player_name, 16);
-	// if(glPlayer->player_name[0])
-	// {
-	// EndDialog(hwndDlg, 0);
-	// return TRUE;
-	// }
-	// }
-	// }
-	// return FALSE;
-	// }
-
-	// void EnterName(HWND hwnd)
-	// {
-	// DialogBox(0, MAKEINTRESOURCE(1003), hwnd, NameDlgProc);
-	// }
 }

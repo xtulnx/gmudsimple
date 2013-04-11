@@ -40,16 +40,18 @@ public class GmudTemp {
 		}
 	}
 
-	/** 单位时间片 */
+	/** 单位时间片 5秒调用一次 */
 	static void TimerFunc() {
 		task.temp_tasks_data[5] += 5; // 捕快time
 		task.temp_tasks_data[29] += 5; // 石料time
 		task.temp_tasks_data[30] += 5; // 存档时间
 		task.temp_tasks_data[31] += 5; // 年龄周期
-		if (task.temp_tasks_data[31] > 300) {
+		if (task.temp_tasks_data[31] >= 60) {
 			++Gmud.sPlayer.played_time; // ++play time
-			task.temp_tasks_data[31] = 0;
+			task.temp_tasks_data[31] -= 60;
 		}
+		Gmud.UpdatePlayTime(Gmud.sPlayer.played_time,
+				task.temp_tasks_data[31]);
 		task.temp_tasks_data[32] += 5;
 		for (int i = 0; i < 2; i++) {
 			if (a < 0 || a > 147) // npc recover

@@ -15,8 +15,9 @@ class UIUtils {
 	/** 指示器：圆圈 */
 	static int MENU_TYPE_CIRCLE = 2;
 
-	private static final int menu_indicator_size[] = new int[] { 7, 11, 5, 5,
-			6, 6 };
+	private static final int menu_indicator_size[] = new int[] { UI.CURSOR_W,
+			UI.CURSOR_H, UI.CURSOR_BOX_W, UI.CURSOR_BOX_W, UI.CURSOR_CIRCLE_R,
+			UI.CURSOR_CIRCLE_R };
 
 	/**
 	 * 竖向菜单
@@ -45,10 +46,9 @@ class UIUtils {
 		if (y == -1) {
 			y = (Gmud.WQX_ORG_HEIGHT - h) >> 1;
 		}
-		Input.ClearKeyStatus();
+		int last_key = 0;
 		while (Input.Running) {
-			Input.ProcessMsg();
-			if ((Input.inputstatus & Input.kKeyUp) != 0) {
+			if ((last_key & Input.kKeyUp) != 0) {
 				if (sel > 0) {
 					sel--;
 				} else if (top > 0) {
@@ -61,7 +61,7 @@ class UIUtils {
 					sel = vCount - 1;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyDown) != 0) {
+			} else if ((last_key & Input.kKeyDown) != 0) {
 				if (top + sel >= count - 1) {
 					top = sel = 0;
 				} else if (sel < vCount - 1) {
@@ -70,9 +70,9 @@ class UIUtils {
 					top++;
 				}
 				update = true;
-			} else if ((Input.inputstatus & Input.kKeyExit) != 0) {
+			} else if ((last_key & Input.kKeyExit) != 0) {
 				break;
-			} else if ((Input.inputstatus & Input.kKeyEnt) != 0) {
+			} else if ((last_key & Input.kKeyEnt) != 0) {
 				ret = UI.onMenuCallBack(callbackID, top + sel);
 				if (ret != 0)
 					break;
@@ -104,8 +104,8 @@ class UIUtils {
 				}
 				Video.VideoUpdate();
 			}
-			Input.ClearKeyStatus();
-			Gmud.GmudDelay(Gmud.DELAY_WAITKEY);
+			last_key = Gmud.GmudWaitNewKey(Input.kKeyUp | Input.kKeyDown
+					| Input.kKeyEnt | Input.kKeyExit);
 		}
 		return ret;
 	}

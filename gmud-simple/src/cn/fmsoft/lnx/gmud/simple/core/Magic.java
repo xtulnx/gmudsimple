@@ -8,6 +8,7 @@ public class Magic {
 			150, 120, 160, 70, 110, 180, 200, 180, 160
 		};
 
+	/** size[39] */
 	static final String MAGIC_NAME[] = new String[] {
 	/* 0 */"流星飞掷", "雷动九天", "红莲出世", "冰心决", "雪花六出",
 	/* 5 */"神倒鬼跌", "三花", "落英缤纷", "柳浪闻莺", "变熊术",
@@ -65,12 +66,13 @@ public class Magic {
 			{
 				int k2 = 0;
 				int l2 = 0;
-				if (Calc2(id_active, 0, 12, 1) > 0)
+				if (TestSelectedSkillLevel(id_active, 0, 12, 1) > 0)
 				{
-					int j3 = Calc2(id_active, 0, 12, 105);
+					// 八卦游身掌 + 混元一气功
+					int j3 = TestSelectedSkillLevel(id_active, 0, 12, 105);
 					if (j3 < 0)
 						return NeedMoreLevel(12);
-					int k1 = Calc2(id_active, 3, 14, 105);
+					int k1 = TestSelectedSkillLevel(id_active, 3, 14, 105);
 					if (k1 < 0)
 						return NeedMoreLevel(14);
 					j3 = Calc1(id_active, 0, 12);
@@ -78,10 +80,11 @@ public class Magic {
 					l2 = 10 + (j3 - 90) / 2;
 				} else
 				{
-					int k3 = Calc2(id_active, 0, 13, 135);
+					// 八阵八卦掌 + 混元一气功
+					int k3 = TestSelectedSkillLevel(id_active, 0, 13, 135);
 					if ((k3) < 0)
 						return NeedMoreLevel(13);
-					int l1 = Calc2(id_active, 3, 14, 135);
+					int l1 = TestSelectedSkillLevel(id_active, 3, 14, 135);
 					if ((l1) < 0)
 						return NeedMoreLevel(14);
 					k3 = Calc1(id_active, 0, 13);
@@ -98,7 +101,7 @@ public class Magic {
 		case 6: //三花
 			{
 				int l3;
-				if ((l3 = Calc2(id_active, 3, 20, 90)) < 0)
+				if ((l3 = TestSelectedSkillLevel(id_active, 3, 20, 90)) < 0)
 					return NeedMoreLevel(20);
 				boolean flag2 = false;
 				l3 = Calc1(id_active, 3, 20);
@@ -111,7 +114,7 @@ public class Magic {
 			}
 		case 2: //红莲出世
 			{
-				int k4 = Calc2(id_active, 3, 25, 120);
+				int k4 = TestSelectedSkillLevel(id_active, 3, 25, 120);
 				if (k4 < 0)
 					return NeedMoreLevel(25);
 				int l5 = 0;
@@ -125,7 +128,7 @@ public class Magic {
 			}
 		case 1: //雷动九天
 			{
-				int l4 = Calc2(id_active, 3, 25, 90);
+				int l4 = TestSelectedSkillLevel(id_active, 3, 25, 90);
 				if (l4 < 0)
 					return NeedMoreLevel(25);
 				int i6 = 21 + util.RandomInt((l4 - 90) / 3);
@@ -137,7 +140,7 @@ public class Magic {
 			}
 		case 25: //忍术烟幕
 			{
-				if (Calc2(id_active, 3, 26, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 26, 90) < 0)
 					return NeedMoreLevel(26);
 				int j7 = Battle.sBattle.fighter_data[id_active][9];
 				int k7 = 50 + (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20;
@@ -158,7 +161,7 @@ public class Magic {
 			}
 		case 26: //忍法影分身
 			{
-				if (Calc2(id_active, 3, 26, 110) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 26, 110) < 0)
 					return NeedMoreLevel(26);
 				int l7 = Battle.sBattle.fighter_data[id_active][37] / 3;
 				if (l7 < 1)
@@ -172,7 +175,7 @@ public class Magic {
 			}
 		case 3: //冰心决
 			{
-				int i8 = Calc2(id_active, 3, 36, 90);
+				int i8 = TestSelectedSkillLevel(id_active, 3, 36, 90);
 				if (i8 < 0)
 					return NeedMoreLevel(36);
 				i8 = Calc1(id_active, 3, 36);
@@ -185,11 +188,11 @@ public class Magic {
 			}
 		case 24: //八卦刀影掌
 			{
-				if (Calc2(id_active, 1, 11, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 11, 105) < 0)
 					return NeedMoreLevel(11);
-				if (Calc2(id_active, 3, 14, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 14, 105) < 0)
 					return NeedMoreLevel(14);
-				if (Calc2(id_active, 0, 12, 1) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 12, 1) < 0)
 					return NeedMoreLevel(12);
 				int l9 = 0;
 				Battle.sBattle.a(util.RandomInt(6) + 8, 0, 0, 0);
@@ -200,11 +203,11 @@ public class Magic {
 			}
 		case 36: //八阵刀影掌
 			{
-				if (Calc2(id_active, 1, 11, 135) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 11, 135) < 0)
 					return NeedMoreLevel(11);
-				if (Calc2(id_active, 3, 14, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 14, 105) < 0)
 					return NeedMoreLevel(14);
-				if (Calc2(id_active, 0, 13, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 13, 105) < 0)
 					return NeedMoreLevel(13);
 				int i10 = 0;
 				Battle.sBattle.a(util.RandomInt(9) + 14, 0, 0, 0);
@@ -218,10 +221,10 @@ public class Magic {
 		case 8: //柳浪闻莺
 			{
 				int i5;
-				if ((i5 = Calc2(id_active, 3, 20, 150)) < 0)
+				if ((i5 = TestSelectedSkillLevel(id_active, 3, 20, 150)) < 0)
 					return NeedMoreLevel(20);
 				int i13;
-				if ((i13 = Calc2(id_active, 1, 18, 150)) < 0)
+				if ((i13 = TestSelectedSkillLevel(id_active, 1, 18, 150)) < 0)
 					return NeedMoreLevel(18);
 				int j10 = 0;
 				Battle.sBattle.a(-1, 0, 0, 0);
@@ -232,9 +235,9 @@ public class Magic {
 			}
 		case 7: //落英缤纷
 			{
-				if (Calc2(id_active, 3, 20, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 20, 120) < 0)
 					return NeedMoreLevel(20);
-				if (Calc2(id_active, 1, 17, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 17, 120) < 0)
 					return NeedMoreLevel(17);
 				int k13 = Calc1(id_active, 1, 17) / 3;
 				if (k13 < 0)
@@ -267,9 +270,9 @@ public class Magic {
 			}
 		case 0: //流星飞掷
 			{
-				if (Calc2(id_active, 3, 25, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 25, 120) < 0)
 					return NeedMoreLevel(25);
-				if (Calc2(id_active, 1, 23, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 23, 120) < 0)
 					return NeedMoreLevel(23);
 				if (Battle.sBattle.fighter_data[id_active][8] < 33)
 				{
@@ -295,9 +298,9 @@ public class Magic {
 			}
 		case 27: //旋风三连斩
 			{
-				if (Calc2(id_active, 3, 26, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 26, 120) < 0)
 					return NeedMoreLevel(26);
-				if (Calc2(id_active, 1, 29, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 29, 90) < 0)
 					return NeedMoreLevel(29);
 				int k10 = 0;
 				boolean flag12 = false;
@@ -314,10 +317,10 @@ public class Magic {
 		case 28: //迎风一刀斩
 			{
 				int i7;
-				if ((i7 = Calc2(id_active, 3, 26, 120)) < 0)
+				if ((i7 = TestSelectedSkillLevel(id_active, 3, 26, 120)) < 0)
 					return NeedMoreLevel(26);
 				int j16;
-				if ((j16 = Calc2(id_active, 1, 29, 120)) < 0)
+				if ((j16 = TestSelectedSkillLevel(id_active, 1, 29, 120)) < 0)
 					return NeedMoreLevel(29);
 				Battle.sBattle.b(1, 22, 1);
 				Battle.sBattle.a(-1, 70, 15, -1);
@@ -327,9 +330,9 @@ public class Magic {
 			}
 		case 4: //雪花六出
 			{
-				if (Calc2(id_active, 3, 36, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 36, 90) < 0)
 					return NeedMoreLevel(36);
-				if (Calc2(id_active, 1, 38, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 38, 90) < 0)
 					return NeedMoreLevel(38);
 				int i11 = 0;
 				int l16 = 0;
@@ -348,9 +351,9 @@ public class Magic {
 			}
 		case 5: //神倒鬼跌
 			{
-				if (Calc2(id_active, 3, 36, 150) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 36, 150) < 0)
 					return NeedMoreLevel(36);
-				if (Calc2(id_active, 0, 39, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 39, 90) < 0)
 					return NeedMoreLevel(39);
 				Battle.sBattle.b(1, 46, 1);
 				int i14= Calc1(id_active, 0, 39) / 5;
@@ -366,7 +369,7 @@ public class Magic {
 			}
 		case 9: //变熊术
 			{
-				if (Calc2(id_active, 3, 45, 150) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 45, 150) < 0)
 					return NeedMoreLevel(45);
 				int l18 = Calc1(id_active, 3, 45) / 2;
 				if (l18 < 0)
@@ -380,7 +383,7 @@ public class Magic {
 		case 10: //猛虎啸
 			{
 				int i18;
-				if ((i18 = Calc2(id_active, 3, 45, 150)) < 0)
+				if ((i18 = TestSelectedSkillLevel(id_active, 3, 45, 150)) < 0)
 					return NeedMoreLevel(45);
 				int j14 = (Battle.sBattle.fighter_data[id_active][4] - Battle.sBattle.fighter_data[id_rival][4]) / 20;
 				if ((j14 += 50) < 0)
@@ -400,7 +403,7 @@ public class Magic {
 			}
 		case 37: //"飞鹰召唤"
 			{
-				if (Calc2(id_active, 3, 45, 180) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 45, 180) < 0)
 					return NeedMoreLevel(45);
 				int i19 = Calc1(id_active, 3, 45);
 				if (!Battle.sBattle.a(id_rival, 7, util.RandomInt(i19), -1, 96, -1, 12))
@@ -410,9 +413,9 @@ public class Magic {
 			}
 		case 38: //"变鹰术"
 			{
-				if (Calc2(id_active, 3, 45, 150) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 45, 150) < 0)
 					return NeedMoreLevel(45);
-				if (Calc2(id_active, 0, 44, 1) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 44, 1) < 0)
 				{
 //					wstring str("你还未学过鹰爪功");
 //					return str;
@@ -427,10 +430,10 @@ public class Magic {
 		case 29: //震字决
 			{
 				// 太极神功+内功 需要 90 级
-				if ( Calc2(id_active, 3, 32, 90)< 0)
+				if ( TestSelectedSkillLevel(id_active, 3, 32, 90)< 0)
 					return NeedMoreLevel(32);
 				// 太极拳+拳脚 需要 90 级
-				if (Calc2(id_active, 0, 31, 90) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 31, 90) < 0)
 					return NeedMoreLevel(31);
 				
 				// 命中率: 70+(使用者内力-敌人内力)/20
@@ -475,9 +478,9 @@ public class Magic {
 			}
 		case 30: //挤字决
 			{
-				if (Calc2(id_active, 3, 32, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 105) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 0, 31, 105) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 31, 105) < 0)
 					return NeedMoreLevel(31);
 				
 				// [4] - fp
@@ -512,9 +515,9 @@ public class Magic {
 			}
 		case 31: // 乱环决 
 			{
-				if (Calc2(id_active, 3, 32, 150) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 150) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 0, 31, 150) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 31, 150) < 0)
 					return NeedMoreLevel(31);
 				int i15 = Calc1(id_active, 0, 31) / 3;
 				if (i15 < 0)
@@ -535,9 +538,9 @@ public class Magic {
 			}
 		case 32: // 阴阳决 
 			{
-				if (Calc2(id_active, 3, 32, 180) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 180) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 0, 31, 180) < 0)
+				if (TestSelectedSkillLevel(id_active, 0, 31, 180) < 0)
 					return NeedMoreLevel(31);
 				int j23 = util.RandomInt(2) + 121;
 				Battle.sBattle.a(j23, 0, 0, -1);
@@ -551,9 +554,9 @@ public class Magic {
 
 		case 33: // 缠绵决 
 			{
-				if (Calc2(id_active, 3, 32, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 120) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 1, 30, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 30, 120) < 0)
 					return NeedMoreLevel(30);
 				int j15 = Calc1(id_active, 1, 30) / 3;
 				if (j15 < 0)
@@ -574,9 +577,9 @@ public class Magic {
 			}
 		case 34: // 连字决
 			{
-				if (Calc2(id_active, 3, 32, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 120) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 1, 30, 120) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 30, 120) < 0)
 					return NeedMoreLevel(30);
 				boolean flag11 = false;
 				if (!(flag11 = (flag11 = Battle.sBattle.a(id_active, 0, 10, -1, -1, 27, 10)) || Battle.sBattle.a(id_active, 3, 12 + util.RandomInt(3), -1, -1, -1, 10)))
@@ -586,9 +589,9 @@ public class Magic {
 			}
 		case 35: //三环套月
 			{
-				if (Calc2(id_active, 3, 32, 180) < 0)
+				if (TestSelectedSkillLevel(id_active, 3, 32, 180) < 0)
 					return NeedMoreLevel(32);
-				if (Calc2(id_active, 1, 30, 180) < 0)
+				if (TestSelectedSkillLevel(id_active, 1, 30, 180) < 0)
 					return NeedMoreLevel(30);
 				Battle.sBattle.a(101, 0, 0, -1);
 				int i12 = Battle.sBattle.PhyAttack(true);
@@ -800,7 +803,7 @@ public class Magic {
 		case 11: //闪光弹
 			{
 				int i1;
-				if ((i1 = Calc2(i, 6, 52, 37)) < 0)
+				if ((i1 = TestSelectedSkillLevel(i, 6, 52, 37)) < 0)
 					return NeedMoreLevel(52);
 				int i7 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
 				int i4 = Calc3(i, j, i7);
@@ -829,7 +832,7 @@ public class Magic {
 		case 12: // 雷火弹
 			{
 				int j1;
-				if ((j1 = Calc2(i, 6, 52, 37)) < 0)
+				if ((j1 = TestSelectedSkillLevel(i, 6, 52, 37)) < 0)
 					return NeedMoreLevel(52);
 				int j4 = 0;
 				int j7 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -859,10 +862,10 @@ public class Magic {
 		case 13: // 掌心雷
 			{
 				int k1;
-				if ((k1 = Calc2(i, 6, 52, 120)) < 0)
+				if ((k1 = TestSelectedSkillLevel(i, 6, 52, 120)) < 0)
 					return NeedMoreLevel(52);
 				int i13;
-				if ((i13 = Calc2(i, 3, 48, 135)) < 0)
+				if ((i13 = TestSelectedSkillLevel(i, 3, 48, 135)) < 0)
 					return NeedMoreLevel(48);
 				int k4 = 0;
 				int k7 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -894,7 +897,7 @@ public class Magic {
 		case 14: // 连珠雷
 			{
 				int l1;
-				if ((l1 = Calc2(i, 6, 52, 180)) < 0)
+				if ((l1 = TestSelectedSkillLevel(i, 6, 52, 180)) < 0)
 					return NeedMoreLevel(52);
 				int l4 = 0;
 				int l7 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -925,7 +928,7 @@ public class Magic {
 		case 15: // '\017'
 			{
 				int i2;
-				if ((i2 = Calc2(i, 6, 50, 52)) < 0)
+				if ((i2 = TestSelectedSkillLevel(i, 6, 50, 52)) < 0)
 					return NeedMoreLevel(50);
 				int i5 = 0;
 				int i8 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -950,7 +953,7 @@ public class Magic {
 		case 16: // '\020'
 			{
 				int j2;
-				if ((j2 = Calc2(i, 6, 50, 80)) < 0)
+				if ((j2 = TestSelectedSkillLevel(i, 6, 50, 80)) < 0)
 					return NeedMoreLevel(50);
 				int j5 = 0;
 				int j8 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -968,10 +971,10 @@ public class Magic {
 		case 17: // '\021'
 			{
 				int k2;
-				if ((k2 = Calc2(i, 6, 50, 120)) < 0)
+				if ((k2 = TestSelectedSkillLevel(i, 6, 50, 120)) < 0)
 					return NeedMoreLevel(50);
 				int j13;
-				if ((j13 = Calc2(i, 3, 48, 170)) < 0)
+				if ((j13 = TestSelectedSkillLevel(i, 3, 48, 170)) < 0)
 					return NeedMoreLevel(48);
 				int k5 = 0;
 				int k8 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -996,7 +999,7 @@ public class Magic {
 		case 18: // '\022'
 			{
 				int l2;
-				if ((l2 = Calc2(i, 6, 50, 80)) < 0)
+				if ((l2 = TestSelectedSkillLevel(i, 6, 50, 80)) < 0)
 					return NeedMoreLevel(50);
 				int l5 = 0;
 				int l8 = (Calc1(i, 6, 52) + Calc1(i, 5, 49)) / 2;
@@ -1014,7 +1017,7 @@ public class Magic {
 		case 19: // '\023'
 			{
 				int i3;
-				if ((i3 = Calc2(i, 6, 51, 45)) < 0)
+				if ((i3 = TestSelectedSkillLevel(i, 6, 51, 45)) < 0)
 					return NeedMoreLevel(51);
 				int i6 = 0;
 				int i9 = (Calc1(i, 6, 51) + Calc1(i, 5, 49)) / 2;
@@ -1046,7 +1049,7 @@ public class Magic {
 		case 20: // '\024'
 			{
 				int j3;
-				if ((j3 = Calc2(i, 6, 51, 90)) < 0)
+				if ((j3 = TestSelectedSkillLevel(i, 6, 51, 90)) < 0)
 					return NeedMoreLevel(51);
 				int j6 = 0;
 				int j9 = (Calc1(i, 6, 51) + Calc1(i, 5, 49)) / 2;
@@ -1076,7 +1079,7 @@ public class Magic {
 		case 21: // '\025'
 			{
 				int k3;
-				if ((k3 = Calc2(i, 6, 51, 150)) < 0)
+				if ((k3 = TestSelectedSkillLevel(i, 6, 51, 150)) < 0)
 					return NeedMoreLevel(51);
 				int k6 = 0;
 				int k9 = (Calc1(i, 6, 51) + Calc1(i, 5, 49)) / 2;
@@ -1094,7 +1097,7 @@ public class Magic {
 			}
 		case 22: // '\026'
 			int l3;
-			if ((l3 = Calc2(i, 6, 51, 180)) < 0)
+			if ((l3 = TestSelectedSkillLevel(i, 6, 51, 180)) < 0)
 				return NeedMoreLevel(51);
 			int l6 = 0;
 			int l9 = (Calc1(i, 6, 51) + Calc1(i, 5, 49)) / 2;
@@ -1158,18 +1161,18 @@ public class Magic {
 	}
 
 	 /** 计算正在使用的技能等级（门派技能+基本功/2），如果技能ID不符合则返回 -1 */
-	static int Calc2(int id_player, int j, int skill_id, int test_level) {
+	static int TestSelectedSkillLevel(int id_player, int type, int skill_id, int test_level) {
 		final int[] data = Battle.sBattle.fighter_data[id_player];
 
 		// 技能ID不符
-		if (data[30 + j * 2] != skill_id)
+		if (data[30 + type * 2] != skill_id)
 			return -1;
 
-		int level = data[30 + j * 2 + 1];
+		int level = data[30 + type * 2 + 1];
 
 
-		if (data[46 + j * 2] != 255)
-			level += data[46 + j * 2 + 1] / 2;
+		if (data[46 + type * 2] != 255)
+			level += data[46 + type * 2 + 1] / 2;
 
 		if (level < test_level)
 			return -1;

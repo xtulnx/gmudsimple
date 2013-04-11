@@ -5,7 +5,7 @@
  */
 package cn.fmsoft.lnx.gmud.simple;
 
-import java.io.File;
+import org.coolnx.lib.LLengthFilter;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -19,9 +19,10 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.InputFilter;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -37,12 +38,9 @@ import android.widget.Toast;
 import cn.fmsoft.lnx.gmud.simple.Configure.Design;
 import cn.fmsoft.lnx.gmud.simple.core.Gmud;
 import cn.fmsoft.lnx.gmud.simple.core.Input;
+import cn.fmsoft.lnx.gmud.simple.core.Player;
 
-public class GmudActivity extends Activity implements Gmud.ICallback {
-	// final static int MENU_HOOKGAME = 0;
-	// final static int MENU_EXITAPPLICATION = 1;
-	// final static int MENU_ABOUT = 2;
-
+public class GmudActivity extends Activity {
 	private int mRequestOritation = Configuration.ORIENTATION_SQUARE;
 	private boolean bLockScreen = false;
 	private boolean bHideSoftKey = false;
@@ -53,8 +51,33 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 	private Show mShow;
 
-	private Handler mHandler = new Handler();
+	private static final int _MSG_USER_ = 0x1000;
+	private static final int MSG_UPDATE_PLAY_TIME = _MSG_USER_ + 1;
+
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_UPDATE_PLAY_TIME:
+				show_time();
+				break;
+
+			default:
+				super.handleMessage(msg);
+				break;
+			}
+		}
+	};
 	protected boolean mDesignIng;
+
+	private boolean bShowTime;
+	private long mMinutes = 0;
+	private int mSeconds = 0;
+	private String BASE_TITLE;
+	private String SHOW_TIME_FORMART = "%s   %.2f'%4d:%d";
+
+	private Intent INTENT_GUARD_SERVER;
+	private boolean bEnableGuard = false;
 
 	protected static PendingIntent getPendingIntent(Context ctx) {
 		if (sMainIntent != null)
@@ -72,6 +95,10 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.main);
+
+		INTENT_GUARD_SERVER = new Intent(getBaseContext(), GuardServer.class);
+
+		BASE_TITLE = getTitle().toString();
 
 		sMainIntent = PendingIntent.getActivity(getBaseContext(), 0,
 				new Intent(getIntent()), getIntent().getFlags());
@@ -92,8 +119,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				if (mDesignIng) {
 					return mDetector.onTouchEvent(event);
 				} else {
-					if (!bHideSoftKey && Configure.HitTest(event)) {
-						((Show) v).KeyPostUpdate();
+					if (!bHideSoftKey) {
+						((Show) v).HitTest(event);
 					}
 					return true;
 				}
@@ -101,7 +128,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		});
 
 		// new Gmud(this);
-		Gmud.SetCallback(this);
+		((GmudApp) getApplication()).BindGmudActivity(this);
 		Gmud.Start();
 	}
 
@@ -109,7 +136,9 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	protected void onDestroy() {
 		super.onDestroy();
 
-		Gmud.SetCallback(null);
+		((GmudApp) getApplication()).UnbindGmudActivity(this);
+
+		Configure.recycle();
 
 		// Gmud.Exit();
 		try {
@@ -121,6 +150,18 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 
 		// �����������ַ�ʽ
 		// android.os.Process.killProcess(android.os.Process.myPid());
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		check_guard();
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		stopService(INTENT_GUARD_SERVER);
 	}
 
 	@Override
@@ -150,6 +191,41 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		if (hideSoftKey != bHideSoftKey) {
 			bHideSoftKey = hideSoftKey;
 			hide_softkey();
+		}
+
+		boolean showTime = p.getBoolean(getString(R.string.key_show_time),
+				bShowTime);
+		if (showTime != bShowTime) {
+			bShowTime = showTime;
+			if (showTime)
+				show_time();
+			else
+				setTitle(BASE_TITLE);
+		}
+
+		boolean image_smooth = p.getBoolean(
+				getString(R.string.key_image_smooth), false);
+		Gmud.setImageSmooth(image_smooth);
+
+		boolean enableGuardServer = p.getBoolean(
+				getString(R.string.key_enable_guard), bEnableGuard);
+		if (enableGuardServer != bEnableGuard)
+			bEnableGuard = enableGuardServer;
+	}
+
+	private void check_guard() {
+		// check background server
+		if (bEnableGuard)
+			startService(INTENT_GUARD_SERVER);
+		else
+			stopService(INTENT_GUARD_SERVER);
+	}
+
+	private void show_time() {
+		if (mMinutes > 0 || mSeconds > 0) {
+			setTitle(String.format(SHOW_TIME_FORMART, BASE_TITLE, 14
+					+ (float) mMinutes / Player.AGE_TIME, mMinutes
+					% Player.AGE_TIME, mSeconds));
 		}
 	}
 
@@ -214,17 +290,7 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 			break;
 
 		case R.id.item_about:
-			Dialog dialog = new AlertDialog.Builder(this)
-					.setIcon(android.R.drawable.btn_star)
-					.setTitle(R.string.title).setMessage(R.string.about)
-					.setPositiveButton("OK", new OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-						}
-					}).create();
-			dialog.setCancelable(true);
-			dialog.setCanceledOnTouchOutside(true);
-			dialog.show();
+			about();
 			break;
 
 		// case R.id.item_backup:
@@ -239,6 +305,22 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void about() {
+		Dialog dialog = new AlertDialog.Builder(this)
+				.setIcon(android.R.drawable.btn_star_big_on)
+				.setTitle(R.string.title).setMessage(R.string.about)
+				.setPositiveButton("OK", new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+				}).create();
+		dialog.setCancelable(true);
+		dialog.setCanceledOnTouchOutside(true);
+		dialog.show();
+		View v = dialog.getWindow().getDecorView();
+		v = v.findViewById(android.R.id.title);
 	}
 
 	@Override
@@ -283,6 +365,18 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 	}
 
 	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (Input.Running) {
+			if (KeyEvent.KEYCODE_ENTER == keyCode
+					|| (KeyEvent.KEYCODE_0 <= keyCode && keyCode <= KeyEvent.KEYCODE_Z)) {
+				Input.onKey(keyCode, event);
+				return true;
+			}
+		}
+		return super.onKeyUp(keyCode, event);
+	}
+
+	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (Input.Running) {
@@ -319,55 +413,6 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		// }
 	}
 
-	public final static String BACK_UP_DIR = "xtulnx/gmud/backup/";
-
-	private void backup() {
-		Context ctx = getBaseContext();
-		File dir = new File(Environment.getExternalStorageDirectory(),
-				BACK_UP_DIR);
-		if (!dir.exists() || !dir.isDirectory()) {
-			dir.delete();
-			dir.mkdirs();
-		}
-		Log.d("lnx", "path =" + dir.getPath());
-		File back = new File(dir, "backup.xml");
-		if (dir.exists()) {
-			new AlertDialog.Builder(this)
-					.setIcon(android.R.drawable.btn_star)
-					.setTitle(R.string.title)
-					.setMessage("Backup to " + back.getPath())
-					.setPositiveButton(android.R.string.yes,
-							new OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-
-								}
-							})
-					.setNeutralButton(android.R.string.cancel,
-							new OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									dialog.dismiss();
-								}
-							}).create().show();
-		}
-	}
-
-	private void restore() {
-
-		new AlertDialog.Builder(this).setIcon(android.R.drawable.btn_star)
-				.setTitle(R.string.title).setMessage(R.string.about)
-				.setPositiveButton("OK", new OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-					}
-				}).create().show();
-	}
-
-	@Override
 	public void EnterNewName(final int type) {
 		mHandler.post(new Runnable() {
 			@Override
@@ -381,6 +426,8 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 				// Set an EditText view to get user input
 				final EditText input = new EditText(ctx);
 				input.setHint("[无名]");
+				input.setFilters(new InputFilter[] { new LLengthFilter(
+						type == 0 ? 12 : 8) });
 				input.setSingleLine(true);
 				input.setOnKeyListener(new View.OnKeyListener() {
 					@Override
@@ -393,6 +440,12 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 					}
 				});
 				alert.setView(input);
+				alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+					@Override
+					public void onCancel(DialogInterface dialog) {
+						setNewName(input.getText().toString());
+					}
+				});
 
 				alert.setPositiveButton("Ok",
 						new DialogInterface.OnClickListener() {
@@ -424,6 +477,15 @@ public class GmudActivity extends Activity implements Gmud.ICallback {
 		if (mDesignIng) {
 			mDesignIng = false;
 			mShow.ApplyDesign(isApply);
+		}
+	}
+
+	public void UpdateTime(long minutes, int seconds) {
+		mMinutes = minutes;
+		mSeconds = seconds;
+		if (bShowTime) {
+			mHandler.removeMessages(MSG_UPDATE_PLAY_TIME);
+			mHandler.sendEmptyMessage(MSG_UPDATE_PLAY_TIME);
 		}
 	}
 }
