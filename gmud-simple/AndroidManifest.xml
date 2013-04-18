@@ -25,7 +25,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="SettingActivity" android:exported="false">
+        <activity android:name="SettingActivity" android:exported="false" android:launchMode="singleTask">
         </activity>
         <service android:name="GuardServer" android:exported="false"></service>
     </application>

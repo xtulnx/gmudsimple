@@ -138,7 +138,7 @@ public class GmudActivity extends Activity {
 
 		((GmudApp) getApplication()).UnbindGmudActivity(this);
 
-		Configure.recycle();
+		// Configure.recycle();
 
 		// Gmud.Exit();
 		try {

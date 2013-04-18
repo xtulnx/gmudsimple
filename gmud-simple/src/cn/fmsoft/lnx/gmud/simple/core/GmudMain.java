@@ -259,19 +259,27 @@ public class GmudMain extends Thread {
 				continue;
 			} else if ((last_key & Input.kKeyLeft) != 0) {
 				Input.ClearKeyStatus();
+				int delay = Gmud.DELAY_AUTO_KEY_MAX;
 				do {
 					map.DirLeft(4);
 					Video.VideoUpdate();
-					Gmud.GmudDelay(60);
+					Gmud.GmudDelay(delay);
+					if (delay > Gmud.DELAY_AUTO_KEY_MIN) {
+						delay -= Gmud.DELAY_AUTO_KEY_RATE;
+					}
 					last_key = Input.getScanCode();
 				} while (last_key == Input.kKeyLeft);
 				continue;
 			} else if ((last_key & Input.kKeyRight) != 0) {
 				Input.ClearKeyStatus();
+				int delay = Gmud.DELAY_AUTO_KEY_MAX;
 				do {
 					map.DirRight(4);
 					Video.VideoUpdate();
-					Gmud.GmudDelay(60);
+					Gmud.GmudDelay(delay);
+					if (delay > Gmud.DELAY_AUTO_KEY_MIN) {
+						delay -= Gmud.DELAY_AUTO_KEY_RATE;
+					}
 					last_key = Input.getScanCode();
 				} while (last_key == Input.kKeyRight);
 				continue;

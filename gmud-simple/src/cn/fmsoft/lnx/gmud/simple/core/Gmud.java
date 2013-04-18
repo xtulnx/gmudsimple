@@ -38,6 +38,10 @@ public class Gmud {
 	/** 1秒 */
 	static final int DELAY_1S = 1000;
 	static final int DELAY_TICK = 10;
+	/** 自动按键，如长按 {LEFT} 等 */
+	static final int DELAY_AUTO_KEY_MAX = 120;
+	static final int DELAY_AUTO_KEY_RATE = 10;
+	static final int DELAY_AUTO_KEY_MIN = 60;
 
 	static Map sMap;
 	static Player sPlayer;
