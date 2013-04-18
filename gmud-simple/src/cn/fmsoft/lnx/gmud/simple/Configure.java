@@ -31,9 +31,11 @@ import cn.fmsoft.lnx.gmud.simple.core.Input;
  * @author nxliao
  * 
  */
-public final class Configure {
+final class Configure {
 	final static boolean DEBUG = false;
 	final static String DBG_TAG = Configure.class.getName();
+
+	private final static Object LOCK = new Object();
 
 	public static final int KEY_Exit = 0;
 	public static final int KEY_Ent = 1;
@@ -104,51 +106,67 @@ public final class Configure {
 
 	private static Context sContext;
 
-	protected static void recycle() {
-		sContext = null;
-		IMG_BG = VIDEO_COVER = null;
-		TITLE = null;
-		VIDEO_PAINT = TITLE_PAINT = null;
-		for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
-			sRcKeys[i] = null;
+	private static boolean checkIntialization() {
+		synchronized (LOCK) {
+			return (sContext != null);
 		}
-		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-			IMG_TITLE[i] = null;
+	}
+
+	public static void recycle() {
+		synchronized (LOCK) {
+			if (!checkIntialization())
+				return;
+
+			sContext = null;
+			IMG_BG = VIDEO_COVER = null;
+			TITLE = null;
+			VIDEO_PAINT = TITLE_PAINT = null;
+			for (int i = 0, c = _KEY_INDEX_MAX; i < c; i++) {
+				sRcKeys[i] = null;
+			}
+			for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+				IMG_TITLE[i] = null;
+			}
 		}
 	}
 
 	/** 初始化 */
-	protected static void init(Context ctx) {
-		sContext = ctx;
+	public static void init(Context ctx) {
+		synchronized (LOCK) {
+			if (checkIntialization())
+				return;
+			
+			sContext = ctx;
 
-		Resources res = ctx.getResources();
-		final DisplayMetrics dm = res.getDisplayMetrics();
-		CUR_DENSITY = dm.density;
+			Resources res = ctx.getResources();
+			final DisplayMetrics dm = res.getDisplayMetrics();
+			CUR_DENSITY = dm.density;
 
-		IMG_BG = new DEF_DRAWABLE_BG(res);
-		VIDEO_COVER = res.getDrawable(R.drawable.nc1020);
-		TITLE = res.getStringArray(R.array.soft_key);
-		if (VIDEO_COVER != null)
-			VIDEO_COVER.getPadding(sRcVideoCoverPadding);
+			IMG_BG = new DEF_DRAWABLE_BG(res);
+			VIDEO_COVER = res.getDrawable(R.drawable.nc1020);
+			TITLE = res.getStringArray(R.array.soft_key);
+			if (VIDEO_COVER != null)
+				VIDEO_COVER.getPadding(sRcVideoCoverPadding);
 
-		VIDEO_PAINT = new Paint();
-		VIDEO_PAINT.setAntiAlias(true);
-		VIDEO_PAINT.setFilterBitmap(true);
+			VIDEO_PAINT = new Paint();
+			VIDEO_PAINT.setAntiAlias(true);
+			VIDEO_PAINT.setFilterBitmap(true);
 
-		TITLE_PAINT = new Paint();
-		TITLE_PAINT.setAntiAlias(true);
-		TITLE_PAINT.setFilterBitmap(true);
-		TITLE_PAINT.setFakeBoldText(true);
-		TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
-		TITLE_PAINT.setShadowLayer(3, 1, 2, Color.BLACK);
+			TITLE_PAINT = new Paint();
+			TITLE_PAINT.setAntiAlias(true);
+			TITLE_PAINT.setFilterBitmap(true);
+			TITLE_PAINT.setFakeBoldText(true);
+			TITLE_PAINT.setTextAlign(Paint.Align.LEFT);
+			TITLE_PAINT.setShadowLayer(3, 1, 2, Color.BLACK);
 
-		for (int i = 0, c = _KEY_MAX_; i < c; i++) {
-			sRcKeys[i] = new Rect();
-			IMG_TITLE[i] = new DEF_DRAWABLE_TITLE(TITLE[i]);
+			for (int i = 0, c = _KEY_MAX_; i < c; i++) {
+				sRcKeys[i] = new Rect();
+				IMG_TITLE[i] = new DEF_DRAWABLE_TITLE(TITLE[i]);
+			}
+			sRcKeys[_KEY_INDEX_VIDEO] = sRcVideo;
+			sRcKeys[_KEY_INDEX_BG] = sRcKeyBg;
+			sRcKeys[_KEY_INDEX_TITLE] = sRcKeyTitle;
 		}
-		sRcKeys[_KEY_INDEX_VIDEO] = sRcVideo;
-		sRcKeys[_KEY_INDEX_BG] = sRcKeyBg;
-		sRcKeys[_KEY_INDEX_TITLE] = sRcKeyTitle;
 	}
 
 	/** 绘制单个软键 */
@@ -285,17 +303,22 @@ public final class Configure {
 	 * @param h
 	 *            高
 	 */
-	protected static void reset(boolean isLandscape, int w, int h) {
-		ConfigInfo defInfo = generateDefault(isLandscape, w, h);
+	public static void reset(boolean isLandscape, int w, int h) {
+		synchronized (LOCK) {
+			if (!checkIntialization())
+				return;
 
-		// try load ...
-		final ConfigInfo info = tryLoadConfig(isLandscape, defInfo);
+			ConfigInfo defInfo = generateDefault(isLandscape, w, h);
 
-		applyConfig(info == null ? defInfo : info);
-		sIsLandscape = isLandscape;
-		sWidth = w;
-		sHeight = h;
-		sBound.set(0, 0, w, h);
+			// try load ...
+			final ConfigInfo info = tryLoadConfig(isLandscape, defInfo);
+
+			applyConfig(info == null ? defInfo : info);
+			sIsLandscape = isLandscape;
+			sWidth = w;
+			sHeight = h;
+			sBound.set(0, 0, w, h);
+		}
 	}
 
 	/** 检查有无必要重绘 */
@@ -339,11 +362,15 @@ public final class Configure {
 		}
 	}
 
-	protected static void Draw(Canvas canvas, Bitmap video, int tick) {
-		drawBackground(canvas);
-		if (sShowKeypad)
-			drawKeypad(canvas);
-		drawVideo(canvas, video);
+	public static void Draw(Canvas canvas, Bitmap video, int tick) {
+		synchronized (LOCK) {
+			if (!checkIntialization())
+				return;
+			drawBackground(canvas);
+			if (sShowKeypad)
+				drawKeypad(canvas);
+			drawVideo(canvas, video);
+		}
 	}
 
 	protected static void hidekeypad(boolean hide) {
