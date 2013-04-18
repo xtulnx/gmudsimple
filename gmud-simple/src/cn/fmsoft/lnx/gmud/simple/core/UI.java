@@ -1798,13 +1798,13 @@ public class UI {
 		case 96: // 谷虚道长
 			ApprenticeWords(182);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.WuDang);
+			Gmud.sPlayer.SetClassID(ClassID.WuDang);
 			break;
 
 		case 97: // 古松道长
 			ApprenticeWords(182);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.WuDang);
+			Gmud.sPlayer.SetClassID(ClassID.WuDang);
 			break;
 
 		case 101: // 清虚道长
@@ -1853,7 +1853,7 @@ public class UI {
 			ApprenticeWords(192);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.XueShan);
+			Gmud.sPlayer.SetClassID(ClassID.XueShan);
 			break;
 
 		case 110: // 白瑞德
@@ -1868,14 +1868,14 @@ public class UI {
 			ApprenticeWords(194);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.XueShan);
+			Gmud.sPlayer.SetClassID(ClassID.XueShan);
 			break;
 
 		case 38: // 商宝震
 			ApprenticeWords(163);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
+			Gmud.sPlayer.SetClassID(ClassID.BaGuaMen);
 			break;
 
 		case 43: // 商剑鸣
@@ -1894,7 +1894,7 @@ public class UI {
 			ApprenticeWords(162);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
+			Gmud.sPlayer.SetClassID(ClassID.BaGuaMen);
 			break;
 
 		case 47: // 王维扬
@@ -1913,14 +1913,14 @@ public class UI {
 			ApprenticeWords(165);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.BaGuaMen);
+			Gmud.sPlayer.SetClassID(ClassID.BaGuaMen);
 			break;
 
 		case 90: // 腾王丸
 			ApprenticeWords(181);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.YiHeGu);
+			Gmud.sPlayer.SetClassID(ClassID.YiHeGu);
 			break;
 
 		case 87: // 花十郎
@@ -1931,7 +1931,7 @@ public class UI {
 			ApprenticeWords(181);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.YiHeGu);
+			Gmud.sPlayer.SetClassID(ClassID.YiHeGu);
 			break;
 
 		case 94: // 和仲阳
@@ -1946,14 +1946,14 @@ public class UI {
 			ApprenticeWords(179);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.YiHeGu);
+			Gmud.sPlayer.SetClassID(ClassID.YiHeGu);
 			break;
 
 		case 73: // 方长老
 			ApprenticeWords(174);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.HongLianJiao);
+			Gmud.sPlayer.SetClassID(ClassID.HongLianJiao);
 			break;
 
 		case 80: // 余鸿儒
@@ -1968,7 +1968,7 @@ public class UI {
 			ApprenticeWords(174);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.HongLianJiao);
+			Gmud.sPlayer.SetClassID(ClassID.HongLianJiao);
 			break;
 
 		case 56: // 平婆婆
@@ -1979,7 +1979,7 @@ public class UI {
 			ApprenticeWords(171);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.HuaJian);
+			Gmud.sPlayer.SetClassID(ClassID.HuaJian);
 			break;
 
 		case 57: // 桑轻虹
@@ -1994,7 +1994,7 @@ public class UI {
 			ApprenticeWords(171);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.HuaJian);
+			Gmud.sPlayer.SetClassID(ClassID.HuaJian);
 			break;
 
 		case 66: // 唐晚词
@@ -2008,7 +2008,7 @@ public class UI {
 			}
 			ApprenticeWords(171);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.HuaJian);
+			Gmud.sPlayer.SetClassID(ClassID.HuaJian);
 			// fall through
 
 		case 58: // 李青照
@@ -2026,7 +2026,7 @@ public class UI {
 			}
 			ApprenticeWords(170);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.HuaJian);
+			Gmud.sPlayer.SetClassID(ClassID.HuaJian);
 			break;
 
 		case 127: // 华佗
@@ -2036,7 +2036,7 @@ public class UI {
 			}
 			ApprenticeWords(150);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.ShouWang);
+			Gmud.sPlayer.SetClassID(ClassID.ShouWang);
 			break;
 
 		case 126: // 北海鳄神
@@ -2047,7 +2047,7 @@ public class UI {
 			ApprenticeWords(149);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.ShouWang);
+			Gmud.sPlayer.SetClassID(ClassID.ShouWang);
 			break;
 
 		case 129: // 娜可露露
@@ -2070,7 +2070,7 @@ public class UI {
 			ApprenticeWords(148);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.ShouWang);
+			Gmud.sPlayer.SetClassID(ClassID.ShouWang);
 			break;
 
 		case 135: // 葛洪
@@ -2081,7 +2081,7 @@ public class UI {
 			ApprenticeWords(145);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.MaoShan);
+			Gmud.sPlayer.SetClassID(ClassID.MaoShan);
 			break;
 
 		case 138: // 留孙真人
@@ -2096,7 +2096,7 @@ public class UI {
 			ApprenticeWords(147);
 			ApprenticeWords(10);
 
-			Gmud.sPlayer.isClass(ClassID.MaoShan);
+			Gmud.sPlayer.SetClassID(ClassID.MaoShan);
 			break;
 
 		case 141: // 茅盈
@@ -2110,7 +2110,7 @@ public class UI {
 			}
 			ApprenticeWords(146);
 			ApprenticeWords(10);
-			Gmud.sPlayer.isClass(ClassID.MaoShan);
+			Gmud.sPlayer.SetClassID(ClassID.MaoShan);
 			break;
 
 		default:
